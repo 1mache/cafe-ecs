@@ -1,0 +1,6 @@
+[submodule "dependencies/SDL"]
+	path = dependencies/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "dependencies/SDL_image"]
+	path = dependencies/SDL_image
+	url = https://github.com/libsdl-org/sdl_image.git
