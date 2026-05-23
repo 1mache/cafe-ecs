@@ -44,7 +44,6 @@ function(target_set_warnings)
         -Wshadow # if a variable declaration shadows one from a parent context
         -Wpedantic # warn if non-standard is used
         # C and C++ Warnings
-        -Wunused # warn on anything being unused
         -Wformat=2 # warn on security issues around functions that format output
         -Wcast-align # warn for potential performance problem casts
         -Wconversion # warn on type conversions that may lose data
@@ -55,7 +54,6 @@ function(target_set_warnings)
         -Wnon-virtual-dtor # if a class with virtual func has a non-virtual dest
         -Wold-style-cast # warn for c-style casts
         -Woverloaded-virtual # if you overload (not override) a virtual function
-        -Weffc++ # violations from Scott Meyers’ Effective C++
     )
 
     set(GCC_WARNINGS
@@ -64,6 +62,16 @@ function(target_set_warnings)
         -Wduplicated-branches # warn if if / else branches have duplicated code
         -Wlogical-op # warn about logical operations being used where bitwise were probably wanted
     )
+
+    if(ENABLE_UNUSED_WARNINGS)
+        list(APPEND CLANG_WARNINGS -Wunused)
+        list(APPEND GCC_WARNINGS   -Wunused)
+        list(APPEND MSVC_WARNINGS  /w14101 /w14189)
+    else()
+        list(APPEND CLANG_WARNINGS -Wno-unused -Wno-unused-parameter)
+        list(APPEND GCC_WARNINGS   -Wno-unused -Wno-unused-parameter)
+        list(APPEND MSVC_WARNINGS  /wd4100 /wd4101 /wd4189)
+    endif()
 
     if(${TARGET_SET_WARNINGS_AS_ERRORS})
         set(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
@@ -79,6 +87,9 @@ function(target_set_warnings)
         set(WARNINGS ${GCC_WARNINGS})
     endif()
 
-    target_compile_options(${TARGET_SET_WARNINGS_TARGET} PRIVATE ${WARNINGS})
+    # Only apply warnings (and warnings-as-errors) in non-Release configs.
+    # Works for both single- and multi-config generators.
+    target_compile_options(${TARGET_SET_WARNINGS_TARGET} PRIVATE
+        $<$<NOT:$<CONFIG:Release>>:${WARNINGS}>)
 
 endfunction(target_set_warnings)

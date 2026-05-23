@@ -1,8 +1,19 @@
 #include <SDL3/SDL.h>
+#include <nlohmann/json.hpp>
+#include <fstream>
 #include <iostream>
 
 int main()
 {
+    {
+        std::ifstream infoFile("res/info.json");
+        nlohmann::json info;
+        infoFile >> info;
+        std::cout << "message: " << info["message"].get<std::string>() << "\n"
+                  << "location: " << info["location"].get<std::string>()
+                  << std::endl;
+    }
+
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
         std::cerr << "Init error : " << SDL_GetError() << std::endl;
