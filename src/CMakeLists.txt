@@ -2,8 +2,13 @@
 target_sources(
     ${EXECUTABLE_NAME}
     PRIVATE
-    example.cpp
-    example.h
+    Systems.h
+    Systems.cpp
+    Entities.h
+    Entities.cpp
+    Components.h
+    Utils.h
+
 )
 
 target_include_directories(
