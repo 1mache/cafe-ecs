@@ -9,6 +9,8 @@ target_sources(
     Components.h
     Utils.h
 
+    GameConfig.h
+    RenderContext.h
 )
 
 target_include_directories(
