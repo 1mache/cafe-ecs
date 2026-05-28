@@ -13,4 +13,15 @@ namespace cafe
     SDL_Quit();
     std::exit(1);
 }
+
+/**
+ * @brief Debug/release assertion. Calls calls fatalError() on failed conditions.
+ * @param condition  Expression that must be true.
+ * @param message    Shown if the condition fails.
+ */
+inline void assertFatal(bool condition, const char* message = "Assertion failed")
+{
+    if (!condition)
+        fatalError(message);
+}
 }
