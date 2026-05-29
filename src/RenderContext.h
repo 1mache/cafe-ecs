@@ -14,6 +14,14 @@ public:
         assertFatal(renderer != nullptr, "RenderContext::init: renderer is nullptr");
         _window   = window;
         _renderer = renderer;
+
+        // Render into a fixed logical canvas; SDL scales it up to the
+        // physical window. INTEGER_SCALE keeps pixel art crisp (whole
+        // multiples only, letterboxing the remainder).
+        SDL_SetRenderLogicalPresentation(_renderer,
+                                         LOGICAL_W,
+                                         LOGICAL_H,
+                                         SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
     };
 
     static SDL_Window* getWindow()
@@ -26,26 +34,6 @@ public:
     {
         ensureState();
         return _renderer;
-    }
-
-    static float getWinW()
-    {
-        ensureState();
-        // if window will be resizable
-        // int w;
-        // SDL_GetWindowSize(_window, &w, nullptr);
-
-        return START_WIN_W;
-    }
-
-    static float getWinH()
-    {
-        ensureState();
-        // if window will be resizable
-        // int h;
-        // SDL_GetWindowSize(_window, nullptr, &h);
-
-        return START_WIN_H;
     }
 
 private:

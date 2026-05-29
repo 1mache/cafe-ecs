@@ -1,15 +1,14 @@
 #include "TransformOperations.h"
 #include "Components.h"
 #include "GameConfig.h"
-#include "RenderContext.h"
 
 namespace cafe
 {
 SDL_FPoint worldToScreenPoint(WorldPos worldPos, WorldPos camPos)
 {
     const float s     = SCALE_FACTOR;
-    const float centx = RenderContext::getWinW() * 0.5f;
-    const float centy = RenderContext::getWinH() * 0.5f;
+    const float centx = LOGICAL_W * 0.5f;
+    const float centy = LOGICAL_H * 0.5f;
 
     // Camera world coord -> screen center. Y-up world -> Y-down screen.
     return SDL_FPoint{centx + (worldPos.x - camPos.x) * PTM * s,
