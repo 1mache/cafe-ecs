@@ -1,4 +1,5 @@
 #pragma once
+#include "GameConfig.h"
 #include "Utils.h"
 #include <SDL3/SDL.h>
 
@@ -25,6 +26,26 @@ public:
     {
         ensureState();
         return _renderer;
+    }
+
+    static float getWinW()
+    {
+        ensureState();
+        // if window will be resizable
+        // int w;
+        // SDL_GetWindowSize(_window, &w, nullptr);
+
+        return START_WIN_W;
+    }
+
+    static float getWinH()
+    {
+        ensureState();
+        // if window will be resizable
+        // int h;
+        // SDL_GetWindowSize(_window, nullptr, &h);
+
+        return START_WIN_H;
     }
 
 private:
