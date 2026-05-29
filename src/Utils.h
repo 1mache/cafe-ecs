@@ -24,4 +24,4 @@ inline void assertFatal(bool condition, const char* message = "Assertion failed"
     if (!condition)
         fatalError(message);
 }
-}
+} // namespace cafe

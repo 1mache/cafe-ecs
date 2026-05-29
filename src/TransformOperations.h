@@ -1,4 +1,5 @@
 #pragma once
+#include "GameConfig.h"
 #include "WorldPos.h"
 #include <SDL3/SDL.h>
 #include <box2d/box2d.h>
@@ -41,4 +42,4 @@ b2Vec2 transformToB2Scale(const Transform& t);
 
 void transformUpdateWithB2Pos(Transform& t, b2Vec2 pos);
 
-}
+} // namespace cafe
