@@ -11,6 +11,10 @@ target_sources(
 
     GameConfig.h
     RenderContext.h
+    
+    TransformOperations.h
+    TransformOperations.cpp
+    WorldPos.h
 )
 
 target_include_directories(
