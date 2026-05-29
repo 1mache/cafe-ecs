@@ -1,5 +1,5 @@
 #pragma once
-
+#include <bagel.h>
 namespace cafe
 {
 // Definition of all components and their storage
@@ -14,4 +14,10 @@ struct Transform
     float rot{};
 };
 
-}
+} // namespace cafe
+
+template <>
+struct bagel::Storage<cafe::Transform> final : bagel::NoInstance
+{
+    using type = bagel::SparseStorage<cafe::Transform>;
+};
