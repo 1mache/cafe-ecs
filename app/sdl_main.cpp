@@ -98,6 +98,8 @@ int main()
 
     while (isRunning)
     {
+        auto frameStart = SDL_GetTicks();
+
         // render here
         SDL_RenderClear(renderer);
         SDL_RenderTexture(renderer, bgTex, &bgSrcRect, &bgDstRect);
@@ -118,6 +120,14 @@ int main()
                 break;
             }
         }
+
+
+        constexpr auto frameDeltaT = static_cast<Uint32>(FRAME_DELTA_MS);
+        auto           frameEnd    = SDL_GetTicks();
+        if (frameEnd - frameStart < static_cast<Uint32>(frameDeltaT))
+            SDL_Delay(static_cast<Uint32>(frameDeltaT - (frameEnd - frameStart)));
+
+        frameStart += frameDeltaT;
     }
 
     SDL_Quit();
