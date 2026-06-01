@@ -40,7 +40,7 @@ public:
 
     static WorldPos getCameraPos()
     {
-       return _cameraPos;
+        return _cameraPos;
     }
 
 private:
@@ -53,6 +53,6 @@ private:
 
     static inline SDL_Window*   _window{};
     static inline SDL_Renderer* _renderer{};
-    static inline WorldPos      _cameraPos{};
+    static inline WorldPos      _cameraPos;
 };
 } // namespace cafe

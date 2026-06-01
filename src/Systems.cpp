@@ -22,8 +22,7 @@ void drawSystem()
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
-        for (const auto& sprite: d.sprites)
-            SDL_RenderTexture(renderer, sprite.texture, &sprite.srcRect, &dstRect);
+        SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
 
     }
 }

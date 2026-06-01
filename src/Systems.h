@@ -2,8 +2,5 @@
 
 namespace cafe
 {
-// System functions.
-
 void drawSystem();
-
 }
