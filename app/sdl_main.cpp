@@ -1,4 +1,5 @@
 #include "Components.h"
+#include "Entities.h"
 #include "Systems.h"
 #include "GameConfig.h"
 #include "RenderContext.h"
@@ -79,10 +80,9 @@ int main()
         Drawable{bgTex, {0.f, 0.f, bgW, bgH}},
         Transform{.x = 0.f, .y = 0.f, .w = LOGICAL_W / (2.f * PTM), .h = LOGICAL_H / (2.f * PTM)});
 
-    auto customerEnt = bagel::Entity::create();
-    customerEnt.addAll(
-        Drawable{customerTex, {0.f, 0.f, customerW, customerH}},
-        Transform{.x = 5.f, .y = -0.5f, .w = customerW / (2 * PTM), .h = customerH / (2 * PTM)});
+    Order sampleOrder{.ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true};
+    auto  customerEnt = createClient(customerTex, customerW, customerH,
+                                     {5.f, -0.5f}, sampleOrder, 30.f);
 
     auto counterEnt = bagel::Entity::create();
     counterEnt.addAll(
@@ -101,6 +101,9 @@ int main()
         // render here
         SDL_RenderClear(renderer);
         customerEnt.get<Transform>().x -= 0.01f;
+        constexpr float dt = FRAME_DELTA_MS / 1000.f;
+        behaviorSystem(dt);
+        orderSystem();
         drawSystem();
         SDL_RenderPresent(renderer);
         // input
