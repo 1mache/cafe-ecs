@@ -1,7 +1,7 @@
 #include "Components.h"
+#include "Systems.h"
 #include "GameConfig.h"
 #include "RenderContext.h"
-#include "TransformOperations.h"
 #include "Utils.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -64,38 +64,33 @@ int main()
     float bgW{}, bgH{};
     SDL_GetTextureSize(bgTex, &bgW, &bgH);
 
-    auto bg = Drawable{bgTex, {0.f,0.f,bgW, bgH}};
-
     SDL_Texture* counterTex = IMG_LoadTexture(renderer, "res/counter.png");
     assertFatal(counterTex != nullptr, SDL_GetError());
     float counterW{}, counterH{};
     SDL_GetTextureSize(counterTex, &counterW, &counterH);
 
-    auto counter = Drawable{counterTex, {0.f,0.f,counterW, counterH}};
-
-    Transform counterTransform{
-        .x = 0.f,
-        // line up the bottom of the counter with the bottom of the screen.
-        .y = counterH / (2 * PTM) - LOGICAL_H / (2.f * PTM),
-        .w = counterW / (2 * PTM),
-        .h = counterH / (2 * PTM)};
-
-
     SDL_Texture* customerTex = IMG_LoadTexture(renderer, "res/def_customer.png");
     assertFatal(customerTex != nullptr, SDL_GetError());
     float customerW{}, customerH{};
     SDL_GetTextureSize(customerTex, &customerW, &customerH);
-    Transform customerTransform{.x = 5.f,
-                                .y = -0.5f,
-                                .w = customerW / (2 * PTM),
-                                .h = customerH / (2 * PTM)};
 
-    auto customer = Drawable{customerTex,{.x = 0, .y = 0, .w = customerW, .h = customerH}};
+    auto bgEnt = bagel::Entity::create();
+    bgEnt.addAll(
+        Drawable{bgTex, {0.f, 0.f, bgW, bgH}},
+        Transform{.x = 0.f, .y = 0.f, .w = LOGICAL_W / (2.f * PTM), .h = LOGICAL_H / (2.f * PTM)});
 
-    SDL_FRect counterDstRect = transformToFrect(counterTransform, {0.f, 0.f});
+    auto customerEnt = bagel::Entity::create();
+    customerEnt.addAll(
+        Drawable{customerTex, {0.f, 0.f, customerW, customerH}},
+        Transform{.x = 5.f, .y = -0.5f, .w = customerW / (2 * PTM), .h = customerH / (2 * PTM)});
 
-    SDL_FRect bgSrcRect{.x = 0, .y = 0, .w = bgW, .h = bgH};
-    SDL_FRect bgDstRect = {.x = 0, .y = 0, .w = LOGICAL_W, .h = LOGICAL_H};
+    auto counterEnt = bagel::Entity::create();
+    counterEnt.addAll(
+        Drawable{counterTex, {0.f, 0.f, counterW, counterH}},
+        Transform{.x  = 0.f,
+                  .y  = counterH / (2 * PTM) - LOGICAL_H / (2.f * PTM),
+                  .w  = counterW / (2 * PTM),
+                  .h  = counterH / (2 * PTM)});
 
     bool isRunning = true;
 
@@ -105,11 +100,8 @@ int main()
 
         // render here
         SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, bg.texture, &bg.srcRect, &bgDstRect);
-        customerTransform.x -= 0.01f;
-        auto customerDstRect = transformToFrect(customerTransform, {0.f, 0.f});
-        SDL_RenderTexture(renderer, customer.texture, &customer.srcRect, &customerDstRect);
-        SDL_RenderTexture(renderer, counterTex, &counter.srcRect, &counterDstRect);
+        customerEnt.get<Transform>().x -= 0.01f;
+        drawSystem();
         SDL_RenderPresent(renderer);
         // input
         SDL_Event event;

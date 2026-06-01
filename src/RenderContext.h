@@ -1,6 +1,8 @@
 #pragma once
 #include "GameConfig.h"
 #include "Utils.h"
+#include "WorldPos.h"
+
 #include <SDL3/SDL.h>
 
 namespace cafe
@@ -36,6 +38,11 @@ public:
         return _renderer;
     }
 
+    static WorldPos getCameraPos()
+    {
+       return _cameraPos;
+    }
+
 private:
     static void ensureState()
     {
@@ -46,5 +53,6 @@ private:
 
     static inline SDL_Window*   _window{};
     static inline SDL_Renderer* _renderer{};
+    static inline WorldPos      _cameraPos{};
 };
 } // namespace cafe

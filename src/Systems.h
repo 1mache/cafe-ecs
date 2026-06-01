@@ -2,5 +2,8 @@
 
 namespace cafe
 {
-// System fucntions.
+// System functions.
+
+void drawSystem();
+
 }
