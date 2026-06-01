@@ -76,17 +76,17 @@ int main()
 
     auto bgEnt = bagel::Entity::create();
     bgEnt.addAll(
-        Drawable{bgTex, {0.f, 0.f, bgW, bgH}},
+        Drawable{.sprites = {Sprite{bgTex, {0.f, 0.f, bgW, bgH}, 0}}},
         Transform{.x = 0.f, .y = 0.f, .w = LOGICAL_W / (2.f * PTM), .h = LOGICAL_H / (2.f * PTM)});
 
     auto customerEnt = bagel::Entity::create();
     customerEnt.addAll(
-        Drawable{customerTex, {0.f, 0.f, customerW, customerH}},
+        Drawable{.sprites = {Sprite{customerTex, {0.f, 0.f, customerW, customerH}, 0}}},
         Transform{.x = 5.f, .y = -0.5f, .w = customerW / (2 * PTM), .h = customerH / (2 * PTM)});
 
     auto counterEnt = bagel::Entity::create();
     counterEnt.addAll(
-        Drawable{counterTex, {0.f, 0.f, counterW, counterH}},
+        Drawable{.sprites = {Sprite{counterTex, {0.f, 0.f, counterW, counterH}, 0}}},
         Transform{.x  = 0.f,
                   .y  = counterH / (2 * PTM) - LOGICAL_H / (2.f * PTM),
                   .w  = counterW / (2 * PTM),

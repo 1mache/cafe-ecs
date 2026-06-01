@@ -17,12 +17,13 @@ void drawSystem()
     {
         if (!e.test(mask)) continue;
 
-        auto d = e.get<Drawable>();
-        auto t = e.get<Transform>();
+        const auto& d = e.get<Drawable>();
+        const auto& t = e.get<Transform>();
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
-        SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
+        for (const auto& sprite: d.sprites)
+            SDL_RenderTexture(renderer, sprite.texture, &sprite.srcRect, &dstRect);
 
     }
 }
