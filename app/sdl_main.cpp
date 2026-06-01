@@ -64,10 +64,14 @@ int main()
     float bgW{}, bgH{};
     SDL_GetTextureSize(bgTex, &bgW, &bgH);
 
+    auto bg = Drawable{bgTex, {0.f,0.f,bgW, bgH}};
+
     SDL_Texture* counterTex = IMG_LoadTexture(renderer, "res/counter.png");
     assertFatal(counterTex != nullptr, SDL_GetError());
     float counterW{}, counterH{};
     SDL_GetTextureSize(counterTex, &counterW, &counterH);
+
+    auto counter = Drawable{counterTex, {0.f,0.f,counterW, counterH}};
 
     Transform counterTransform{
         .x = 0.f,
@@ -86,9 +90,8 @@ int main()
                                 .w = customerW / (2 * PTM),
                                 .h = customerH / (2 * PTM)};
 
-    SDL_FRect customerSrcRect{.x = 0, .y = 0, .w = customerW, .h = customerH};
+    auto customer = Drawable{customerTex,{.x = 0, .y = 0, .w = customerW, .h = customerH}};
 
-    SDL_FRect counterSrcRect{.x = 0, .y = 0, .w = counterW, .h = counterH};
     SDL_FRect counterDstRect = transformToFrect(counterTransform, {0.f, 0.f});
 
     SDL_FRect bgSrcRect{.x = 0, .y = 0, .w = bgW, .h = bgH};
@@ -102,11 +105,11 @@ int main()
 
         // render here
         SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, bgTex, &bgSrcRect, &bgDstRect);
+        SDL_RenderTexture(renderer, bg.texture, &bg.srcRect, &bgDstRect);
         customerTransform.x -= 0.01f;
         auto customerDstRect = transformToFrect(customerTransform, {0.f, 0.f});
-        SDL_RenderTexture(renderer, customerTex, &customerSrcRect, &customerDstRect);
-        SDL_RenderTexture(renderer, counterTex, &counterSrcRect, &counterDstRect);
+        SDL_RenderTexture(renderer, customer.texture, &customer.srcRect, &customerDstRect);
+        SDL_RenderTexture(renderer, counterTex, &counter.srcRect, &counterDstRect);
         SDL_RenderPresent(renderer);
         // input
         SDL_Event event;

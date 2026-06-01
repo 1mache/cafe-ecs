@@ -1,4 +1,7 @@
 #pragma once
+#include "SDL3/SDL_render.h"
+
+
 #include <bagel.h>
 namespace cafe
 {
@@ -14,10 +17,22 @@ struct Transform
     float rot{};
 };
 
+struct Drawable
+{
+    SDL_Texture* texture{};
+    SDL_FRect    srcRect{};
+};
+
 } // namespace cafe
 
 template <>
 struct bagel::Storage<cafe::Transform> final : bagel::NoInstance
 {
     using type = bagel::SparseStorage<cafe::Transform>;
+};
+
+template <>
+struct  bagel::Storage<cafe::Drawable> final : bagel::NoInstance
+{
+    using type = bagel::SparseStorage<cafe::Drawable>;
 };
