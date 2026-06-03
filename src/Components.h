@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDL3/SDL_render.h"
+#include "WorldPos.h"
 
 
 #include <bagel.h>
@@ -23,6 +24,12 @@ struct Drawable
     SDL_Texture* texture{};
     SDL_FRect    srcRect{};
     int          renderLayer{};
+};
+
+struct ChildOf
+{
+    bagel::Entity parent{bagel::ent_type(-1)};
+    SDL_FPoint localOffset{}; // from center of parenting object
 };
 
 } // namespace cafe

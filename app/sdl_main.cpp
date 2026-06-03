@@ -1,7 +1,8 @@
 #include "Components.h"
-#include "Systems.h"
 #include "GameConfig.h"
 #include "RenderContext.h"
+#include "Systems.h"
+#include "TransformOperations.h"
 #include "Utils.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -74,6 +75,12 @@ int main()
     float customerW{}, customerH{};
     SDL_GetTextureSize(customerTex, &customerW, &customerH);
 
+    SDL_Texture* cupTex = IMG_LoadTexture(renderer, "res/big_cup.png");
+    assertFatal(cupTex != nullptr, SDL_GetError());
+    float cupW{24}, cupH{24};
+    SDL_FRect cupframe1 = {0,0, cupW, cupH};
+    SDL_FRect cupframe2 = {cupW,0, cupW, cupH};
+
     auto bgEnt = bagel::Entity::create();
     bgEnt.addAll(
         Drawable{bgTex, {0.f, 0.f, bgW, bgH}},
@@ -92,6 +99,21 @@ int main()
                   .w  = counterW / (2 * PTM),
                   .h  = counterH / (2 * PTM)});
 
+    Transform cupStartT = {0,0, screenToWorldSize(cupW/2.f), screenToWorldSize(cupH/2.f)};
+    auto cupEntBack = bagel::Entity::create();
+    auto cupEntFront = bagel::Entity::create();
+
+    cupEntBack.addAll(
+        Drawable{cupTex, cupframe2},
+        cupStartT,
+        ChildOf{cupEntFront, {0,0}}
+        );
+
+    cupEntFront.addAll(
+        Drawable{cupTex, cupframe1},
+        cupStartT
+        );
+
     bool isRunning = true;
 
     while (isRunning)
@@ -100,7 +122,9 @@ int main()
 
         // render here
         SDL_RenderClear(renderer);
-        customerEnt.get<Transform>().x -= 0.01f;
+        //customerEnt.get<Transform>().x -= 0.01f;
+        cupEntFront.get<Transform>().x += 0.01f;
+        hierarchySystem();
         drawSystem();
         SDL_RenderPresent(renderer);
         // input

@@ -3,4 +3,5 @@
 namespace cafe
 {
 void drawSystem();
+void hierarchySystem();
 }
