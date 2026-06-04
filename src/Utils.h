@@ -1,7 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
-#include <cassert>
-#include <cstdlib>
+#include <string_view>
 
 namespace cafe
 {
@@ -19,9 +18,9 @@ namespace cafe
  * @param condition  Expression that must be true.
  * @param message    Shown if the condition fails.
  */
-inline void assertFatal(bool condition, const char* message = "Assertion failed")
+inline void assertFatal(bool condition, std::string_view message = "Assertion failed")
 {
     if (!condition)
-        fatalError(message);
+        fatalError(message.data());
 }
 } // namespace cafe

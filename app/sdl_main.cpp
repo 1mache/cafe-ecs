@@ -1,8 +1,9 @@
 #include "Components.h"
 #include "Entities.h"
-#include "Systems.h"
 #include "GameConfig.h"
 #include "RenderContext.h"
+#include "Systems.h"
+#include "TransformOperations.h"
 #include "Utils.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -59,7 +60,7 @@ int main()
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     RenderContext::init(window, renderer);
 
-    // TODO: put it in a wrapper class with load fucntion
+    // TODO: put it in a wrapper class with load function
     SDL_Texture* bgTex = IMG_LoadTexture(renderer, "res/bg.png");
     assertFatal(bgTex != nullptr, SDL_GetError());
     float bgW{}, bgH{};
@@ -75,15 +76,30 @@ int main()
     float customerW{}, customerH{};
     SDL_GetTextureSize(customerTex, &customerW, &customerH);
 
+    // Beverage icon: front frame of the layered cup sprite (24x24 per big_cup.json)
+    SDL_Texture* cupTex = IMG_LoadTexture(renderer, "res/big_cup.png");
+    assertFatal(cupTex != nullptr, SDL_GetError());
+    constexpr float CUP_FRAME_W = 24.f, CUP_FRAME_H = 24.f;
+
+    // Pastry icon: whole props sprite (no sheet JSON yet; sub-rect tunable later)
+    SDL_Texture* propsTex = IMG_LoadTexture(renderer, "res/props.png");
+    assertFatal(propsTex != nullptr, SDL_GetError());
+    float propsW{}, propsH{};
+    SDL_GetTextureSize(propsTex, &propsW, &propsH);
+
+    // Speech bubble
+    SDL_Texture* bubbleTex = IMG_LoadTexture(renderer, "res/bubble.png");
+    assertFatal(bubbleTex != nullptr, SDL_GetError());
+    float bubbleW{}, bubbleH{};
+    SDL_GetTextureSize(bubbleTex, &bubbleW, &bubbleH);
+
+    // --- Background ---
     auto bgEnt = bagel::Entity::create();
     bgEnt.addAll(
         Drawable{bgTex, {0.f, 0.f, bgW, bgH}},
         Transform{.x = 0.f, .y = 0.f, .w = LOGICAL_W / (2.f * PTM), .h = LOGICAL_H / (2.f * PTM)});
 
-    Order sampleOrder{.ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true};
-    auto  customerEnt = createClient(customerTex, customerW, customerH,
-                                     {5.f, -0.5f}, sampleOrder, 30.f);
-
+    // --- Counter ---
     auto counterEnt = bagel::Entity::create();
     counterEnt.addAll(
         Drawable{counterTex, {0.f, 0.f, counterW, counterH}},
@@ -92,23 +108,48 @@ int main()
                   .w  = counterW / (2 * PTM),
                   .h  = counterH / (2 * PTM)});
 
+    // --- Client ---
+    Order sampleOrder{.ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true};
+    auto  customerEnt = createClient(customerTex, customerW, customerH,
+                                     {5.f, -0.5f}, sampleOrder, 30.f);
+
+    // --- Speech bubble (child of client) ---
+    // offsetPx is in screen pixels, Y-down: negative Y = upward on screen
+    SDL_FPoint bubbleOffPx = {0.f, -(customerH / 2.f + bubbleH / 2.f + 2.f)};
+    auto bubble = createSpeechBubble(bubbleTex, bubbleW, bubbleH, customerEnt, bubbleOffPx);
+
+    // --- Order icons (children of the bubble) ---
+    if (sampleOrder.hasDrink)
+    {
+        SDL_FRect drinkSrc = {0.f, 0.f, CUP_FRAME_W, CUP_FRAME_H};
+        createOrderIcon(cupTex, drinkSrc, bubble, {-6.f, 0.f});
+    }
+    if (sampleOrder.hasPastry)
+    {
+        SDL_FRect pastrySrc = {0.f, 0.f, propsW, propsH};
+        createOrderIcon(propsTex, pastrySrc, bubble, {6.f, 0.f});
+    }
+
     bool isRunning = true;
 
     while (isRunning)
     {
         auto frameStart = SDL_GetTicks();
 
-        // render here
         SDL_RenderClear(renderer);
-        customerEnt.get<Transform>().x -= 0.01f;
-        constexpr float dt = FRAME_DELTA_MS / 1000.f;
-        behaviorSystem(dt);
-        orderSystem();
-        drawSystem();
-        SDL_RenderPresent(renderer);
-        // input
-        SDL_Event event;
 
+        customerEnt.get<Transform>().x -= 0.01f;
+
+        constexpr float dt = FRAME_DELTA_MS / 1000.f;
+        behaviorSystem(dt);     // tick patience; marks expired clients Leaving
+        hierarchySystem();      // move children to follow parents; drop children of Leaving parents
+        orderSystem();
+        cleanupSystem();        // destroy Leaving entities
+        drawSystem();
+
+        SDL_RenderPresent(renderer);
+
+        SDL_Event event;
         while (SDL_PollEvent(&event))
         {
             switch (event.type)
@@ -119,13 +160,10 @@ int main()
             }
         }
 
-
         constexpr auto frameDeltaT = static_cast<Uint32>(FRAME_DELTA_MS);
         auto           frameEnd    = SDL_GetTicks();
         if (frameEnd - frameStart < static_cast<Uint32>(frameDeltaT))
             SDL_Delay(static_cast<Uint32>(frameDeltaT - (frameEnd - frameStart)));
-
-        frameStart += frameDeltaT;
     }
 
     SDL_Quit();

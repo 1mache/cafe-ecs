@@ -15,6 +15,10 @@ target_sources(
     TransformOperations.h
     TransformOperations.cpp
     WorldPos.h
+    AssetManager.h
+    AssetManager.cpp
+    Texture.h
+    Texture.cpp
 )
 
 target_include_directories(

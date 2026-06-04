@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDL3/SDL_render.h"
+#include "WorldPos.h"
 
 #include <bagel.h>
 
@@ -30,6 +31,14 @@ struct Drawable
     int          renderLayer{};
 };
 
+/** @brief Makes an entity a child of another: its Transform follows the parent's
+ *  center each frame (via hierarchySystem), offset by localOffset in screen pixels. */
+struct ChildOf
+{
+    bagel::Entity parent{bagel::ent_type(-1)};
+    SDL_FPoint    localOffset{}; // from center of parenting object, in screen pixels
+};
+
 /** @brief A client's order: a desired drink composition and/or a pastry.
  *  Invariant: hasDrink || hasPastry must be true. */
 struct Order
@@ -46,6 +55,9 @@ struct Behavior
     int   rating{};   // satisfaction score written after order is served
 };
 
+/** @brief Marker: entity has expired and should be destroyed this frame by cleanupSystem. */
+struct Leaving {};
+
 } // namespace cafe
 
 template <>
@@ -61,6 +73,12 @@ struct bagel::Storage<cafe::Drawable> final : NoInstance
 };
 
 template <>
+struct bagel::Storage<cafe::ChildOf> final : NoInstance
+{
+    using type = SparseStorage<cafe::ChildOf>;
+};
+
+template <>
 struct bagel::Storage<cafe::Order> final : NoInstance
 {
     using type = SparseStorage<cafe::Order>;
@@ -70,4 +88,10 @@ template <>
 struct bagel::Storage<cafe::Behavior> final : NoInstance
 {
     using type = SparseStorage<cafe::Behavior>;
+};
+
+template <>
+struct bagel::Storage<cafe::Leaving> final : NoInstance
+{
+    using type = TaggedStorage<cafe::Leaving>;
 };
