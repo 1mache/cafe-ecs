@@ -50,23 +50,21 @@ TEST_CASE("A coffee drop falls into the cup, fills it by 1, and is destroyed", "
     PhysicsContext::shutdown();
 }
 
-TEST_CASE("Cup at capacity: drop is still destroyed, counter does not overflow", "[fill]")
+TEST_CASE("Cup at capacity: counter does not exceed capacity", "[fill]")
 {
     PhysicsContext::init();
+    auto cupEnt = createCupHeadless({ 0.f, 0.f }, 8.f, 8.f, 1);
 
-    // Capacity = 1 — first drop fills it, second drop tests the saturating branch.
-    auto cupEnt = createCupHeadless({ 0.f, 0.f }, 32.f, 24.f, 1);
-    createLiquidDrop({ 0.f, 5.f });
+    createLiquidDrop({ 0.f, 3.f });
     stepFor(60);
-    REQUIRE(cupEnt.get<Cup>().filled == 1);
     REQUIRE(cupEnt.get<Cup>().isFull());
 
-    // Second drop into the now-full cup.
-    createLiquidDrop({ 0.f, 5.f });
-    stepFor(60);
-    REQUIRE(cupEnt.get<Cup>().filled == 1);     // did NOT exceed capacity
-    REQUIRE(countLiquidEntities() == 0);        // drop was still destroyed
+    // Overflow drop — deflected, not absorbed. Counter stays at 1.
+    auto extraEnt = createLiquidDrop({ 0.2f, 3.f });
+    stepFor(35);
+    REQUIRE(cupEnt.get<Cup>().filled == 1);
 
+    destroyPhysicalEntity(extraEnt.entity());
     destroyPhysicalEntity(cupEnt.entity());
     PhysicsContext::shutdown();
 }
@@ -150,4 +148,50 @@ TEST_CASE("Cup::fillPercent and Cup::isFull behave correctly at edges", "[compon
     REQUIRE(Cup{ 10, 10 }.fillPercent() == 1.f);
     REQUIRE(Cup{ 10, 10 }.isFull());
     REQUIRE_FALSE(Cup{ 10, 9 }.isFull());
+}
+
+TEST_CASE("Full cup deflects new drops upward instead of destroying them", "[overflow]")
+{
+    PhysicsContext::init();
+
+    // Tiny cup so the (±3, +5) deflection clears it easily.
+    auto cupEnt = createCupHeadless({ 0.f, 0.f }, 8.f, 8.f, 1);
+    createLiquidDrop({ 0.f, 3.f });
+    stepFor(60);
+    REQUIRE(cupEnt.get<Cup>().isFull());
+
+    // x offset → deterministic deflection sign.
+    auto dropEnt = createLiquidDrop({ 0.2f, 3.f });
+    const b2BodyId dropBody = dropEnt.get<PhysicsBody>().id;
+    stepFor(35); // deflected once, not yet re-entered
+
+    REQUIRE(countLiquidEntities() == 1);
+    REQUIRE(cupEnt.get<Cup>().filled == 1);
+    REQUIRE(b2Body_GetLinearVelocity(dropBody).y > 0.f);
+
+    destroyPhysicalEntity(dropEnt.entity());
+    destroyPhysicalEntity(cupEnt.entity());
+    PhysicsContext::shutdown();
+}
+
+TEST_CASE("Full cup overflow: deflected drop is destroyed by CLEANUP", "[overflow]")
+{
+    PhysicsContext::init();
+    auto cupEnt     = createCupHeadless({ 0.f, 0.f }, 8.f, 8.f, 1);
+    auto cleanupEnt = createCleanupZone();
+
+    createLiquidDrop({ 0.f, 3.f });
+    stepFor(60);
+    REQUIRE(cupEnt.get<Cup>().isFull());
+
+    // Overflow drop — bounces out, falls, hits CLEANUP at y=-8.
+    createLiquidDrop({ 0.2f, 3.f });
+    stepFor(300);
+
+    REQUIRE(countLiquidEntities() == 0);
+    REQUIRE(cupEnt.get<Cup>().filled == 1);
+
+    destroyPhysicalEntity(cleanupEnt.entity());
+    destroyPhysicalEntity(cupEnt.entity());
+    PhysicsContext::shutdown();
 }

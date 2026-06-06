@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <bagel.h>
 #include <box2d/box2d.h>
+#include <cmath>
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -22,9 +23,34 @@ struct DebugStats
     int   spawned{};
     int   caught{};
     int   spilled{};
+    int   overflowed{};
     float accumulator{};
 };
 DebugStats g_stats;
+
+// Coffee fill color (#4B2F1E) and rim inset in screen pixels.
+constexpr Uint8 kCoffeeR = 75, kCoffeeG = 47, kCoffeeB = 30;
+constexpr float kCupRimPx = 1.f;
+
+// Drawn before the cup sprite so the sprite's rim masks the rect edges.
+void drawCupLiquid(SDL_Renderer* r, const SDL_FRect& cupRect, const Cup& c)
+{
+    const float interiorW = cupRect.w - 2.f * kCupRimPx;
+    const float interiorH = cupRect.h - 2.f * kCupRimPx;
+    if (interiorW <= 0.f || interiorH <= 0.f) return;
+
+    const float fillH = std::floor(c.fillPercent() * interiorH);
+    if (fillH <= 0.f) return;
+
+    const SDL_FRect fillRect{
+        std::floor(cupRect.x + kCupRimPx),
+        std::floor(cupRect.y + kCupRimPx + (interiorH - fillH)),
+        std::floor(interiorW),
+        fillH
+    };
+    SDL_SetRenderDrawColor(r, kCoffeeR, kCoffeeG, kCoffeeB, 255);
+    SDL_RenderFillRect(r, &fillRect);
+}
 } // namespace
 
 void drawSystem()
@@ -43,8 +69,10 @@ void drawSystem()
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
-        SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
+        if (e.has<Cup>())
+            drawCupLiquid(renderer, dstRect, e.get<Cup>());
 
+        SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
     }
 }
 
@@ -139,17 +167,29 @@ void sensorEventSystem()
             bagel::Entity cup{ bagel::ent_type{
                 static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(cupBody)))
             } };
+
+            // Cup full → deflect sideways + upward. CLEANUP destroys the drop later.
+            if (cup.test(cupMask) && cup.get<Cup>().isFull())
+            {
+                const b2BodyId dropBody = b2Shape_GetBody(be.visitorShapeId);
+                const b2Vec2   dropPos  = b2Body_GetPosition(dropBody);
+                const b2Vec2   cupPos   = b2Body_GetPosition(cupBody);
+                const float    side     = (dropPos.x >= cupPos.x) ? 1.f : -1.f;
+                b2Body_SetLinearVelocity(dropBody, { side * 3.f, 5.f });
+
+                if (g_stats.overflowed == 0)
+                    std::cout << "[Spill] cup overflowed for the first time" << std::endl;
+                ++g_stats.overflowed;
+                continue;
+            }
+
             if (cup.test(cupMask))
             {
                 auto& c = cup.get<Cup>();
-                if (c.filled < c.capacity)
-                {
-                    ++c.filled;
-                    // One-shot transition to full.
-                    if (c.filled == c.capacity)
-                        std::cout << "[CupFull] cup is full (" << c.filled
-                                  << "/" << c.capacity << ")" << std::endl;
-                }
+                ++c.filled;
+                if (c.filled == c.capacity)
+                    std::cout << "[CupFull] cup is full (" << c.filled
+                              << "/" << c.capacity << ")" << std::endl;
             }
             ++g_stats.caught;
             toDestroy.push_back(visitorId);
@@ -196,10 +236,11 @@ void dumpDebugStatsEvery(float dtSeconds)
 
     const int pct = totalCapacity ? (totalFilled * 100) / totalCapacity : 0;
     std::cout << "[Stats] spawned=" << g_stats.spawned
-              << " caught=" << g_stats.caught
-              << " spilled=" << g_stats.spilled
-              << " live=" << liveDrops
-              << " cup=" << totalFilled << "/" << totalCapacity
+              << " caught="     << g_stats.caught
+              << " overflowed=" << g_stats.overflowed
+              << " spilled="    << g_stats.spilled
+              << " live="       << liveDrops
+              << " cup="        << totalFilled << "/" << totalCapacity
               << " (" << pct << "%)" << std::endl;
 }
 } // namespace cafe

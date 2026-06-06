@@ -10,7 +10,9 @@
 
 - Hold **SPACE** to pour coffee from the machine. Release to stop.
 - The cup catches drops, counts them in `Cup::filled`, and destroys each drop on contact.
-- Drops that miss the cup are destroyed by an off-screen cleanup sensor.
+- **You can see the cup filling up** — a brown rectangle rises inside the cup as `fillPercent()` grows.
+- **When the cup is full, new drops spill out** — they get deflected sideways + upward instead of being absorbed.
+- Drops that miss the cup (or spill out of a full one) are destroyed by an off-screen cleanup sensor.
 - All physics goes through one shared `b2World` (in `PhysicsContext`).
 - **Collision filtering is in place so this won't interfere with the drag-and-drop dropspace feature** — see "If you're building dropspace" below.
 
@@ -76,6 +78,30 @@ destroyPhysicalEntity(cup.entity());   // ✅
 cup.destroy();                          // ❌ leaks the b2Body
 ```
 **Always** use `destroyPhysicalEntity` for anything that has a `PhysicsBody`. If you `entity.destroy()` directly, the Box2D body is orphaned and the next frame may crash.
+
+---
+
+## Cup fill animation + overflow
+
+### Fill animation (no API — it's automatic)
+
+`drawSystem()` draws a brown rectangle inside each `Cup` entity, sized by `fillPercent()`, BEFORE blitting the cup sprite. The sprite's opaque rim masks the rect edges, so the rect only shows through the transparent interior of `cup.png`.
+
+- Color: `#4B2F1E` (constants `kCoffeeR/G/B` at the top of the unnamed namespace in `Systems.cpp`).
+- Rim inset: `kCupRimPx = 1.f` in screen pixels. Bump it if your cup art has a thicker outline.
+- All four edges are `floor`-snapped so the surface never sits on a half-pixel seam.
+
+No new components, no opt-in flag — every entity with a `Cup` gets the rect drawn for free. If you want to *hide* the fill on a specific cup (e.g. takeaway lid), set `c.capacity = 0` so `fillPercent()` is `0`, or drop a special-case skip into `drawSystem`.
+
+### Overflow when the cup is full
+
+When a drop enters the `CUP_INSIDE` sensor of a cup where `isFull()` is true, instead of destroying the drop, `sensorEventSystem` overwrites the drop's velocity with `{ ±3, +5 }` m/s — sideways away from the cup center, plus an upward kick. The drop arcs out, falls past the cup, and the `CLEANUP` sensor eventually destroys it like any other miss.
+
+- Counter `g_stats.overflowed` ticks every overflow. Shown in the periodic `[Stats]` print.
+- One-shot `[Spill] cup overflowed for the first time` logged the first time it happens.
+- No new entities are created — the same `Liquid` drop just gets redirected.
+
+If a future feature needs to know "a drop was rejected", read `g_stats.overflowed` or move the counter into a public observer (today it's `Systems.cpp`-local).
 
 ---
 
@@ -147,6 +173,9 @@ drawSystem();              // 5. render
 | Cup `capacity` | 2nd arg to `createCup` | `50` | Drops to "full" |
 | Wall thickness `wallT` | `Entities.cpp` (`createCupCommon`) | `0.5f / PTM` | Cup wall thickness in meters |
 | Spout offset | 2nd arg to `createCoffeeMachine` | `(0, -0.5)` | Where drops appear |
+| Coffee color | `Systems.cpp` (`kCoffeeR/G/B`) | `#4B2F1E` | Liquid surface RGB |
+| Cup rim inset | `Systems.cpp` (`kCupRimPx`) | `1.f` | Px inset on each side of the fill rect |
+| Overflow velocity | `Systems.cpp` (`sensorEventSystem`) | `(±3, +5)` m/s | Sideways + upward kick on full-cup spill |
 
 ---
 
@@ -155,12 +184,21 @@ drawSystem();              // 5. render
 ```bash
 ctest --preset core-test-windows
 ```
-7 cases pass:
+15 cases pass:
 - 3× filter-mask invariants (compile-time `STATIC_REQUIRE`)
 - 3× spawner timing (active, inactive, offset)
-- 1× end-to-end fill (drop falls into cup, counter increments, drop destroyed)
+- 9× end-to-end fill + overflow + cup-component edges:
+  - basic 1-drop fill
+  - capacity saturation + overflow deflection
+  - cleanup zone catches misses
+  - two cups stay independent
+  - two drops into one cup
+  - `destroyPhysicalEntity` actually destroys the body
+  - `Cup::fillPercent` / `isFull` edges
+  - **full cup deflects new drops upward (no destroy)** (new)
+  - **deflected drop eventually reaches CLEANUP** (new)
 
-The fill test stands up the real `PhysicsContext` and runs 60 fixed steps — no SDL window needed.
+The fill tests stand up the real `PhysicsContext` and step fixed 1/60 s frames — no SDL window needed.
 
 ---
 
@@ -178,8 +216,8 @@ The fill test stands up the real `PhysicsContext` and runs 60 fixed steps — no
 ## Known TODOs / future work
 
 - **SPACE key is a temporary trigger.** Replace with a game-rule activation (e.g., cursor over machine + active order). Look for `TODO(team)` in `sdl_main.cpp`.
-- **Fill visualization.** `Cup::filled` is a number; rendering a rising liquid surface inside the cup is not yet implemented.
 - **Order/customer integration.** When a cup reaches capacity, somebody needs to decide what happens (serve, reset, destroy). That's the order system's call — `Cup::filled / Cup::capacity` is the API they read.
+- **Fill animation could ease.** Today the fill rect tracks `fillPercent()` directly; with low-capacity cups the level snaps by a noticeable pixel step. If that gets ugly, add a `displayedFill` float on `Cup` and lerp toward the target each frame.
 - **Cup placement.** Currently hardcoded to `{ -4.f, -1.f }` in `sdl_main.cpp` so it sits under the machine spout for the demo. When dropspace lands, this will be user-controlled.
 - **No customer entity in `main` right now.** It was removed from `sdl_main.cpp` because it conflicted with the new system loop. Jonathan's branch (`origin/Jonathan`) will re-introduce it properly with the `Order`/`Behavior` components.
 
