@@ -11,10 +11,16 @@ target_sources(
 
     GameConfig.h
     RenderContext.h
+    PhysicsFilters.h
+    PhysicsContext.h
+    PhysicsContext.cpp
     
     TransformOperations.h
     TransformOperations.cpp
     WorldPos.h
+
+    Assets.h
+    Assets.cpp
 )
 
 target_include_directories(
