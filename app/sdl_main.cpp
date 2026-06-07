@@ -81,7 +81,7 @@ int main()
     assertFatal(cupTex != nullptr, SDL_GetError());
     constexpr float CUP_FRAME_W = 24.f, CUP_FRAME_H = 24.f;
 
-    // Pastry icon: whole props sprite (no sheet JSON yet; sub-rect tunable later)
+    // Pastry icon: 3-frame strip [cinnamon roll | croissant | cup]; frame 0 used as pastry icon
     SDL_Texture* propsTex = IMG_LoadTexture(renderer, "res/props.png");
     assertFatal(propsTex != nullptr, SDL_GetError());
     float propsW{}, propsH{};
@@ -109,25 +109,42 @@ int main()
                   .h  = counterH / (2 * PTM)});
 
     // --- Client ---
+    // Mouth offset from sprite center, in logical pixels (Y-up).
+    constexpr SDL_FPoint CUSTOMER_MOUTH_OFFSET_PX = {-4.f, -1.3f};
     Order sampleOrder{.ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true};
     auto  customerEnt = createClient(customerTex, customerW, customerH,
-                                     {5.f, -0.5f}, sampleOrder, 30.f);
+                                     {5.f, -0.5f}, sampleOrder, 30.f,
+                                     CUSTOMER_MOUTH_OFFSET_PX);
 
     // --- Speech bubble (child of client) ---
-    // offsetPx is in screen pixels, Y-down: negative Y = upward on screen
-    SDL_FPoint bubbleOffPx = {0.f, -(customerH / 2.f + bubbleH / 2.f + 2.f)};
-    auto bubble = createSpeechBubble(bubbleTex, bubbleW, bubbleH, customerEnt, bubbleOffPx);
+    // Tail tip is at the bottom-right of the bubble sprite (measured from raw 48x24 pixels).
+    // BUBBLE_TAIL_OFFSET: offset from bubble center to its tail tip, in logical px (Y-up).
+    constexpr float BUBBLE_DISPLAY_W = 24.f, BUBBLE_DISPLAY_H = 14.f; // logical px
+    constexpr SDL_FPoint BUBBLE_TAIL_OFFSET_PX = {7.5f, -6.5f};
+
+    // Shift bubble so its tail tip lands on the client's mouth. 1px gap keeps tail visible.
+    SDL_FRect  bubbleSrc   = {0.f, 0.f, bubbleW, bubbleH};
+    SDL_FPoint mouth       = customerEnt.get<SpeechAnchor>().mouthOffset;
+    SDL_FPoint bubbleOffPx = {mouth.x - BUBBLE_TAIL_OFFSET_PX.x,
+                              mouth.y - BUBBLE_TAIL_OFFSET_PX.y + 1.f};
+    auto bubble = createSpeechBubble(bubbleTex, bubbleSrc,
+                                     BUBBLE_DISPLAY_W, BUBBLE_DISPLAY_H,
+                                     customerEnt, bubbleOffPx);
 
     // --- Order icons (children of the bubble) ---
-    if (sampleOrder.hasDrink)
-    {
-        SDL_FRect drinkSrc = {0.f, 0.f, CUP_FRAME_W, CUP_FRAME_H};
-        createOrderIcon(cupTex, drinkSrc, bubble, {-6.f, 0.f});
-    }
+    // props.png is a 3-frame strip: [cinnamon roll | croissant | cup], each propsW/3 wide.
+    constexpr float ICON_SIZE = 8.f / 1.5f; // logical px, square
+    constexpr float ICON_DX   = 3.f;        // horizontal spread from bubble center
+    constexpr float ICON_DY   = 2.f;  // nudge up inside the bubble
     if (sampleOrder.hasPastry)
     {
-        SDL_FRect pastrySrc = {0.f, 0.f, propsW, propsH};
-        createOrderIcon(propsTex, pastrySrc, bubble, {6.f, 0.f});
+        SDL_FRect pastrySrc = {0.f, 0.f, propsW / 3.f, propsH}; // frame 0 = cinnamon roll
+        createOrderIcon(propsTex, pastrySrc, ICON_SIZE, ICON_SIZE, bubble, {-ICON_DX, ICON_DY});
+    }
+    if (sampleOrder.hasDrink)
+    {
+        SDL_FRect drinkSrc = {0.f, 0.f, CUP_FRAME_W, CUP_FRAME_H}; // big_cup front frame
+        createOrderIcon(cupTex, drinkSrc, ICON_SIZE, ICON_SIZE, bubble, {ICON_DX, ICON_DY});
     }
 
     bool isRunning = true;

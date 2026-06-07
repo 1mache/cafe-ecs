@@ -58,6 +58,13 @@ struct Behavior
 /** @brief Marker: entity has expired and should be destroyed this frame by cleanupSystem. */
 struct Leaving {};
 
+/** @brief Offset from an entity's center to its "speech" point (e.g. mouth),
+ *  in logical pixels, Y-up. Used to anchor a speech bubble's tail. */
+struct SpeechAnchor
+{
+    SDL_FPoint mouthOffset{};
+};
+
 } // namespace cafe
 
 template <>
@@ -94,4 +101,10 @@ template <>
 struct bagel::Storage<cafe::Leaving> final : NoInstance
 {
     using type = TaggedStorage<cafe::Leaving>;
+};
+
+template <>
+struct bagel::Storage<cafe::SpeechAnchor> final : NoInstance
+{
+    using type = SparseStorage<cafe::SpeechAnchor>;
 };
