@@ -19,6 +19,14 @@ target_sources(
     AssetManager.cpp
     Texture.h
     Texture.cpp
+
+    components/Transform.h
+    components/Drawable.h
+    components/ChildOf.h
+    components/Order.h
+    components/Behavior.h
+    components/Leaving.h
+    components/SpeechAnchor.h
 )
 
 target_include_directories(
