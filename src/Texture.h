@@ -31,6 +31,11 @@ public:
     {
         return _size;
     }
+
+    SDL_FRect getFullSrcRect() const
+    {
+        return {0.f, 0.f, _size.x, _size.y};
+    }
 private:
     SDL_Texture* _texture{};
     SDL_FPoint   _size{};

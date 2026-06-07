@@ -7,7 +7,7 @@
 namespace cafe
 {
 
-Texture& AssetManager::getTexture(std::string_view path, SDL_Renderer* renderer)
+const Texture& AssetManager::getTexture(std::string_view path, SDL_Renderer* renderer)
 {
     std::string fullPath = RES_DIR_PATH + std::string(path);
     auto [it, success] = _textures.try_emplace(path.data());

@@ -9,7 +9,9 @@ class AssetManager final
 {
 public:
     // loads a texture with path (inside res/ dir), if not in map already
-    Texture& getTexture(std::string_view path, SDL_Renderer* renderer);
+    // TODO: take renderer in ctor
+    const Texture& getTexture(std::string_view path, SDL_Renderer* renderer);
+    void clear() { _textures.clear(); }
 private:
     std::unordered_map<std::string, Texture> _textures{};
 
