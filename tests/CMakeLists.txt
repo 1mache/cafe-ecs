@@ -18,9 +18,15 @@ catch_discover_tests(UnitTestFilters
 
 add_executable(UnitTestSpawner
     test_spawner.cpp
-    ${CMAKE_SOURCE_DIR}/src/Systems.cpp
-    ${CMAKE_SOURCE_DIR}/src/TransformOperations.cpp
-    ${CMAKE_SOURCE_DIR}/src/Entities.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/RenderSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/TransformSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/CoffeeSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/component/Transform.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CupFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/LiquidDropFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
     ${CMAKE_SOURCE_DIR}/src/Assets.cpp
     ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp)
 target_link_libraries(UnitTestSpawner
@@ -34,7 +40,10 @@ target_include_directories(UnitTestSpawner
         "${CMAKE_SOURCE_DIR}/dependencies/bagel")
 target_include_directories(UnitTestSpawner
     PRIVATE
-        "${CMAKE_SOURCE_DIR}/src")
+        "${CMAKE_SOURCE_DIR}/src"
+        "${CMAKE_SOURCE_DIR}/src/component"
+        "${CMAKE_SOURCE_DIR}/src/system"
+        "${CMAKE_SOURCE_DIR}/src/entity")
 
 if(${ENABLE_WARNINGS})
     target_set_warnings(
@@ -52,9 +61,15 @@ catch_discover_tests(UnitTestSpawner
 
 add_executable(UnitTestFill
     test_fill.cpp
-    ${CMAKE_SOURCE_DIR}/src/Systems.cpp
-    ${CMAKE_SOURCE_DIR}/src/TransformOperations.cpp
-    ${CMAKE_SOURCE_DIR}/src/Entities.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/RenderSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/TransformSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/CoffeeSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/component/Transform.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CupFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/LiquidDropFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
     ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp
     ${CMAKE_SOURCE_DIR}/src/Assets.cpp)
 target_link_libraries(UnitTestFill
@@ -68,7 +83,10 @@ target_include_directories(UnitTestFill
         "${CMAKE_SOURCE_DIR}/dependencies/bagel")
 target_include_directories(UnitTestFill
     PRIVATE
-        "${CMAKE_SOURCE_DIR}/src")
+        "${CMAKE_SOURCE_DIR}/src"
+        "${CMAKE_SOURCE_DIR}/src/component"
+        "${CMAKE_SOURCE_DIR}/src/system"
+        "${CMAKE_SOURCE_DIR}/src/entity")
 
 if(${ENABLE_WARNINGS})
     target_set_warnings(

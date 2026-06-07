@@ -1,14 +1,10 @@
 #pragma once
+
 #include "WorldPos.h"
 #include <functional>
 
 namespace cafe
 {
-void drawSystem();
-
-/** @brief Copies each entity's b2Body position/rotation into its Transform. */
-void syncTransformFromBody();
-
 /** @brief Spawns coffee drops from every active CoffeeSpawner. */
 void coffeeSpawnerSystem(float dtSeconds);
 
@@ -21,5 +17,4 @@ void sensorEventSystem();
 
 /** @brief Prints a one-line debug summary every 0.5 s of accumulated dt. */
 void dumpDebugStatsEvery(float dtSeconds);
-void hierarchySystem();
-}
+} // namespace cafe

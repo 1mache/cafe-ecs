@@ -1,5 +1,4 @@
-#include "TransformOperations.h"
-#include "Components.h"
+#include "Transform.h"
 #include "GameConfig.h"
 
 namespace cafe
@@ -35,7 +34,6 @@ b2Vec2 transformToB2Pos(const Transform& t)
 }
 
 b2Vec2 transformToB2Scale(const Transform& t)
-
 {
     return b2Vec2{t.w, t.h};
 }

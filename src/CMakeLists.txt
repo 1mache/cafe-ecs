@@ -2,21 +2,46 @@
 target_sources(
     ${EXECUTABLE_NAME}
     PRIVATE
-    Systems.h
-    Systems.cpp
-    Entities.h
-    Entities.cpp
-    Components.h
-    Utils.h
+    # components
+    component/Transform.h
+    component/Transform.cpp
+    component/Drawable.h
+    component/ChildOf.h
+    component/Liquid.h
+    component/PhysicsBody.h
+    component/Cup.h
+    component/CoffeeSpawner.h
+    component/CleanupZone.h
+    component/Components.h
 
+    # systems
+    system/RenderSystem.h
+    system/RenderSystem.cpp
+    system/TransformSystem.h
+    system/TransformSystem.cpp
+    system/CoffeeSystem.h
+    system/CoffeeSystem.cpp
+    system/Systems.h
+
+    # entities
+    entity/CupFactory.h
+    entity/CupFactory.cpp
+    entity/LiquidDropFactory.h
+    entity/LiquidDropFactory.cpp
+    entity/CoffeeMachineFactory.h
+    entity/CoffeeMachineFactory.cpp
+    entity/CleanupZoneFactory.h
+    entity/CleanupZoneFactory.cpp
+    entity/Entities.h
+    entity/Entities.cpp
+
+    # root helpers
     GameConfig.h
     RenderContext.h
     PhysicsFilters.h
     PhysicsContext.h
     PhysicsContext.cpp
 
-    TransformOperations.h
-    TransformOperations.cpp
     WorldPos.h
 
     Assets.h
@@ -25,10 +50,14 @@ target_sources(
     AssetManager.cpp
     Texture.h
     Texture.cpp
+    Utils.h
 )
 
 target_include_directories(
     ${EXECUTABLE_NAME}
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/component
+    ${CMAKE_CURRENT_SOURCE_DIR}/system
+    ${CMAKE_CURRENT_SOURCE_DIR}/entity
 )

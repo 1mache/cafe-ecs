@@ -1,12 +1,22 @@
 #pragma once
+
 #include "GameConfig.h"
 #include "WorldPos.h"
 #include <SDL3/SDL.h>
+#include <bagel.h>
 #include <box2d/box2d.h>
 
 namespace cafe
 {
-struct Transform;
+/** @brief World-space AABB transform: center (x,y), half-extents (w,h), rotation. */
+struct Transform
+{
+    // *In world coordinates
+    float x{}, y{}; // center
+    float w{}, h{}; // from the center. like box2d
+    // degrees or radians but can be converted into another type later
+    float rot{};
+};
 
 /**
  * @brief Converts a world point to SDL screen coordinates.
@@ -16,7 +26,7 @@ struct Transform;
  *          screenY = winCenterY − (worldY − camY) × PTM × scale
  *
  * @param worldPos  Position in world units (meters, Y-up).
- * @param cam       Current camera center in world units.
+ * @param camPos       Current camera center in world units.
  * @return SDL_FPoint in screen pixels (Y-down, origin top-left).
  */
 SDL_FPoint worldToScreenPoint(WorldPos worldPos, WorldPos camPos);
@@ -33,7 +43,7 @@ constexpr float screenToWorldSize(float screenSize)
     return screenSize / (PTM * SCALE_FACTOR);
 }
 
-/** @brief Converts an MTransform to an SDL_FRect in screen pixels for rendering. */
+/** @brief Converts a Transform to an SDL_FRect in screen pixels for rendering. */
 SDL_FRect transformToFrect(const Transform& t, WorldPos camPos);
 
 b2Vec2 transformToB2Pos(const Transform& t);
@@ -43,3 +53,5 @@ b2Vec2 transformToB2Scale(const Transform& t);
 void transformUpdateWithB2Pos(Transform& t, b2Vec2 pos);
 
 } // namespace cafe
+
+template <> struct bagel::Storage<cafe::Transform> final : NoInstance { using type = SparseStorage<cafe::Transform>; };

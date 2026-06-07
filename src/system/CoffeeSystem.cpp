@@ -1,21 +1,17 @@
-#include "Systems.h"
+#include "CoffeeSystem.h"
 #include "Components.h"
 #include "Entities.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
-#include "RenderContext.h"
-#include "TransformOperations.h"
-#include <algorithm>
 #include <bagel.h>
 #include <box2d/box2d.h>
-#include <cmath>
+#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <vector>
 
 namespace cafe
 {
-// Running counters for the periodic debug dump. File-local so tests don't see them.
 namespace
 {
 struct DebugStats
@@ -27,90 +23,7 @@ struct DebugStats
     float accumulator{};
 };
 DebugStats g_stats;
-
-// Coffee fill color (#4B2F1E) and rim inset in screen pixels.
-constexpr Uint8 kCoffeeR = 75, kCoffeeG = 47, kCoffeeB = 30;
-constexpr float kCupRimPx = 1.f;
-
-// Drawn before the cup sprite so the sprite's rim masks the rect edges.
-void drawCupLiquid(SDL_Renderer* r, const SDL_FRect& cupRect, const Cup& c)
-{
-    const float interiorW = cupRect.w - 2.f * kCupRimPx;
-    const float interiorH = cupRect.h - 2.f * kCupRimPx;
-    if (interiorW <= 0.f || interiorH <= 0.f) return;
-
-    const float fillH = std::floor(c.fillPercent() * interiorH);
-    if (fillH <= 0.f) return;
-
-    const SDL_FRect fillRect{
-        std::floor(cupRect.x + kCupRimPx),
-        std::floor(cupRect.y + kCupRimPx + (interiorH - fillH)),
-        std::floor(interiorW),
-        fillH
-    };
-    SDL_SetRenderDrawColor(r, kCoffeeR, kCoffeeG, kCoffeeB, 255);
-    SDL_RenderFillRect(r, &fillRect);
-}
 } // namespace
-
-void drawSystem()
-{
-    static const bagel::Mask mask =
-        bagel::MaskBuilder().set<Drawable>().set<Transform>().build();
-
-    SDL_Window*   window   = RenderContext::getWindow();
-    SDL_Renderer* renderer = RenderContext::getRenderer();
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(mask))
-            continue;
-
-        const auto& d = e.get<Drawable>();
-        const auto& t = e.get<Transform>();
-
-        SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
-
-        if (e.has<Cup>())
-            drawCupLiquid(renderer, dstRect, e.get<Cup>());
-
-        SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
-    }
-}
-void hierarchySystem()
-{
-    static const bagel::Mask mask =
-        bagel::MaskBuilder().set<Drawable>().set<Transform>().set<ChildOf>().build();
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(mask)) continue;
-
-        auto& t = e.get<Transform>();
-        auto& childComp = e.get<ChildOf>();
-        auto& parentT = childComp.parent.get<Transform>();
-        t.x = parentT.x + screenToWorldSize(childComp.localOffset.x);
-        t.y = parentT.y + screenToWorldSize(childComp.localOffset.y);
-        t.rot = parentT.rot;
-    }
-}
-
-void syncTransformFromBody()
-{
-    static const bagel::Mask mask =
-        bagel::MaskBuilder().set<Transform>().set<PhysicsBody>().build();
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(mask)) continue;
-        const auto body = e.get<PhysicsBody>().id;
-        if (!b2Body_IsValid(body)) continue;  // belt + suspenders: never sync a destroyed body
-        b2Vec2 p   = b2Body_GetPosition(body);
-        b2Rot  rot = b2Body_GetRotation(body);
-        auto&  t   = e.get<Transform>();
-        t.x   = p.x;
-        t.y   = p.y;
-        t.rot = b2Rot_GetAngle(rot);
-    }
-}
 
 void coffeeSpawnerSystemImpl(float dtSeconds,
                              const std::function<void(WorldPos)>& spawnDrop)
