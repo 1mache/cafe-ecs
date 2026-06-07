@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <string_view>
+#include <cstdlib>
 
 namespace cafe
 {
