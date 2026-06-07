@@ -12,6 +12,10 @@ target_sources(
     component/Cup.h
     component/CoffeeSpawner.h
     component/CleanupZone.h
+    component/Behavior.h
+    component/Leaving.h
+    component/Order.h
+    component/SpeechAnchor.h
     component/Components.h
 
     # systems
@@ -21,6 +25,8 @@ target_sources(
     system/TransformSystem.cpp
     system/CoffeeSystem.h
     system/CoffeeSystem.cpp
+    system/ClientSystem.h
+    system/ClientSystem.cpp
     system/Systems.h
 
     # entities
@@ -32,6 +38,12 @@ target_sources(
     entity/CoffeeMachineFactory.cpp
     entity/CleanupZoneFactory.h
     entity/CleanupZoneFactory.cpp
+    entity/ClientFactory.h
+    entity/ClientFactory.cpp
+    entity/SpeechBubbleFactory.h
+    entity/SpeechBubbleFactory.cpp
+    entity/OrderIconFactory.h
+    entity/OrderIconFactory.cpp
     entity/Entities.h
     entity/Entities.cpp
 

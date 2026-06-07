@@ -6,6 +6,7 @@
 
 namespace cafe
 {
+
 void syncTransformFromBody()
 {
     static const bagel::Mask mask =
@@ -27,18 +28,29 @@ void syncTransformFromBody()
 
 void hierarchySystem()
 {
-    static const bagel::Mask mask =
-        bagel::MaskBuilder().set<Drawable>().set<Transform>().set<ChildOf>().build();
+    static const bagel::Mask childMask =
+        bagel::MaskBuilder().set<ChildOf>().set<Transform>().build();
+
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (!e.test(mask)) continue;
+        if (!e.test(childMask)) continue;
 
-        auto& t = e.get<Transform>();
         auto& childComp = e.get<ChildOf>();
-        auto& parentT = childComp.parent.get<Transform>();
-        t.x = parentT.x + screenToWorldSize(childComp.localOffset.x);
-        t.y = parentT.y + screenToWorldSize(childComp.localOffset.y);
+        bagel::Entity parent = childComp.parent;
+
+        // If the parent is gone or leaving, destroy this child immediately
+        if (!parent.has<Transform>() || parent.has<Leaving>())
+        {
+            e.destroy();
+            continue;
+        }
+
+        auto& t       = e.get<Transform>();
+        auto& parentT = parent.get<Transform>();
+        t.x   = parentT.x + screenToWorldSize(childComp.localOffset.x);
+        t.y   = parentT.y + screenToWorldSize(childComp.localOffset.y);
         t.rot = parentT.rot;
     }
 }
+
 } // namespace cafe
