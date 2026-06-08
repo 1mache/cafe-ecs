@@ -33,17 +33,66 @@ void behaviorSystem(float dtSeconds)
     }
 }
 
+void deliverySystem()
+{
+    static const bagel::Mask heldMask =
+        bagel::MaskBuilder().set<Held>().build();
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(heldMask)) continue;
+
+        const auto& held = e.get<Held>();
+        if (!held.dropSpaceEntity.has_value()) continue;
+
+        bagel::Entity target{ *held.dropSpaceEntity };
+        if (!target.has<Served>()) continue;
+
+        auto& served = target.get<Served>();
+        if (e.has<Cup>())
+            served.drink = served.drink || e.get<Cup>().isFull();
+        else
+            served.pastry = true;
+    }
+}
+
 void orderSystem()
 {
     static const bagel::Mask orderMask =
-        bagel::MaskBuilder().set<Order>().set<Behavior>().build();
+        bagel::MaskBuilder().set<Order>().set<Behavior>().set<Served>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(orderMask)) continue;
+        if (e.has<Leaving>()) continue;
 
-        // TODO: when a cup is served to this client, compare cup's Holds composition
-        //       against Order::ratio and write the result into Behavior::rating
+        const auto& order  = e.get<Order>();
+        const auto& served = e.get<Served>();
+
+        const bool drinkOk  = !order.hasDrink  || served.drink;
+        const bool pastryOk = !order.hasPastry || served.pastry;
+
+        if (drinkOk && pastryOk)
+        {
+            e.get<Behavior>().rating = 1;
+            e.add(Leaving{});
+        }
+    }
+}
+
+void reportLeavingClients()
+{
+    static const bagel::Mask leavingMask =
+        bagel::MaskBuilder().set<Leaving>().set<Behavior>().build();
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(leavingMask)) continue;
+
+        if (e.get<Behavior>().rating > 0)
+            std::cout << "[Order] Client left SUCCESSFUL\n";
+        else
+            std::cout << "[Order] Client left FAILED (patience ran out)\n";
     }
 }
 

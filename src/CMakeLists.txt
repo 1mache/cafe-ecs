@@ -13,8 +13,13 @@ target_sources(
     component/CoffeeSpawner.h
     component/CleanupZone.h
     component/Behavior.h
+    component/Draggable.h
+    component/DropSpace.h
+    component/DropType.h
+    component/Held.h
     component/Leaving.h
     component/Order.h
+    component/Served.h
     component/SpeechAnchor.h
     component/Components.h
 
@@ -27,6 +32,8 @@ target_sources(
     system/CoffeeSystem.cpp
     system/ClientSystem.h
     system/ClientSystem.cpp
+    system/DragAndDropSystem.h
+    system/DragAndDropSystem.cpp
     system/Systems.h
 
     # entities

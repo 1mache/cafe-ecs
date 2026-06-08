@@ -1,9 +1,8 @@
-#include "Components.h"
-#include "Entities.h"
+#include "component/Components.h"
+#include "entity/Entities.h"
 #include "GameConfig.h"
 #include "RenderContext.h"
-#include "Systems.h"
-#include "Transform.h"
+#include "system/Systems.h"
 #include "Utils.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -135,7 +134,7 @@ int main()
     // props.png is a 3-frame strip: [cinnamon roll | croissant | cup], each propsW/3 wide.
     constexpr float ICON_SIZE = 8.f / 1.5f; // logical px, square
     constexpr float ICON_DX   = 3.f;        // horizontal spread from bubble center
-    constexpr float ICON_DY   = 2.f;  // nudge up inside the bubble
+    constexpr float ICON_DY   = 2.f;        // nudge up inside the bubble
     if (sampleOrder.hasPastry)
     {
         SDL_FRect pastrySrc = {0.f, 0.f, propsW / 3.f, propsH}; // frame 0 = cinnamon roll
@@ -162,7 +161,7 @@ int main()
         hierarchySystem();      // move children to follow parents; drop children of Leaving parents
         orderSystem();
         cleanupSystem();        // destroy Leaving entities
-        drawSystem();
+        drawSystem(renderer);
 
         SDL_RenderPresent(renderer);
 
