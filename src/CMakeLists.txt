@@ -19,6 +19,7 @@ target_sources(
     component/Held.h
     component/Leaving.h
     component/Order.h
+    component/Served.h
     component/SpeechAnchor.h
     component/Components.h
 

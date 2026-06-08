@@ -4,7 +4,9 @@
 #include "Transform.h"
 #include <SDL3/SDL.h>
 #include <bagel.h>
+#include <algorithm>
 #include <cmath>
+#include <vector>
 
 namespace cafe
 {

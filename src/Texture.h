@@ -26,8 +26,9 @@ public:
     Texture& operator=(const Texture&) = delete;
     Texture& operator=(Texture&& other) noexcept;
 
-    bool       loadFromFile(const std::string_view& path, SDL_Renderer* renderer);
-    SDL_FPoint getSize() const
+    bool         loadFromFile(const std::string_view& path, SDL_Renderer* renderer);
+    SDL_Texture* get() const { return _texture; }
+    SDL_FPoint   getSize() const
     {
         return _size;
     }
