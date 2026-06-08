@@ -9,7 +9,7 @@ struct Drawable
 {
     SDL_Texture* texture{};
     SDL_FRect    srcRect{};
-    int          renderLayer{};
+    RenderLayer  renderLayer{LAYER_BG};
 };
 } // namespace cafe
 

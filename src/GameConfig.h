@@ -17,4 +17,18 @@ static constexpr int LOGICAL_H = 90;
 // Pure zoom inside logical space. Display-fit handled by SDL, not here.
 static constexpr float SCALE_FACTOR = 1.f;
 static constexpr float GRAVITY      = 25.f;
+
+enum RenderLayer : int
+{
+    LAYER_BG = 0,
+    LAYER_CUSTOMER,
+    LAYER_BARTOP,
+    LAYER_STATIC_ON_BARTOP, // coffee machine, pastry holder
+    LAYER_CONTAINER_BACK,
+    LAYER_LIQUID,
+    LAYER_CONTAINER_FRONT,
+    LAYER_PROP, // draggable objects
+    LAYER_UI,
+    LAYER_COUNT // how many layers
+};
 } // namespace cafe

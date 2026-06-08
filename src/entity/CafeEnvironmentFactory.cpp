@@ -10,7 +10,7 @@ bagel::Entity createBg(const Texture& bgTex)
     const auto bgSrcRect = bgTex.getFullSrcRect();
 
     auto bgEnt = bagel::Entity::create();
-    bgEnt.addAll(Drawable{bgTex.get(), bgSrcRect},
+    bgEnt.addAll(Drawable{bgTex.get(), bgSrcRect, LAYER_BG},
                  Transform{.x = 0.f,
                            .y = 0.f,
                            .w = screenToWorldScale(LOGICAL_W),
@@ -23,7 +23,7 @@ bagel::Entity createBartop(const Texture& bartopTex)
     const float bartopHalfHeight = screenToWorldScale(bartopSrcRect.h);
     auto  bartopEnt        = bagel::Entity::create();
     bartopEnt.addAll(
-        Drawable{bartopTex.get(), bartopSrcRect},
+        Drawable{bartopTex.get(), bartopSrcRect, LAYER_BARTOP},
         Transform{.x = 0.f,
                   .y = -(screenToWorldDistance(LOGICAL_H / 2) - bartopHalfHeight),
                   .w = screenToWorldScale(bartopSrcRect.w),
