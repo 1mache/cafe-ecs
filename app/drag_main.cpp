@@ -217,7 +217,8 @@ int main()
                                 static_cast<int>(START_WIN_H),
                                 SDL_WINDOW_OPENGL,
                                 &window,
-                                &renderer);
+                                &
+                                renderer);
     assertFatal(window != nullptr, SDL_GetError());
     assertFatal(renderer != nullptr, SDL_GetError());
 
