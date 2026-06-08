@@ -49,7 +49,9 @@ target_sources(
 
     # root helpers
     GameConfig.h
+    Utils.h
     RenderContext.h
+
     PhysicsFilters.h
     PhysicsContext.h
     PhysicsContext.cpp
@@ -58,11 +60,15 @@ target_sources(
 
     Assets.h
     Assets.cpp
+
+    Scene.h
+    Scene.cpp
     AssetManager.h
     AssetManager.cpp
     Texture.h
     Texture.cpp
-    Utils.h
+    CafeGame.h
+    CafeGame.cpp
 )
 
 target_include_directories(

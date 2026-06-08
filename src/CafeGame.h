@@ -12,16 +12,22 @@ public:
     void run();
     void destroy();
 
+private:
+    Scene         _currentScene{INIT_SCENE_BG};
+    SDL_Renderer* _renderer{};
+    SDL_Window*   _window{};
+
     // same as through scene, just shortcut
     AssetManager& getAssetManager()
     {
         return _currentScene.getAssetManager();
     }
 
-private:
-    Scene         _currentScene{INIT_SCENE_BG, _renderer};
-    SDL_Renderer* _renderer{};
-    SDL_Window*   _window{};
+    static constexpr auto TEX_COUNTER  = "counter.png";
+    static constexpr auto TEX_CUSTOMER = "def_customer.png";
+    static constexpr auto TEX_CUP      = "big_cup.png";
+    static constexpr auto TEX_PROPS    = "props.png";
+    static constexpr auto TEX_BUBBLE   = "bubble.png";
 
     static constexpr auto INIT_SCENE_BG = "bg.png";
 };

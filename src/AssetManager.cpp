@@ -7,13 +7,18 @@
 namespace cafe
 {
 
-const Texture& AssetManager::getTexture(std::string_view path, SDL_Renderer* renderer)
+void AssetManager::init(SDL_Renderer* renderer)
 {
-    std::string fullPath = RES_DIR_PATH + std::string(path);
-    auto [it, success] = _textures.try_emplace(path.data());
+    _renderer = renderer;
+}
+
+const Texture& AssetManager::getTexture(std::string_view filename)
+{
+    std::string fullPath = RES_DIR_PATH + std::string(filename);
+    auto [it, success] = _textures.try_emplace(filename.data());
     if (success) // key didnt previously exist
     {
-        bool loaded = it->second.loadFromFile(path.data(), renderer);
+        bool loaded = it->second.loadFromFile(fullPath, _renderer);
         assertFatal(loaded, "Error loading " + fullPath + ": "
                                                         + SDL_GetError());
     }
