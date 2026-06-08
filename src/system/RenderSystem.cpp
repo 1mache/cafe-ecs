@@ -40,15 +40,28 @@ void drawSystem()
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<Drawable>().set<Transform>().build();
 
-    SDL_Window*   window   = RenderContext::getWindow();
-    SDL_Renderer* renderer = RenderContext::getRenderer();
+    struct DrawItem
+    {
+        bagel::ent_type id;
+        int             renderLayer;
+    };
+
+    std::vector<DrawItem> drawOrder;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (!e.test(mask))
-            continue;
+        if (!e.test(mask)) continue;
+        drawOrder.push_back({ e.entity(), e.get<Drawable>().renderLayer });
+    }
 
-        const auto& d = e.get<Drawable>();
-        const auto& t = e.get<Transform>();
+    std::sort(drawOrder.begin(), drawOrder.end(),
+              [](const DrawItem& a, const DrawItem& b) { return a.renderLayer < b.renderLayer; });
+
+    SDL_Renderer* renderer = RenderContext::getRenderer();
+    for (const DrawItem& item : drawOrder)
+    {
+        bagel::Entity e{ item.id };
+        const auto&   d = e.get<Drawable>();
+        const auto&   t = e.get<Transform>();
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 

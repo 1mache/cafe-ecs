@@ -14,6 +14,16 @@ SDL_FPoint worldToScreenPoint(WorldPos worldPos, WorldPos camPos)
                       centy - (worldPos.y - camPos.y) * PTM * s};
 }
 
+WorldPos screenToWorldPoint(SDL_FPoint screenPos, WorldPos camPos)
+{
+    const float s     = SCALE_FACTOR;
+    const float centx = LOGICAL_W * 0.5f;
+    const float centy = LOGICAL_H * 0.5f;
+
+    return WorldPos{camPos.x + (screenPos.x - centx) / (PTM * s),
+                    camPos.y - (screenPos.y - centy) / (PTM * s)};
+}
+
 SDL_FRect transformToFrect(const Transform& t, WorldPos camPos)
 {
     constexpr auto ptm = PTM;

@@ -31,6 +31,19 @@ struct Transform
  */
 SDL_FPoint worldToScreenPoint(WorldPos worldPos, WorldPos camPos);
 
+/**
+ * @brief Converts SDL screen coordinates to a world point (inverse of worldToScreenPoint).
+ *
+ * Maps pixels (Y-down, window-relative) back to meters (Y-up, camera-relative).
+ * Formula: worldX = camX + (screenX − winCenterX) / (PTM × scale)
+ *          worldY = camY − (screenY − winCenterY) / (PTM × scale)
+ *
+ * @param screenPos Position in screen pixels (Y-down, origin top-left).
+ * @param camPos    Current camera center in world units.
+ * @return WorldPos in world units (meters, Y-up).
+ */
+WorldPos screenToWorldPoint(SDL_FPoint screenPos, WorldPos camPos);
+
 /** @brief Converts a world-unit length to screen pixels (PTM × SCALE_FACTOR). */
 constexpr float worldToScreenSize(float worldSize)
 {

@@ -11,10 +11,12 @@
 ################################
 build/
 build-*/
+cmake-build-debug/
 html/
 .vscode/
 .idea/
 tools/
+dependencies/
 .claude/
 docs/superpowers/
 
