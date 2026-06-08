@@ -6,6 +6,7 @@
 #include <vector>
 #include <SDL3/SDL.h>
 #include <bagel.h>
+#include <vector>
 #include <cmath>
 
 namespace cafe
