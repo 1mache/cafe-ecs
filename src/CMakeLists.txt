@@ -44,6 +44,8 @@ target_sources(
     entity/SpeechBubbleFactory.cpp
     entity/OrderIconFactory.h
     entity/OrderIconFactory.cpp
+    entity/CafeEnvironmentFactory.h
+    entity/CafeEnvironmentFactory.cpp
     entity/Entities.h
     entity/Entities.cpp
 

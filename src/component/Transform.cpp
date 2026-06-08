@@ -24,8 +24,8 @@ SDL_FRect transformToFrect(const Transform& t, WorldPos camPos)
 
     return SDL_FRect{.x = topLeft.x,
                      .y = topLeft.y,
-                     .w = worldToScreenSize(t.w * 2),
-                     .h = worldToScreenSize(t.h * 2)};
+                     .w = worldToScreenScale(t.w),
+                     .h = worldToScreenScale(t.h)};
 }
 
 b2Vec2 transformToB2Pos(const Transform& t)

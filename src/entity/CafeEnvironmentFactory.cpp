@@ -13,20 +13,20 @@ bagel::Entity createBg(const Texture& bgTex)
     bgEnt.addAll(Drawable{bgTex.get(), bgSrcRect},
                  Transform{.x = 0.f,
                            .y = 0.f,
-                           .w = screenToWorldSize(LOGICAL_W/2),
-                           .h = screenToWorldSize(LOGICAL_H/2)});
+                           .w = screenToWorldScale(LOGICAL_W),
+                           .h = screenToWorldScale(LOGICAL_H)});
     return bgEnt;
 }
 bagel::Entity createBartop(const Texture& bartopTex)
 {
     const auto  bartopSrcRect    = bartopTex.getFullSrcRect();
-    const float bartopHalfHeight = screenToWorldSize(bartopSrcRect.h / 2.f);
+    const float bartopHalfHeight = screenToWorldScale(bartopSrcRect.h);
     auto  bartopEnt        = bagel::Entity::create();
     bartopEnt.addAll(
         Drawable{bartopTex.get(), bartopSrcRect},
         Transform{.x = 0.f,
-                  .y = -(screenToWorldSize(LOGICAL_H / 2) - bartopHalfHeight),
-                  .w = screenToWorldSize(bartopSrcRect.w / 2.f),
+                  .y = -(screenToWorldDistance(LOGICAL_H / 2) - bartopHalfHeight),
+                  .w = screenToWorldScale(bartopSrcRect.w),
                   .h = bartopHalfHeight});
 
     return bartopEnt;

@@ -32,15 +32,27 @@ struct Transform
 SDL_FPoint worldToScreenPoint(WorldPos worldPos, WorldPos camPos);
 
 /** @brief Converts a world-unit length to screen pixels (PTM × SCALE_FACTOR). */
-constexpr float worldToScreenSize(float worldSize)
+constexpr float worldToScreenDistance(float worldDist)
 {
-    return worldSize * PTM * SCALE_FACTOR;
+    return worldDist * PTM * SCALE_FACTOR;
 }
 
-/** @brief Converts a screen-pixel length to world units (inverse of worldToScreenSize). */
-constexpr float screenToWorldSize(float screenSize)
+/** @brief Converts a screen-pixel length to world units (inverse of worldToScreenDistance). */
+constexpr float screenToWorldDistance(float screenDist)
 {
-    return screenSize / (PTM * SCALE_FACTOR);
+    return screenDist / (PTM * SCALE_FACTOR);
+}
+
+/** @brief World half-extent → full screen-pixel size (e.g. Transform.w → rect width). */
+constexpr float worldToScreenScale(float worldHalfExtent)
+{
+    return worldToScreenDistance(worldHalfExtent * 2.f);
+}
+
+/** @brief Full screen-pixel size → world half-extent (inverse of worldToScreenScale). */
+constexpr float screenToWorldScale(float screenSize)
+{
+    return screenToWorldDistance(screenSize) / 2.f;
 }
 
 /** @brief Converts a Transform to an SDL_FRect in screen pixels for rendering. */
