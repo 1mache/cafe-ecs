@@ -1,0 +1,51 @@
+---
+description: ECS design practices — system boundaries, components, and isolated test entry points
+alwaysApply: true
+---
+
+# ECS Design Practices
+
+## Systems Communicate Through Components
+
+Systems must not call into each other. If system A needs to affect system B's behavior, A writes a component — B reads it next frame.
+
+If two systems feel tightly coupled, add an intermediate component (and possibly a new system to populate it).
+
+```cpp
+// ❌ BAD — MovementSystem reading raw input
+if (InputSystem::isKeyDown(SDLK_RIGHT)) { ... }
+
+// ❌ BAD — InputSystem touching movement fields
+vel.x = isRight ? speed : 0.f;
+
+// ✅ GOOD — MoveIntent component decouples input from movement
+MoveIntent& intent = MoveIntent::get(ent);
+intent.dx = isRight ? 1.f : 0.f;
+
+float dx = MoveIntent::get(ent).dx; // MovementSystem knows nothing about input
+```
+
+## Systems Are Cheap, Components Are Not
+
+Prefer more systems over bloated ones. A system per enemy type is fine. A component per enemy type is not — components should be general enough to reuse across entity types.
+
+```cpp
+// ❌ BAD — one component per enemy variant
+struct BeeAI { ... };
+struct TurretAI { ... };
+
+// ✅ OK — one system per variant, shared or minimal components
+class BeeSystem final : bagel::NoInstance {};
+class TurretSystem final : bagel::NoInstance {};
+```
+
+Components are plain-data structs with no behavior — systems operate on them externally.
+
+## Testing Independent Features
+
+Add a dedicated entry point under `app/` and register it in `app/CMakeLists.txt`. Keep test entry points out of main `main.cpp`; remove them before merging to `main`.
+
+```cmake
+# app/CMakeLists.txt — first line for isolated test
+set(APP_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/my_test.cpp")
+```

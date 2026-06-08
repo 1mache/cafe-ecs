@@ -1,9 +1,8 @@
-#include "Components.h"
-#include "Entities.h"
+#include "component/Components.h"
+#include "entity/Entities.h"
 #include "GameConfig.h"
 #include "RenderContext.h"
-#include "Systems.h"
-#include "TransformOperations.h"
+#include "system/Systems.h"
 #include "Utils.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>

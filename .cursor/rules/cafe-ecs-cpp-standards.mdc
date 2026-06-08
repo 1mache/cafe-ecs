@@ -1,0 +1,63 @@
+---
+description: C++20 formatting and code practices for cafe-ecs
+alwaysApply: true
+---
+
+# C++20 Coding Standards
+
+## Format
+
+- **Indentation:** 4 spaces, no tabs
+- **Braces:** Allman style — opening brace on its own line
+- **Naming:** `camelCase` (vars/functions), `PascalCase` (classes/structs), `_camelCase` (private members), `lowerCase` (namespaces)
+- **Pointers/references:** align to type — `const Transform& t`, `SDL_Window* _window`
+- **Extensions:** `.h` headers, `.cpp` implementations — no `.hpp`/`.hxx`
+
+```cpp
+void doSomething(int x)
+{
+    if (x > 0)
+    {
+        // ...
+    }
+}
+```
+
+## Code Practices
+
+| Topic | Rule |
+|-------|------|
+| Headers vs `.cpp` | ≤3-line functions in `.h`; everything else in `.cpp` |
+| `constexpr` | Use wherever value/computation is compile-time known |
+| Classes | Only when state is needed; prefer free functions |
+| RAII | Own resources in ctor/dtor; `unique_ptr`/`shared_ptr` for ownership; raw pointers for non-owning refs |
+| Non-member fns | Prefer over member/friend when operating on a type |
+| Structs | Plain public data for components — no methods |
+| Enums | `enum class` outside classes; plain `enum` inside classes |
+| Init | Value-init members with `{}`; designated initializers for aggregates |
+| Headers | `#pragma once` only — no include guards |
+| Exceptions | None — use `assert` for programmer errors, `std::expected`/error codes for recoverable failures |
+| `optional` | Nullable returns/optional params — not as a pointer substitute |
+| `final` / `= delete` | `final` when inheritance unintended; delete ctors on utility classes |
+
+```cpp
+// ✅ Component struct
+struct Health
+{
+    int  points{};
+    bool isInvulnerable{};
+    bool isDead{};
+};
+
+// ✅ Utility system — no instantiation
+class MovementSystem final : bagel::NoInstance {};
+
+// ✅ Non-member over member
+b2Vec2 transformToB2Pos(const Transform& t);
+
+// ✅ Namespace — close with comment
+namespace cafe
+{
+// ...
+} // namespace cafe
+```

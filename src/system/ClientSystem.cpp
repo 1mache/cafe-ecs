@@ -1,57 +1,10 @@
-#include "Systems.h"
+#include "ClientSystem.h"
 #include "Components.h"
-#include "RenderContext.h"
-#include "TransformOperations.h"
 #include <bagel.h>
 #include <iostream>
 
 namespace cafe
 {
-
-void drawSystem()
-{
-    static const bagel::Mask drawMask =
-        bagel::MaskBuilder().set<Drawable>().set<Transform>().build();
-
-    SDL_Renderer* renderer = RenderContext::getRenderer();
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(drawMask)) continue;
-
-        const auto& d = e.get<Drawable>();
-        const auto& t = e.get<Transform>();
-
-        SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
-        SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
-    }
-}
-
-void hierarchySystem()
-{
-    static const bagel::Mask childMask =
-        bagel::MaskBuilder().set<ChildOf>().set<Transform>().build();
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(childMask)) continue;
-
-        auto& childComp = e.get<ChildOf>();
-        bagel::Entity parent = childComp.parent;
-
-        // If the parent is gone or leaving, destroy this child immediately
-        if (!parent.has<Transform>() || parent.has<Leaving>())
-        {
-            e.destroy();
-            continue;
-        }
-
-        auto& t       = e.get<Transform>();
-        auto& parentT = parent.get<Transform>();
-        t.x   = parentT.x + screenToWorldSize(childComp.localOffset.x);
-        t.y   = parentT.y + screenToWorldSize(childComp.localOffset.y);
-        t.rot = parentT.rot;
-    }
-}
 
 void behaviorSystem(float dtSeconds)
 {

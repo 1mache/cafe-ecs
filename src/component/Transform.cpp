@@ -1,5 +1,4 @@
-#include "TransformOperations.h"
-#include "Components.h"
+#include "Transform.h"
 #include "GameConfig.h"
 
 namespace cafe
@@ -13,6 +12,16 @@ SDL_FPoint worldToScreenPoint(WorldPos worldPos, WorldPos camPos)
     // Camera world coord -> screen center. Y-up world -> Y-down screen.
     return SDL_FPoint{centx + (worldPos.x - camPos.x) * PTM * s,
                       centy - (worldPos.y - camPos.y) * PTM * s};
+}
+
+WorldPos screenToWorldPoint(SDL_FPoint screenPos, WorldPos camPos)
+{
+    const float s     = SCALE_FACTOR;
+    const float centx = LOGICAL_W * 0.5f;
+    const float centy = LOGICAL_H * 0.5f;
+
+    return WorldPos{camPos.x + (screenPos.x - centx) / (PTM * s),
+                    camPos.y - (screenPos.y - centy) / (PTM * s)};
 }
 
 SDL_FRect transformToFrect(const Transform& t, WorldPos camPos)
@@ -35,7 +44,6 @@ b2Vec2 transformToB2Pos(const Transform& t)
 }
 
 b2Vec2 transformToB2Scale(const Transform& t)
-
 {
     return b2Vec2{t.w, t.h};
 }

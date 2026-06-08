@@ -1,53 +1,103 @@
 include(Catch)
 
-# add_executable("UnitTestFoo" "test_foo.cc")
-# target_link_libraries("UnitTestFoo" PUBLIC "LibFoo")
-# target_link_libraries("UnitTestFoo" PRIVATE Catch2::Catch2WithMain)
+add_executable(UnitTestFilters test_filters.cpp)
+target_link_libraries(UnitTestFilters PRIVATE Catch2::Catch2WithMain)
+target_include_directories(UnitTestFilters PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
-# add_executable("UnitTestBar" "test_bar.cc")
-# target_link_libraries("UnitTestBar" PUBLIC "LibBar")
-# target_link_libraries("UnitTestBar" PRIVATE Catch2::Catch2WithMain)
+if(${ENABLE_WARNINGS})
+    target_set_warnings(
+        TARGET UnitTestFilters
+        ENABLE ${ENABLE_WARNINGS}
+        AS_ERRORS ${ENABLE_WARNINGS_AS_ERRORS})
+endif()
 
-# if(${ENABLE_WARNINGS})
-#     target_set_warnings(
-#         TARGET
-#         "UnitTestFoo"
-#         ENABLE
-#         ${ENABLE_WARNINGS}
-#         AS_ERRORS
-#         ${ENABLE_WARNINGS_AS_ERRORS})
-#     target_set_warnings(
-#         TARGET
-#         "UnitTestBar"
-#         ENABLE
-#         ${ENABLE_WARNINGS}
-#         AS_ERRORS
-#         ${ENABLE_WARNINGS_AS_ERRORS})
-# endif()
+get_filename_component(_compiler_bin_dir "${CMAKE_CXX_COMPILER}" DIRECTORY)
+catch_discover_tests(UnitTestFilters
+    DISCOVERY_MODE PRE_TEST
+    DL_PATHS "${_compiler_bin_dir}")
 
-# catch_discover_tests("UnitTestFoo")
-# catch_discover_tests("UnitTestBar")
+add_executable(UnitTestSpawner
+    test_spawner.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/RenderSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/TransformSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/CoffeeSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/component/Transform.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CupFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/LiquidDropFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
+    ${CMAKE_SOURCE_DIR}/src/Assets.cpp
+    ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp)
+target_link_libraries(UnitTestSpawner
+    PRIVATE
+        Catch2::Catch2WithMain
+        SDL3-static
+        SDL3_image-static
+        box2d)
+target_include_directories(UnitTestSpawner
+    SYSTEM PRIVATE
+        "${CMAKE_SOURCE_DIR}/dependencies/bagel")
+target_include_directories(UnitTestSpawner
+    PRIVATE
+        "${CMAKE_SOURCE_DIR}/src"
+        "${CMAKE_SOURCE_DIR}/src/component"
+        "${CMAKE_SOURCE_DIR}/src/system"
+        "${CMAKE_SOURCE_DIR}/src/entity")
 
-# if(ENABLE_COVERAGE)
-#     set(COVERAGE_MAIN "coverage")
-#     set(COVERAGE_EXCLUDES
-#         "${PROJECT_SOURCE_DIR}/app/*"
-#         "${PROJECT_SOURCE_DIR}/cmake/*"
-#         "${PROJECT_SOURCE_DIR}/docs/*"
-#         "${PROJECT_SOURCE_DIR}/external/*"
-#         "${PROJECT_SOURCE_DIR}/tests/*"
-#         "${PROJECT_SOURCE_DIR}/build/*"
-#         "/usr/include/*")
-#     set(COVERAGE_EXTRA_FLAGS)
-#     set(COVERAGE_DEPENDENCIES "UnitTestFoo" "UnitTestBar")
+if(${ENABLE_WARNINGS})
+    target_set_warnings(
+        TARGET UnitTestSpawner
+        ENABLE ${ENABLE_WARNINGS}
+        AS_ERRORS ${ENABLE_WARNINGS_AS_ERRORS})
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(UnitTestSpawner PRIVATE -Wno-old-style-cast)
+endif()
 
-#     setup_target_for_coverage_gcovr_html(
-#         NAME
-#         ${COVERAGE_MAIN}
-#         EXECUTABLE
-#         ctest
-#         DEPENDENCIES
-#         ${COVERAGE_DEPENDENCIES}
-#         BASE_DIRECTORY
-#         ${CMAKE_SOURCE_DIR})
-# endif()
+catch_discover_tests(UnitTestSpawner
+    DISCOVERY_MODE PRE_TEST
+    DL_PATHS "${_compiler_bin_dir}")
+
+add_executable(UnitTestFill
+    test_fill.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/RenderSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/TransformSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/CoffeeSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/component/Transform.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CupFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/LiquidDropFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
+    ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
+    ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp
+    ${CMAKE_SOURCE_DIR}/src/Assets.cpp)
+target_link_libraries(UnitTestFill
+    PRIVATE
+        Catch2::Catch2WithMain
+        SDL3-static
+        SDL3_image-static
+        box2d)
+target_include_directories(UnitTestFill
+    SYSTEM PRIVATE
+        "${CMAKE_SOURCE_DIR}/dependencies/bagel")
+target_include_directories(UnitTestFill
+    PRIVATE
+        "${CMAKE_SOURCE_DIR}/src"
+        "${CMAKE_SOURCE_DIR}/src/component"
+        "${CMAKE_SOURCE_DIR}/src/system"
+        "${CMAKE_SOURCE_DIR}/src/entity")
+
+if(${ENABLE_WARNINGS})
+    target_set_warnings(
+        TARGET UnitTestFill
+        ENABLE ${ENABLE_WARNINGS}
+        AS_ERRORS ${ENABLE_WARNINGS_AS_ERRORS})
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(UnitTestFill PRIVATE -Wno-old-style-cast)
+endif()
+
+catch_discover_tests(UnitTestFill
+    DISCOVERY_MODE PRE_TEST
+    DL_PATHS "${_compiler_bin_dir}")

@@ -1,0 +1,48 @@
+---
+description: Where to put new code — folder layout and file conventions
+globs: src/**,app/**
+alwaysApply: false
+---
+
+# Project Structure
+
+```
+app/           # main.cpp + isolated test entry points
+src/
+  component/   # one .h per component (+ .cpp only if non-trivial helpers)
+  system/      # systems grouped by cohesion
+  entity/      # one *Factory per entity type
+  (root)       # contexts, config, assets, utilities
+tests/         # Catch2 unit tests
+res/           # runtime assets
+```
+
+## `component/` — one file per component
+
+Header contains: (1) plain-data `struct`, (2) `bagel::Storage<>` specialization, (3) conversion/inspect helpers that only touch that component (e.g. `Transform.h`). Add new headers to `Components.h`.
+
+## `system/` — grouped by cohesion
+
+Share a file when systems share file-local `static` state or are always one logical unit. Split when a `.cpp` is hard to navigate or concerns diverge. Register in `Systems.h`.
+
+## `entity/` — one `*Factory` per type
+
+`*Factory` suffix avoids collisions with component headers (`Cup.h` vs `CupFactory.h`). Factory creates entity, calls `addAll(...)`, returns it. File-local helpers stay in the same `.cpp`, never in headers. Register in `Entities.h`.
+
+## `src/` root
+
+Contexts (`RenderContext`, `PhysicsContext`), config (`GameConfig.h`), asset wrappers (`Assets`, `AssetManager`, `Texture`), and small utilities — not components or systems.
+
+## `app/` — entry points
+
+For isolated feature tests: dedicated `my_test.cpp` + first line of `app/CMakeLists.txt` sets `APP_SOURCES`. Remove before merging to `main`.
+
+## Where does new code go?
+
+| Question | Location |
+|----------|----------|
+| Data-only struct entities carry? | `component/MyThing.h` → `Components.h` |
+| Converts/reads only that component? | Same component header |
+| Per-frame logic over entities? | `system/` → `Systems.h` |
+| Constructs a specific entity? | `entity/MyThingFactory.{h,cpp}` → `Entities.h` |
+| Shared infrastructure? | `src/` root |

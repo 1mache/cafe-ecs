@@ -2,35 +2,80 @@
 target_sources(
     ${EXECUTABLE_NAME}
     PRIVATE
-    Systems.h
-    Systems.cpp
-    Entities.h
-    Entities.cpp
-    Components.h
-    Utils.h
+    # components
+    component/Transform.h
+    component/Transform.cpp
+    component/Drawable.h
+    component/ChildOf.h
+    component/Liquid.h
+    component/PhysicsBody.h
+    component/Cup.h
+    component/CoffeeSpawner.h
+    component/CleanupZone.h
+    component/Behavior.h
+    component/Draggable.h
+    component/DropSpace.h
+    component/DropType.h
+    component/Held.h
+    component/Leaving.h
+    component/Order.h
+    component/SpeechAnchor.h
+    component/Components.h
 
+    # systems
+    system/RenderSystem.h
+    system/RenderSystem.cpp
+    system/TransformSystem.h
+    system/TransformSystem.cpp
+    system/CoffeeSystem.h
+    system/CoffeeSystem.cpp
+    system/ClientSystem.h
+    system/ClientSystem.cpp
+    system/DragAndDropSystem.h
+    system/DragAndDropSystem.cpp
+    system/Systems.h
+
+    # entities
+    entity/CupFactory.h
+    entity/CupFactory.cpp
+    entity/LiquidDropFactory.h
+    entity/LiquidDropFactory.cpp
+    entity/CoffeeMachineFactory.h
+    entity/CoffeeMachineFactory.cpp
+    entity/CleanupZoneFactory.h
+    entity/CleanupZoneFactory.cpp
+    entity/ClientFactory.h
+    entity/ClientFactory.cpp
+    entity/SpeechBubbleFactory.h
+    entity/SpeechBubbleFactory.cpp
+    entity/OrderIconFactory.h
+    entity/OrderIconFactory.cpp
+    entity/Entities.h
+    entity/Entities.cpp
+
+    # root helpers
     GameConfig.h
     RenderContext.h
-    
-    TransformOperations.h
-    TransformOperations.cpp
+    PhysicsFilters.h
+    PhysicsContext.h
+    PhysicsContext.cpp
+
     WorldPos.h
+
+    Assets.h
+    Assets.cpp
     AssetManager.h
     AssetManager.cpp
     Texture.h
     Texture.cpp
-
-    components/Transform.h
-    components/Drawable.h
-    components/ChildOf.h
-    components/Order.h
-    components/Behavior.h
-    components/Leaving.h
-    components/SpeechAnchor.h
+    Utils.h
 )
 
 target_include_directories(
     ${EXECUTABLE_NAME}
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/component
+    ${CMAKE_CURRENT_SOURCE_DIR}/system
+    ${CMAKE_CURRENT_SOURCE_DIR}/entity
 )
