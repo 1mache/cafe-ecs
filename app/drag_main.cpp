@@ -61,6 +61,7 @@ void enableSensorEventsOnHeldEntities()
 void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH)
 {
     b2ShapeDef visitor = b2DefaultShapeDef();
+    visitor.isSensor               = true;
     visitor.filter.categoryBits    = cafe::filter::DRAGGABLE;
     visitor.filter.maskBits        = cafe::filter::MASK_DRAGGABLE;
     visitor.enableSensorEvents     = true;
