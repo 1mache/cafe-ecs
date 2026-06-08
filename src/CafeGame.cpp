@@ -1,4 +1,6 @@
 #include "CafeGame.h"
+
+#include "CafeEnvironmentFactory.h"
 #include "Components.h"
 #include "Entities.h"
 #include "GameConfig.h"
@@ -53,16 +55,12 @@ void CafeGame::init()
     _currentScene.init(_renderer);
     PhysicsContext::init();
 
-
+    createBg(_currentScene.getBgTexture());
+    createBartop(getAssetManager().getTexture(TEX_COUNTER));
 }
 
 void CafeGame::run()
 {
-    auto& bgTex      = _currentScene.getBgTexture();
-    auto  bgSrcRect  = bgTex.getFullSrcRect();
-
-    auto& bartopTex     = getAssetManager().getTexture(TEX_COUNTER);
-    auto  bartopSrcRect = bartopTex.getFullSrcRect();
 
     auto& customerTex = getAssetManager().getTexture(TEX_CUSTOMER);
     float customerW   = customerTex.getSize().x, customerH = customerTex.getSize().y;
@@ -79,24 +77,6 @@ void CafeGame::run()
     auto& machineTex  = getAssetManager().getTexture(TEX_MACHINE);
     auto& cupItemTex  = getAssetManager().getTexture(TEX_CUP_ITEM);
     auto& particleTex = getAssetManager().getTexture(TEX_PARTICLE);
-
-    // --- Background ---
-    auto bgEnt = bagel::Entity::create();
-    bgEnt.addAll(Drawable{bgTex.get(), bgSrcRect},
-                 Transform{.x = 0.f,
-                           .y = 0.f,
-                           .w = LOGICAL_W / (2.f * PTM),
-                           .h = LOGICAL_H / (2.f * PTM)});
-
-    // --- Bartop ---
-    auto  bartopEnt        = bagel::Entity::create();
-    float bartopHalfHeight = screenToWorldSize(bartopSrcRect.h / 2.f);
-    bartopEnt.addAll(
-        Drawable{bartopTex.get(), bartopSrcRect},
-        Transform{.x = 0.f,
-                  .y = -(screenToWorldSize(LOGICAL_H / 2) - bartopHalfHeight),
-                  .w = screenToWorldSize(bartopSrcRect.w / 2.f),
-                  .h = bartopHalfHeight});
 
     // --- Client ---
     // Mouth offset from sprite center, in logical pixels (Y-up).
@@ -214,7 +194,7 @@ void CafeGame::run()
     }
 }
 
-void CafeGame::destroy()
+void CafeGame::destroy() const
 {
     PhysicsContext::shutdown();
     SDL_DestroyRenderer(_renderer);

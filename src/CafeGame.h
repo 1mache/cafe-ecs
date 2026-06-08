@@ -10,7 +10,7 @@ class CafeGame final
 public:
     void init();
     void run();
-    void destroy();
+    void destroy() const;
 
 private:
     Scene         _currentScene{INIT_SCENE_BG};
