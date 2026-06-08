@@ -1,5 +1,4 @@
 #include "CoffeeMachineFactory.h"
-#include "Assets.h"
 #include "Components.h"
 #include "GameConfig.h"
 #include "PhysicsContext.h"
@@ -7,12 +6,13 @@
 
 namespace cafe
 {
-bagel::Entity createCoffeeMachine(WorldPos pos, WorldPos spoutOffset)
+bagel::Entity createCoffeeMachine(WorldPos pos, WorldPos spoutOffset,
+                                  SDL_Texture* tex, float texW, float texH)
 {
     auto ent = bagel::Entity::create();
 
-    const float halfW = Assets::machineW() / (2.f * PTM);
-    const float halfH = Assets::machineH() / (2.f * PTM);
+    const float halfW = texW / (2.f * PTM);
+    const float halfH = texH / (2.f * PTM);
     Transform t{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH };
 
     // Kinematic body, no fixtures — the machine is just a position anchor for spawning.
@@ -24,7 +24,7 @@ bagel::Entity createCoffeeMachine(WorldPos pos, WorldPos spoutOffset)
 
     ent.addAll(
         t,
-        Drawable{ Assets::machine(), Assets::machineSrcRect() },
+        Drawable{ tex, { 0.f, 0.f, texW, texH } },
         PhysicsBody{ body },
         CoffeeSpawner{
             .interval    = 0.05f,

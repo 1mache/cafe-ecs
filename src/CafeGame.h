@@ -28,6 +28,9 @@ private:
     static constexpr auto TEX_CUP      = "big_cup.png";
     static constexpr auto TEX_PROPS    = "props.png";
     static constexpr auto TEX_BUBBLE   = "bubble.png";
+    static constexpr auto TEX_MACHINE  = "machine.png";
+    static constexpr auto TEX_CUP_ITEM = "cup.png";
+    static constexpr auto TEX_PARTICLE = "particle.png";
 
     static constexpr auto INIT_SCENE_BG = "bg.png";
 };

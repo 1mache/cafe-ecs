@@ -1,5 +1,4 @@
 #include "LiquidDropFactory.h"
-#include "Assets.h"
 #include "Components.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
@@ -7,7 +6,7 @@
 
 namespace cafe
 {
-bagel::Entity createLiquidDrop(WorldPos pos)
+bagel::Entity createLiquidDrop(WorldPos pos, SDL_Texture* tex)
 {
     auto ent = bagel::Entity::create();
     constexpr float r = 0.06f; // ~0.5 px radius. Raise to 0.10f if drops jitter.
@@ -30,9 +29,10 @@ bagel::Entity createLiquidDrop(WorldPos pos)
     b2Circle circle{ {0.f, 0.f}, r };
     b2CreateCircleShape(body, &sd, &circle);
 
-    // Assets::particle() may be null in unit tests — fall back to a 2x2 stub rect.
-    SDL_Texture* tex = Assets::particle();
-    SDL_FRect    src = tex ? Assets::particleSrcRect() : SDL_FRect{ 0.f, 0.f, 2.f, 2.f };
+    float     w{}, h{};
+    SDL_FRect src{ 0.f, 0.f, 2.f, 2.f };
+    if (tex && SDL_GetTextureSize(tex, &w, &h))
+        src = { 0.f, 0.f, w, h };
 
     ent.addAll(
         Liquid{},

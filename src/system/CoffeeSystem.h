@@ -1,12 +1,13 @@
 #pragma once
 
 #include "WorldPos.h"
+#include <SDL3/SDL.h>
 #include <functional>
 
 namespace cafe
 {
 /** @brief Spawns coffee drops from every active CoffeeSpawner. */
-void coffeeSpawnerSystem(float dtSeconds);
+void coffeeSpawnerSystem(float dtSeconds, SDL_Texture* dropTex);
 
 /** @brief Same as coffeeSpawnerSystem but emits through @p spawnDrop — for tests without Box2D. */
 void coffeeSpawnerSystemImpl(float dtSeconds,

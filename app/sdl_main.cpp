@@ -10,6 +10,7 @@ int main()
     CafeGame game;
     game.init();
     game.run();
+    game.destroy();
 
     return EXIT_SUCCESS;
 }

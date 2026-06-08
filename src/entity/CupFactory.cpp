@@ -1,5 +1,4 @@
 #include "CupFactory.h"
-#include "Assets.h"
 #include "Components.h"
 #include "GameConfig.h"
 #include "PhysicsContext.h"
@@ -54,12 +53,12 @@ static bagel::Entity createCupCommon(WorldPos pos, float halfW, float halfH,
     return ent;
 }
 
-bagel::Entity createCup(WorldPos pos, int capacity)
+bagel::Entity createCup(WorldPos pos, SDL_Texture* tex, float texW, float texH,
+                        int capacity)
 {
-    const float halfW = Assets::cupW() / (2.f * PTM);
-    const float halfH = Assets::cupH() / (2.f * PTM);
-    return createCupCommon(pos, halfW, halfH, capacity,
-                           Assets::cup(), Assets::cupSrcRect());
+    const float halfW = texW / (2.f * PTM);
+    const float halfH = texH / (2.f * PTM);
+    return createCupCommon(pos, halfW, halfH, capacity, tex, { 0.f, 0.f, texW, texH });
 }
 
 bagel::Entity createCupHeadless(WorldPos pos, float texW, float texH, int capacity)

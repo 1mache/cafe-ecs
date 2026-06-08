@@ -48,12 +48,12 @@ void coffeeSpawnerSystemImpl(float dtSeconds,
     }
 }
 
-void coffeeSpawnerSystem(float dtSeconds)
+void coffeeSpawnerSystem(float dtSeconds, SDL_Texture* dropTex)
 {
     // We don't need to track each drop's entity; the sensor system finds them
     // again through their bodies' userData when destroying them.
-    coffeeSpawnerSystemImpl(dtSeconds, [](WorldPos p) {
-        (void)createLiquidDrop(p);
+    coffeeSpawnerSystemImpl(dtSeconds, [dropTex](WorldPos p) {
+        (void)createLiquidDrop(p, dropTex);
         ++g_stats.spawned;
     });
 }
