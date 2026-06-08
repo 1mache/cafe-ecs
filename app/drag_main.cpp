@@ -238,7 +238,7 @@ int main()
               << "[DragTest]          dropSpaceDetectionSystem (sensor overlap), dragReleaseSystem (snap/drop).\n"
               << "[DragTest] Controls: left mouse drag; close window to quit.\n";
 
-    auto cupEnt = createCup({ -3.f, 0.f }, 50);
+    auto cupEnt = createCup({ -3.f, 0.f }, Assets::cup(), Assets::cupW(), Assets::cupH(), 50);
     cupEnt.add(Draggable{ DropType::Any });
     cupEnt.get<Drawable>().renderLayer = kCupRenderLayer;
 

@@ -177,13 +177,14 @@ int main()
     // renderer is destroyed, so SDL_DestroyTexture fires in the right order.
     {
         AssetManager assets;
+        assets.init(renderer);
 
-        SDL_Texture* bgTex       = assets.getTexture("bg.png",          renderer).get();
-        SDL_Texture* counterTex  = assets.getTexture("counter.png",      renderer).get();
-        SDL_Texture* customerTex = assets.getTexture("def_customer.png", renderer).get();
-        SDL_Texture* propsTex    = assets.getTexture("props.png",        renderer).get();
-        SDL_Texture* bubbleTex   = assets.getTexture("bubble.png",       renderer).get();
-        SDL_Texture* bigCupTex   = assets.getTexture("big_cup.png",      renderer).get();
+        SDL_Texture* bgTex       = assets.getTexture("bg.png").get();
+        SDL_Texture* counterTex  = assets.getTexture("counter.png").get();
+        SDL_Texture* customerTex = assets.getTexture("def_customer.png").get();
+        SDL_Texture* propsTex    = assets.getTexture("props.png").get();
+        SDL_Texture* bubbleTex   = assets.getTexture("bubble.png").get();
+        SDL_Texture* bigCupTex   = assets.getTexture("big_cup.png").get();
 
         for (SDL_Texture* t : { bgTex, counterTex, customerTex,
                                  propsTex, bubbleTex, bigCupTex })
@@ -212,10 +213,11 @@ int main()
                        .h = counterH / (2.f * PTM) });
 
         // --- Coffee machine + cup (omer_main pour rig) ---
-        auto machineEnt = createCoffeeMachine({ -4.f, 1.f }, { 0.f, -0.5f });
+        auto machineEnt = createCoffeeMachine({ -4.f, 1.f }, { 0.f, -0.5f },
+                                              Assets::machine(), Assets::machineW(), Assets::machineH());
         machineEnt.get<Drawable>().renderLayer = kLayerMachine;
 
-        auto cupEnt = createCup({ -4.f, -1.f }, kCupCapacity);
+        auto cupEnt = createCup({ -4.f, -1.f }, Assets::cup(), Assets::cupW(), Assets::cupH(), kCupCapacity);
         cupEnt.get<Drawable>().renderLayer = kLayerCup;
         // Make the cup draggable.
         cupEnt.add(Draggable{ DropType::Any });
@@ -342,7 +344,7 @@ int main()
                 }
             }
 
-            coffeeSpawnerSystem(dt);    // spawn drops while pouring
+            coffeeSpawnerSystem(dt, Assets::particle());    // spawn drops while pouring
             PhysicsContext::step(dt);
             sensorEventSystem();        // count drops into cup; cleanup spilled
             dropSpaceDetectionSystem(); // update Held.dropSpaceEntity
@@ -355,7 +357,7 @@ int main()
             cleanupSystem();            // destroy all Leaving entities
 
             SDL_RenderClear(renderer);
-            drawSystem();               // sorted by renderLayer ascending
+            drawSystem(renderer);       // sorted by renderLayer ascending
             SDL_RenderPresent(renderer);
 
             constexpr Uint64 frameDeltaT = static_cast<Uint64>(FRAME_DELTA_MS);

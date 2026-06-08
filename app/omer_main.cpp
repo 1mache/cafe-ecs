@@ -136,7 +136,7 @@ int main()
         dumpDebugStatsEvery(dt);
 
         SDL_RenderClear(renderer);
-        drawSystem();
+        drawSystem(renderer);
         SDL_RenderPresent(renderer);
 
         // Frame pacing — cap at FPS. SDL_GetTicks is Uint64, SDL_Delay takes Uint32.
