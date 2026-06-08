@@ -93,7 +93,7 @@ void CafeGame::run()
 
     // --- Client ---
     // Mouth offset from sprite center, in logical pixels (Y-up).
-    constexpr SDL_FPoint CUSTOMER_MOUTH_OFFSET_PX = {-4.f, -1.3f};
+    constexpr SDL_FPoint CUSTOMER_MOUTH_OFFSET_PX = {-10.f, -1.3f};
     Order sampleOrder{.ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true};
     auto  customerEnt = createClient(customerTex.get(),
                                     customerW,
