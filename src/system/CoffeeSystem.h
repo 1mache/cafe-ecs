@@ -6,8 +6,10 @@
 
 namespace cafe
 {
+class AssetManager;
+
 /** @brief Spawns coffee drops from every active CoffeeSpawner. */
-void coffeeSpawnerSystem(float dtSeconds, SDL_Texture* dropTex);
+void coffeeSpawnerSystem(float dtSeconds, AssetManager& assets);
 
 /** @brief Same as coffeeSpawnerSystem but emits through @p spawnDrop — for tests without Box2D. */
 void coffeeSpawnerSystemImpl(float dtSeconds,

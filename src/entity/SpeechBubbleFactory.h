@@ -5,7 +5,9 @@
 
 namespace cafe
 {
-bagel::Entity createSpeechBubble(SDL_Texture* tex, SDL_FRect srcRect,
+class AssetManager;
+
+bagel::Entity createSpeechBubble(AssetManager& assets,
                                  float displayW, float displayH,
                                  bagel::Entity parent, SDL_FPoint offsetPx);
 } // namespace cafe

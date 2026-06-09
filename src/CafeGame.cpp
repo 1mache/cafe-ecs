@@ -55,86 +55,58 @@ void CafeGame::init()
     _currentScene.init(_renderer);
     PhysicsContext::init();
 
+
     createBg(_currentScene.getBgTexture());
-    createBartop(getAssetManager().getTexture(TEX_COUNTER));
+    createBartop(getAssetManager());
+
+    createCoffeeMachine(getAssetManager(), {-4.f, 1.f}, {0.f, -0.5f});
+
+    createCup(getAssetManager(), {-4.f, -1.f}, CUP_CAPACITY);
+
 }
 
 void CafeGame::run()
 {
 
-    auto& customerTex = getAssetManager().getTexture(TEX_CUSTOMER);
-    float customerW   = customerTex.getSize().x, customerH = customerTex.getSize().y;
-
-    auto&           cupTex      = getAssetManager().getTexture(TEX_CUP);
-    constexpr float CUP_FRAME_W = 24.f, CUP_FRAME_H = 24.f;
-
-    auto&           propsTex      = getAssetManager().getTexture(TEX_PROPS);
     constexpr float PROPS_FRAME_W = 16.f, PROPS_FRAME_H = 16.f;
 
-    auto& bubbleTex = getAssetManager().getTexture(TEX_BUBBLE);
-    float bubbleW   = bubbleTex.getSize().x, bubbleH = bubbleTex.getSize().y;
-
-    auto& machineTex  = getAssetManager().getTexture(TEX_MACHINE);
-    auto& cupItemTex  = getAssetManager().getTexture(TEX_CUP_ITEM);
-    auto& particleTex = getAssetManager().getTexture(TEX_PARTICLE);
-
     // --- Client ---
-    // Mouth offset from sprite center, in logical pixels (Y-up).
     constexpr SDL_FPoint CUSTOMER_MOUTH_OFFSET_PX = {-10.f, -1.3f};
     Order sampleOrder{.ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true};
-    auto  customerEnt = createClient(customerTex.get(),
-                                     customerW,
-                                     customerH,
-                                     {5.f, -0.5f},
-                                     sampleOrder,
-                                     30.f,
+    auto  customerEnt = createClient(getAssetManager(), {5.f, -0.5f}, sampleOrder, 30.f,
                                      CUSTOMER_MOUTH_OFFSET_PX);
 
     // --- Speech bubble (child of client) ---
-    // Tail tip is at the bottom-right of the bubble sprite (measured from raw 48x24 pixels).
-    // BUBBLE_TAIL_OFFSET: offset from bubble center to its tail tip, in logical px (Y-up).
     constexpr float      BUBBLE_DISPLAY_W      = 24.f, BUBBLE_DISPLAY_H = 14.f;
     constexpr SDL_FPoint BUBBLE_TAIL_OFFSET_PX = {7.5f, -6.5f};
 
-    // Shift bubble so its tail tip lands on the client's mouth. 1px gap keeps tail visible.
-    SDL_FRect  bubbleSrc   = {0.f, 0.f, bubbleW, bubbleH};
     SDL_FPoint mouth       = customerEnt.get<SpeechAnchor>().mouthOffset;
     SDL_FPoint bubbleOffPx = {mouth.x - BUBBLE_TAIL_OFFSET_PX.x,
                               mouth.y - BUBBLE_TAIL_OFFSET_PX.y + 1.f};
-    auto       bubble      = createSpeechBubble(bubbleTex.get(),
-                                                bubbleSrc,
-                                                BUBBLE_DISPLAY_W,
-                                                BUBBLE_DISPLAY_H,
-                                                customerEnt,
-                                                bubbleOffPx);
+    auto       bubble      = createSpeechBubble(getAssetManager(), BUBBLE_DISPLAY_W, BUBBLE_DISPLAY_H,
+                                                customerEnt, bubbleOffPx);
+    bubble.get<Drawable>().renderLayer = LAYER_UI;
 
     // --- Order icons (children of the bubble) ---
-    // props.png is a 3-frame strip: [cinnamon roll | croissant | cup], each propsW/3 wide.
     constexpr float ICON_SIZE = 8.f / 1.5f;
     constexpr float ICON_DX   = 3.f;
     constexpr float ICON_DY   = 2.f;
     if (sampleOrder.hasPastry)
     {
-        SDL_FRect pastrySrc = {0.f, 0.f, PROPS_FRAME_W, PROPS_FRAME_H};
-        createOrderIcon(propsTex.get(), pastrySrc, ICON_SIZE, ICON_SIZE, bubble, {-ICON_DX, ICON_DY});
+        SDL_FRect pastrySrc  = {0.f, 0.f, PROPS_FRAME_W, PROPS_FRAME_H};
+        auto      pastryIcon = createOrderIcon(getAssetManager(), pastrySrc, ICON_SIZE, ICON_SIZE, bubble, {-ICON_DX, ICON_DY});
+        pastryIcon.get<Drawable>().renderLayer = LAYER_UI;
     }
     if (sampleOrder.hasDrink)
     {
-        SDL_FRect drinkSrc = {2.f * PROPS_FRAME_W, 0.f, PROPS_FRAME_W, PROPS_FRAME_H};
-        createOrderIcon(propsTex.get(), drinkSrc, ICON_SIZE, ICON_SIZE, bubble, {ICON_DX, ICON_DY});
+        SDL_FRect drinkSrc  = {0.f, 0.f, PROPS_FRAME_W, PROPS_FRAME_H}; // TODO: aim at drink frame in props.png
+        auto      drinkIcon = createOrderIcon(getAssetManager(), drinkSrc, ICON_SIZE, ICON_SIZE, bubble, {ICON_DX, ICON_DY});
+        drinkIcon.get<Drawable>().renderLayer = LAYER_UI;
     }
 
     // --- Coffee machine, cup, cleanup zone ---
-    auto machineEnt = createCoffeeMachine({-4.f, 1.f}, {0.f, -0.5f},
-                                          machineTex.get(),
-                                          machineTex.getSize().x,
-                                          machineTex.getSize().y);
-    auto cupEnt     = createCup({-4.f, -1.f},
-                                cupItemTex.get(),
-                                cupItemTex.getSize().x,
-                                cupItemTex.getSize().y,
-                                50);
-    (void)            createCleanupZone();
+    auto cupEnt = createCup(getAssetManager(), {-4.f, -1.f}, 50);
+    (void)        createCleanupZone();
 
     bool   isRunning = true;
     Uint64 lastTicks = SDL_GetTicks();
@@ -174,7 +146,7 @@ void CafeGame::run()
         }
 
         behaviorSystem(dt);
-        coffeeSpawnerSystem(dt, particleTex.get());
+        coffeeSpawnerSystem(dt, getAssetManager());
         PhysicsContext::step(dt);
         sensorEventSystem();
         syncTransformFromBody();

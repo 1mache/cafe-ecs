@@ -6,7 +6,10 @@
 
 namespace cafe
 {
+class AssetManager;
+
 /** @brief Kinematic coffee machine. Carries a CoffeeSpawner; toggle .active to pour. */
-bagel::Entity createCoffeeMachine(WorldPos pos, WorldPos spoutOffset,
-                                  SDL_Texture* tex, float texW, float texH);
+bagel::Entity createCoffeeMachine(AssetManager& assets,
+                                  WorldPos      pos,
+                                  WorldPos      spoutOffset);
 } // namespace cafe

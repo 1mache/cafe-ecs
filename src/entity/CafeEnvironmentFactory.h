@@ -5,6 +5,8 @@
 
 namespace cafe
 {
+    class AssetManager;
+
     bagel::Entity createBg(const Texture& bgTex);
-    bagel::Entity createBartop(const Texture& bartopTex);
+    bagel::Entity createBartop(AssetManager& assets);
 }

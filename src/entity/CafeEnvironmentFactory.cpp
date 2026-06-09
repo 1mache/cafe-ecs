@@ -1,9 +1,15 @@
 #include "CafeEnvironmentFactory.h"
-
+#include "AssetManager.h"
 #include "Components.h"
+#include "Texture.h"
 
 namespace cafe
 {
+
+namespace
+{
+static constexpr auto TEX_BARTOP = "counter.png";
+}
 
 bagel::Entity createBg(const Texture& bgTex)
 {
@@ -17,8 +23,9 @@ bagel::Entity createBg(const Texture& bgTex)
                            .h = screenToWorldScale(LOGICAL_H)});
     return bgEnt;
 }
-bagel::Entity createBartop(const Texture& bartopTex)
+bagel::Entity createBartop(AssetManager& assets)
 {
+    const Texture& bartopTex     = assets.getTexture(TEX_BARTOP);
     const auto  bartopSrcRect    = bartopTex.getFullSrcRect();
     const float bartopHalfHeight = screenToWorldScale(bartopSrcRect.h);
     auto  bartopEnt        = bagel::Entity::create();

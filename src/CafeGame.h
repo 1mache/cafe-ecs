@@ -23,14 +23,7 @@ private:
         return _currentScene.getAssetManager();
     }
 
-    static constexpr auto TEX_COUNTER  = "counter.png";
-    static constexpr auto TEX_CUSTOMER = "def_customer.png";
-    static constexpr auto TEX_CUP      = "big_cup.png";
-    static constexpr auto TEX_PROPS    = "props.png";
-    static constexpr auto TEX_BUBBLE   = "bubble.png";
-    static constexpr auto TEX_MACHINE  = "machine.png";
-    static constexpr auto TEX_CUP_ITEM = "cup.png";
-    static constexpr auto TEX_PARTICLE = "particle.png";
+    static constexpr int CUP_CAPACITY = 50;
 
     static constexpr auto INIT_SCENE_BG = "bg.png";
 };

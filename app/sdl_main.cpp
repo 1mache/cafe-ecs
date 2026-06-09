@@ -15,16 +15,6 @@
 
 namespace
 {
-// Render layer constants — lower value = drawn first = behind.
-constexpr int kLayerBg      = -10;
-constexpr int kLayerCounter =  -5;
-constexpr int kLayerClient  =   0;
-constexpr int kLayerBubble  =  10;
-constexpr int kLayerIcon    =  20;
-constexpr int kLayerCup     =   1;
-constexpr int kLayerPastry  =   1;
-constexpr int kLayerMachine =   0;
-
 // Speech-bubble geometry (measured from bubble.png, same as jonathan_main).
 constexpr float      BUBBLE_DISPLAY_W      = 24.f;          // logical px
 constexpr float      BUBBLE_DISPLAY_H      = 14.f;
@@ -146,76 +136,7 @@ void makeCustomerDeliverable(bagel::Entity client)
 
 int main()
 {
-    using namespace cafe;
-
-    if (!SDL_Init(SDL_INIT_VIDEO))
     {
-        std::cerr << "Init error: " << SDL_GetError() << "\n";
-        return EXIT_FAILURE;
-    }
-
-    SDL_Window*   window{};
-    SDL_Renderer* renderer{};
-    SDL_CreateWindowAndRenderer("Cafe Demo",
-                                static_cast<int>(START_WIN_W),
-                                static_cast<int>(START_WIN_H),
-                                SDL_WINDOW_OPENGL,
-                                &window, &renderer);
-    assertFatal(window   != nullptr, SDL_GetError());
-    assertFatal(renderer != nullptr, SDL_GetError());
-    SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-
-    RenderContext::init(window, renderer);
-    Assets::init(renderer);         // factory textures: cup.png, machine.png, particle.png
-    PhysicsContext::init();
-
-    SDL_SetTextureScaleMode(Assets::particle(), SDL_SCALEMODE_NEAREST);
-    SDL_SetTextureScaleMode(Assets::cup(),      SDL_SCALEMODE_NEAREST);
-    SDL_SetTextureScaleMode(Assets::machine(),  SDL_SCALEMODE_NEAREST);
-
-    // Scene textures loaded via AssetManager (RAII). The block ends before the
-    // renderer is destroyed, so SDL_DestroyTexture fires in the right order.
-    {
-        AssetManager assets;
-        assets.init(renderer);
-
-        SDL_Texture* bgTex       = assets.getTexture("bg.png").get();
-        SDL_Texture* counterTex  = assets.getTexture("counter.png").get();
-        SDL_Texture* customerTex = assets.getTexture("def_customer.png").get();
-        SDL_Texture* propsTex    = assets.getTexture("props.png").get();
-        SDL_Texture* bubbleTex   = assets.getTexture("bubble.png").get();
-        SDL_Texture* bigCupTex   = assets.getTexture("big_cup.png").get();
-
-        for (SDL_Texture* t : { bgTex, counterTex, customerTex,
-                                 propsTex, bubbleTex, bigCupTex })
-            SDL_SetTextureScaleMode(t, SDL_SCALEMODE_NEAREST);
-
-        float bgW{}, bgH{};         SDL_GetTextureSize(bgTex,       &bgW,       &bgH);
-        float counterW{}, counterH{};SDL_GetTextureSize(counterTex,  &counterW,  &counterH);
-        float customerW{}, customerH{};SDL_GetTextureSize(customerTex,&customerW,&customerH);
-        float propsW{}, propsH{};   SDL_GetTextureSize(propsTex,    &propsW,    &propsH);
-        float bubbleW{}, bubbleH{};  SDL_GetTextureSize(bubbleTex,   &bubbleW,   &bubbleH);
-
-        // --- Background ---
-        auto bgEnt = bagel::Entity::create();
-        bgEnt.addAll(
-            Drawable{ bgTex, { 0.f, 0.f, bgW, bgH }, kLayerBg },
-            Transform{ .x = 0.f, .y = 0.f,
-                       .w = LOGICAL_W / (2.f * PTM), .h = LOGICAL_H / (2.f * PTM) });
-
-        // --- Counter ---
-        auto counterEnt = bagel::Entity::create();
-        counterEnt.addAll(
-            Drawable{ counterTex, { 0.f, 0.f, counterW, counterH }, kLayerCounter },
-            Transform{ .x = 0.f,
-                       .y = counterH / (2.f * PTM) - LOGICAL_H / (2.f * PTM),
-                       .w = counterW / (2.f * PTM),
-                       .h = counterH / (2.f * PTM) });
-
-        // --- Coffee machine + cup (omer_main pour rig) ---
-        auto machineEnt = createCoffeeMachine({ -4.f, 1.f }, { 0.f, -0.5f },
-                                              Assets::machine(), Assets::machineW(), Assets::machineH());
-        machineEnt.get<Drawable>().renderLayer = kLayerMachine;
 
         auto cupEnt = createCup({ -4.f, -1.f }, Assets::cup(), Assets::cupW(), Assets::cupH(), kCupCapacity);
         cupEnt.get<Drawable>().renderLayer = kLayerCup;

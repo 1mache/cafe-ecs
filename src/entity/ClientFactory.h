@@ -7,7 +7,9 @@
 
 namespace cafe
 {
-bagel::Entity createClient(SDL_Texture* tex, float texW, float texH,
+class AssetManager;
+
+bagel::Entity createClient(AssetManager& assets,
                            WorldPos pos, const Order& order, float patience,
                            SDL_FPoint mouthOffsetPx);
 } // namespace cafe

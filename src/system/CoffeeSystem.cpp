@@ -1,4 +1,5 @@
 #include "CoffeeSystem.h"
+#include "AssetManager.h"
 #include "Components.h"
 #include "Entities.h"
 #include "PhysicsContext.h"
@@ -48,12 +49,12 @@ void coffeeSpawnerSystemImpl(float dtSeconds,
     }
 }
 
-void coffeeSpawnerSystem(float dtSeconds, SDL_Texture* dropTex)
+void coffeeSpawnerSystem(float dtSeconds, AssetManager& assets)
 {
     // We don't need to track each drop's entity; the sensor system finds them
     // again through their bodies' userData when destroying them.
-    coffeeSpawnerSystemImpl(dtSeconds, [dropTex](WorldPos p) {
-        (void)createLiquidDrop(p, dropTex);
+    coffeeSpawnerSystemImpl(dtSeconds, [&assets](WorldPos p) {
+        (void)createLiquidDrop(assets, p);
         ++g_stats.spawned;
     });
 }
