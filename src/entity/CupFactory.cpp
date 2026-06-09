@@ -59,8 +59,11 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
         t,
         Drawable{ tex, backSrcRect, LAYER_CONTAINER_BACK },
         PhysicsBody{ body },
-        Cup{ .capacity = capacity }
+        Cup{ .capacity = capacity },
+        Draggable{ DropType::Any }
     );
+
+    addDraggableVisitorShape(body, halfW, halfH);
 
     cupFront.addAll(
         Transform(t),

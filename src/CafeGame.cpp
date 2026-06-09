@@ -4,6 +4,7 @@
 #include "Components.h"
 #include "Entities.h"
 #include "GameConfig.h"
+#include "PastryFactory.h"
 #include "PhysicsContext.h"
 #include "RenderContext.h"
 #include "Systems.h"
@@ -55,14 +56,24 @@ void CafeGame::init()
     _currentScene.init(_renderer);
     PhysicsContext::init();
 
-
+    auto& assets = getAssetManager();
     createBg(_currentScene.getBgTexture());
-    createBartop(getAssetManager());
+    createBartop(assets);
 
-    createCoffeeMachine(getAssetManager(), {-4.f, 1.f}, {0.f, -0.5f});
+    createCoffeeMachine(assets, {-4.f, 1.f}, {0.f, -0.5f});
 
-    createCup(getAssetManager(), {-4.f, -1.f}, CUP_CAPACITY);
+    createCup(assets, {-4.f, -1.f}, CUP_CAPACITY);
+    createPastry({4.f, -3.f},  assets);
 
+    // Cleanup zone: off-screen sensor destroys spilled drops.
+    createCleanupZone();
+
+
+    // --- Customer ---
+    const Order clientOrder{ .ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true };
+    createClient(customerTex, customerW, customerH,
+                                { 3.f, -1.f }, clientOrder, 60.f,
+                                CUSTOMER_MOUTH_OFFSET);
 }
 
 void CafeGame::run()

@@ -5,6 +5,6 @@ namespace cafe
 void behaviorSystem(float dtSeconds);
 void deliverySystem();
 void orderSystem();
-void reportLeavingClients();
+void reportLeavingCustomers();
 void cleanupSystem();
 } // namespace cafe

@@ -1,6 +1,7 @@
 #include "AssetManager.h"
 #include "Assets.h"
 #include "Components.h"
+#include "Draggable.h"
 #include "Entities.h"
 #include "GameConfig.h"
 #include "PhysicsContext.h"
@@ -11,7 +12,6 @@
 #include <SDL3/SDL.h>
 #include <box2d/box2d.h>
 #include <iostream>
-#include <vector>
 
 namespace
 {
@@ -39,129 +39,11 @@ SDL_FPoint mouseWindowToRenderPoint(float windowX, float windowY)
     return p;
 }
 
-void setBodySensorEvents(b2BodyId body, bool enabled)
-{
-    if (!b2Body_IsValid(body)) return;
-    const int count = b2Body_GetShapeCount(body);
-    if (count <= 0) return;
-    std::vector<b2ShapeId> shapes(static_cast<size_t>(count));
-    b2Body_GetShapes(body, shapes.data(), count);
-    for (b2ShapeId s : shapes)
-        b2Shape_EnableSensorEvents(s, enabled);
-}
-
-void enableSensorEventsOnHeldEntities()
-{
-    static const bagel::Mask mask = bagel::MaskBuilder().set<cafe::Held>().build();
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(mask)) continue;
-        if (!e.has<cafe::PhysicsBody>()) continue;
-        setBodySensorEvents(e.get<cafe::PhysicsBody>().id, true);
-    }
-}
-
-// Adds a DRAGGABLE sensor shape to an existing physics body so the drag system
-// can hit-test it via Box2D sensor events.
-void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH)
-{
-    b2ShapeDef def          = b2DefaultShapeDef();
-    def.isSensor            = true;
-    def.enableSensorEvents  = true;
-    def.filter.categoryBits = cafe::filter::DRAGGABLE;
-    def.filter.maskBits     = cafe::filter::MASK_DRAGGABLE;
-    b2Polygon box = b2MakeOffsetBox(halfW, halfH, { 0.f, 0.f }, b2Rot_identity);
-    b2CreatePolygonShape(body, &def, &box);
-}
-
-// Creates a kinematic pastry entity sitting on the counter, draggable.
-bagel::Entity createPastry(cafe::WorldPos pos, SDL_Texture* propsTex,
-                           float propsW, float propsH)
-{
-    using namespace cafe;
-
-    const float halfW = (propsW / 3.f) / (2.f * PTM);
-    const float halfH = propsH / (2.f * PTM);
-
-    auto ent = bagel::Entity::create();
-
-    b2BodyDef bd = b2DefaultBodyDef();
-    bd.type      = b2_kinematicBody;
-    bd.position  = { pos.x, pos.y };
-    bd.userData  = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
-    addDraggableVisitorShape(body, halfW, halfH);
-
-    // Frame 0 of the 3-frame props strip = cinnamon roll.
-    SDL_FRect src = { 0.f, 0.f, propsW / 3.f, propsH };
-    ent.addAll(
-        Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ propsTex, src, kLayerPastry },
-        PhysicsBody{ body },
-        Draggable{ DropType::Any }
-    );
-    return ent;
-}
-
-// Attaches a static DropSpace sensor + Served to an existing client entity so
-// dragged items can be "dropped on" the customer.
-void makeCustomerDeliverable(bagel::Entity client)
-{
-    using namespace cafe;
-
-    const auto& t = client.get<Transform>();
-
-    b2BodyDef bd = b2DefaultBodyDef();
-    bd.type      = b2_staticBody;
-    bd.position  = { t.x, t.y };
-    bd.userData  = reinterpret_cast<void*>(static_cast<uintptr_t>(client.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
-
-    b2ShapeDef sensor          = b2DefaultShapeDef();
-    sensor.isSensor            = true;
-    sensor.enableSensorEvents  = true;
-    sensor.filter.categoryBits = filter::DROPSPACE_SENSOR;
-    sensor.filter.maskBits     = filter::MASK_DROPSPACE_SENSOR;
-    b2Polygon zone = b2MakeOffsetBox(t.w, t.h, { 0.f, 0.f }, b2Rot_identity);
-    b2CreatePolygonShape(body, &sensor, &zone);
-
-    client.addAll(
-        PhysicsBody{ body },
-        DropSpace{ DropType::Any },
-        Served{}
-    );
-}
-
 } // anonymous namespace
 
 int main()
 {
     {
-
-        auto cupEnt = createCup({ -4.f, -1.f }, Assets::cup(), Assets::cupW(), Assets::cupH(), kCupCapacity);
-        cupEnt.get<Drawable>().renderLayer = kLayerCup;
-        // Make the cup draggable.
-        cupEnt.add(Draggable{ DropType::Any });
-        {
-            const auto& ct = cupEnt.get<Transform>();
-            addDraggableVisitorShape(cupEnt.get<PhysicsBody>().id, ct.w, ct.h);
-        }
-
-        // Cleanup zone: off-screen sensor destroys spilled drops.
-        createCleanupZone();
-
-        // --- Pastry (draggable, sits right-side of counter) ---
-        auto pastryEnt = createPastry({ 4.f, -3.f }, propsTex, propsW, propsH);
-        (void)pastryEnt; // referenced only by the ECS from here on
-
-        // --- Customer ---
-        const Order clientOrder{ .ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true };
-        auto customerEnt = createClient(customerTex, customerW, customerH,
-                                        { 3.f, -1.f }, clientOrder, 60.f,
-                                        CUSTOMER_MOUTH_OFFSET);
-        customerEnt.get<Drawable>().renderLayer = kLayerClient;
-        makeCustomerDeliverable(customerEnt); // adds DropSpace + Served
-
         // --- Speech bubble + order icons (children of customer) ---
         {
             const SDL_FPoint mouth = customerEnt.get<SpeechAnchor>().mouthOffset;
@@ -237,7 +119,7 @@ int main()
                             static_cast<float>(event.button.y));
                         dropSpacePickupSystem(pos);
                         dragStartSystem(pos);
-                        enableSensorEventsOnHeldEntities();
+                        cafe::enableSensorEventsOnHeldEntities();
                         isDragging = true;
                     }
                     break;

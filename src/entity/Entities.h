@@ -1,9 +1,9 @@
 #pragma once
 
 #include "CleanupZoneFactory.h"
-#include "ClientFactory.h"
 #include "CoffeeMachineFactory.h"
 #include "CupFactory.h"
+#include "CustomerFactory.h"
 #include "LiquidDropFactory.h"
 #include "OrderIconFactory.h"
 #include "SpeechBubbleFactory.h"

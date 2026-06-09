@@ -61,7 +61,7 @@ system/
   RenderSystem.h / .cpp      # drawSystem
   TransformSystem.h / .cpp   # syncTransformFromBody, hierarchySystem
   CoffeeSystem.h / .cpp      # coffeeSpawnerSystem, sensorEventSystem, dumpDebugStatsEvery
-  ClientSystem.h / .cpp      # behaviorSystem, orderSystem, cleanupSystem
+  CustomerSystem.h / .cpp      # behaviorSystem, orderSystem, cleanupSystem
   Systems.h                  # umbrella: #includes all system headers
 ```
 
@@ -83,7 +83,7 @@ entity/
   LiquidDropFactory.h / .cpp       # createLiquidDrop
   CoffeeMachineFactory.h / .cpp    # createCoffeeMachine
   CleanupZoneFactory.h / .cpp      # createCleanupZone
-  ClientFactory.h / .cpp           # createClient
+  CustomerFactory.h / .cpp           # createClient
   SpeechBubbleFactory.h / .cpp     # createSpeechBubble
   OrderIconFactory.h / .cpp        # createOrderIcon
   Entities.h / .cpp                # umbrella + destroyPhysicalEntity

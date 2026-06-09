@@ -1,0 +1,40 @@
+#include "PastryFactory.h"
+
+#include "Components.h"
+#include "PhysicsContext.h"
+#include "SpriteDims.h"
+#include "box2d/types.h"
+
+namespace cafe
+{
+// Creates a kinematic pastry entity sitting on the counter, draggable.
+bagel::Entity createPastry(WorldPos pos, AssetManager& assets)
+{
+    constexpr auto TEX_PROPS_PATH = "props.png";
+
+    using namespace cafe;
+
+    const float halfW = screenToWorldScale(PROP_DIMS.x);
+    const float halfH = screenToWorldScale(PROP_DIMS.y);
+
+    auto ent = bagel::Entity::create();
+
+    b2BodyDef bd = b2DefaultBodyDef();
+    bd.type      = b2_kinematicBody;
+    bd.position  = { pos.x, pos.y };
+    bd.userData  = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
+    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    addDraggableVisitorShape(body, halfW, halfH);
+
+    // Frame 0 of the 3-frame props strip = cinnamon roll.
+    SDL_FRect src = { 0.f, 0.f, PROP_DIMS.x, PROP_DIMS.y };
+    auto&     propsTex = assets.getTexture(TEX_PROPS_PATH);
+    ent.addAll(
+        Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
+        Drawable{ propsTex.get(), src, LAYER_PROP },
+        PhysicsBody{ body },
+        Draggable{ DropType::Any }
+    );
+    return ent;
+}
+}

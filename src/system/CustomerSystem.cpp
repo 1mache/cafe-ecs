@@ -1,5 +1,5 @@
-#include "ClientSystem.h"
 #include "Components.h"
+#include "CustomerSystem.h"
 #include <bagel.h>
 #include <iostream>
 
@@ -80,7 +80,7 @@ void orderSystem()
     }
 }
 
-void reportLeavingClients()
+void reportLeavingCustomers()
 {
     static const bagel::Mask leavingMask =
         bagel::MaskBuilder().set<Leaving>().set<Behavior>().build();
