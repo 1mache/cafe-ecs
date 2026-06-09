@@ -34,6 +34,7 @@ target_sources(
     system/CustomerSystem.cpp
     system/DragAndDropSystem.h
     system/DragAndDropSystem.cpp
+    system/InputSystem.h
     system/Systems.h
 
     # entities

@@ -28,7 +28,8 @@ enum RenderLayer : int
     LAYER_LIQUID,
     LAYER_CONTAINER_FRONT,
     LAYER_PROP, // draggable objects
-    LAYER_UI,
+    LAYER_UI1,
+    LAYER_UI2,
     LAYER_COUNT // how many layers
 };
 } // namespace cafe

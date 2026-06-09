@@ -21,10 +21,13 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
     const float wallT = screenToWorldScale(1.f);
     Transform t{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH };
 
+    auto cupBack  = bagel::Entity::create();
+    auto cupFront = bagel::Entity::create();
+
     b2BodyDef bd = b2DefaultBodyDef();
     bd.type     = b2_kinematicBody; // kinematic so drag-and-drop can move the cup later
     bd.position = { t.x, t.y };
-    bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
+    bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(cupBack.entity().id));
     b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
 
     // Solid walls + bottom — stop drops from passing through.
@@ -51,9 +54,6 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
 
     SDL_FRect frontSrcRect = {0, 0, CUP_DIMS.x, CUP_DIMS.y};
     SDL_FRect backSrcRect = {CUP_DIMS.x, 0, CUP_DIMS.x, CUP_DIMS.y};
-
-    auto cupBack = bagel::Entity::create();
-    auto cupFront = bagel::Entity::create();
 
     cupBack.addAll(
         t,

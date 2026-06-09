@@ -1,12 +1,11 @@
 #include "CafeGame.h"
 
-#include "CafeEnvironmentFactory.h"
 #include "Components.h"
 #include "Entities.h"
 #include "GameConfig.h"
-#include "PastryFactory.h"
 #include "PhysicsContext.h"
 #include "RenderContext.h"
+#include "SpriteDims.h"
 #include "Systems.h"
 #include "Utils.h"
 #include <SDL3/SDL.h>
@@ -60,7 +59,7 @@ void CafeGame::init()
     createBg(_currentScene.getBgTexture());
     createBartop(assets);
 
-    createCoffeeMachine(assets, {-4.f, 1.f}, {0.f, -0.5f});
+    _machineEnt = createCoffeeMachine(assets, {-4.f, 1.f}, {0.f, -0.5f});
 
     createCup(assets, {-4.f, -1.f}, CUP_CAPACITY);
     createPastry({4.f, -3.f},  assets);
@@ -70,56 +69,45 @@ void CafeGame::init()
 
 
     // --- Customer ---
-    const Order clientOrder{ .ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true };
-    createClient(customerTex, customerW, customerH,
-                                { 3.f, -1.f }, clientOrder, 60.f,
-                                CUSTOMER_MOUTH_OFFSET);
+    Order customerOrder{ .ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true };
+    auto customerEnt = createCustomer(assets, { 3.f, -1.f }, customerOrder, 60.f);
+
+    // --- Speech bubble + order icons (children of customer) ---
+    auto bubbleEnt = createSpeechBubble(assets, customerEnt, {PERSON_DIMS.x, PERSON_DIMS.y * 0.25f});
+    // --- Order icons (children of the bubble) ---
+    constexpr float ICON_SIZE = 8.f / 1.5f; // TODO:move somewhere else
+    constexpr float ICON_DX   = 3.f;
+    constexpr float ICON_DY   = 2.f;
+    if (customerOrder.hasDrink)
+    {
+        // Drink icon (right) — front frame of big_cup (16x16).
+        createOrderIcon(assets,
+                        2,
+                        ICON_SIZE,
+                        ICON_SIZE,
+                        bubbleEnt,
+                        {ICON_DX, ICON_DY});
+    }
+    if (customerOrder.hasPastry)
+    {
+        // Pastry icon (left) — frame 0 of props strip.
+        createOrderIcon(assets,
+                        0,
+                        ICON_SIZE,
+                        ICON_SIZE,
+                        bubbleEnt,
+                        {-ICON_DX, ICON_DY});
+    }
 }
 
 void CafeGame::run()
 {
 
-    constexpr float PROPS_FRAME_W = 16.f, PROPS_FRAME_H = 16.f;
-
-    // --- Client ---
-    constexpr SDL_FPoint CUSTOMER_MOUTH_OFFSET_PX = {-10.f, -1.3f};
-    Order sampleOrder{.ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true};
-    auto  customerEnt = createClient(getAssetManager(), {5.f, -0.5f}, sampleOrder, 30.f,
-                                     CUSTOMER_MOUTH_OFFSET_PX);
-
-    // --- Speech bubble (child of client) ---
-    constexpr float      BUBBLE_DISPLAY_W      = 24.f, BUBBLE_DISPLAY_H = 14.f;
-    constexpr SDL_FPoint BUBBLE_TAIL_OFFSET_PX = {7.5f, -6.5f};
-
-    SDL_FPoint mouth       = customerEnt.get<SpeechAnchor>().mouthOffset;
-    SDL_FPoint bubbleOffPx = {mouth.x - BUBBLE_TAIL_OFFSET_PX.x,
-                              mouth.y - BUBBLE_TAIL_OFFSET_PX.y + 1.f};
-    auto       bubble      = createSpeechBubble(getAssetManager(), BUBBLE_DISPLAY_W, BUBBLE_DISPLAY_H,
-                                                customerEnt, bubbleOffPx);
-    bubble.get<Drawable>().renderLayer = LAYER_UI;
-
-    // --- Order icons (children of the bubble) ---
-    constexpr float ICON_SIZE = 8.f / 1.5f;
-    constexpr float ICON_DX   = 3.f;
-    constexpr float ICON_DY   = 2.f;
-    if (sampleOrder.hasPastry)
-    {
-        SDL_FRect pastrySrc  = {0.f, 0.f, PROPS_FRAME_W, PROPS_FRAME_H};
-        auto      pastryIcon = createOrderIcon(getAssetManager(), pastrySrc, ICON_SIZE, ICON_SIZE, bubble, {-ICON_DX, ICON_DY});
-        pastryIcon.get<Drawable>().renderLayer = LAYER_UI;
-    }
-    if (sampleOrder.hasDrink)
-    {
-        SDL_FRect drinkSrc  = {0.f, 0.f, PROPS_FRAME_W, PROPS_FRAME_H}; // TODO: aim at drink frame in props.png
-        auto      drinkIcon = createOrderIcon(getAssetManager(), drinkSrc, ICON_SIZE, ICON_SIZE, bubble, {ICON_DX, ICON_DY});
-        drinkIcon.get<Drawable>().renderLayer = LAYER_UI;
-    }
-
-    // --- Coffee machine, cup, cleanup zone ---
-    auto cupEnt = createCup(getAssetManager(), {-4.f, -1.f}, 50);
-    (void)        createCleanupZone();
+    std::cout << "[Demo] Hold SPACE to pour coffee. Left-drag to move the cup or pastry.\n"
+              << "[Demo] Serve a FULL cup + pastry to the customer in 60 s.\n";
 
     bool   isRunning = true;
+    bool   isDragging = false;
     Uint64 lastTicks = SDL_GetTicks();
 
     while (isRunning)
@@ -129,46 +117,87 @@ void CafeGame::run()
         if (dt > 0.05f) dt = 0.05f;
         lastTicks = frameStart;
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            switch (event.type)
+            SDL_Event event;
+            while (SDL_PollEvent(&event))
             {
-            case SDL_EVENT_QUIT:
-                isRunning = false;
-                break;
-            case SDL_EVENT_KEY_DOWN:
-                if (event.key.scancode == SDL_SCANCODE_SPACE
-                    && !machineEnt.get<CoffeeSpawner>().active)
+                switch (event.type)
                 {
-                    machineEnt.get<CoffeeSpawner>().active = true;
-                    std::cout << "[Pour] ON" << std::endl;
+                case SDL_EVENT_QUIT:
+                    isRunning = false;
+                    break;
+
+                // TODO:move into input system
+                case SDL_EVENT_KEY_DOWN:
+                    if (event.key.scancode == SDL_SCANCODE_SPACE
+                        && !_machineEnt.get<CoffeeSpawner>().active)
+                    {
+                        _machineEnt.get<CoffeeSpawner>().active = true;
+                        std::cout << "[Pour] ON\n";
+                    }
+                    break;
+
+                case SDL_EVENT_KEY_UP:
+                    if (event.key.scancode == SDL_SCANCODE_SPACE
+                        && _machineEnt.get<CoffeeSpawner>().active)
+                    {
+                        _machineEnt.get<CoffeeSpawner>().active = false;
+                        std::cout << "[Pour] OFF\n";
+                    }
+                    break;
+
+                case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                    if (event.button.button == SDL_BUTTON_LEFT)
+                    {
+                        const SDL_FPoint pos =
+                            mouseWindowToRenderPoint(_renderer,
+                                                     event.button.x,
+                                                     event.button.y);
+                        dropSpacePickupSystem(pos);
+                        dragStartSystem(pos);
+                        enableSensorEventsOnHeldEntities();
+                        isDragging = true;
+                    }
+                    break;
+
+                case SDL_EVENT_MOUSE_MOTION:
+                    if (isDragging)
+                    {
+                        const SDL_FPoint pos =
+                            mouseWindowToRenderPoint(_renderer,
+                                                     event.motion.x,
+                                                     event.motion.y);
+                        midDragSystem(pos);
+                    }
+                    break;
+
+                case SDL_EVENT_MOUSE_BUTTON_UP:
+                    if (event.button.button == SDL_BUTTON_LEFT && isDragging)
+                    {
+                        // deliverySystem reads Held.dropSpaceEntity before
+                        // dragReleaseSystem removes the Held component.
+                        deliverySystem();
+                        dragReleaseSystem();
+                        isDragging = false;
+                    }
+                    break;
                 }
-                break;
-            case SDL_EVENT_KEY_UP:
-                if (event.key.scancode == SDL_SCANCODE_SPACE
-                    && machineEnt.get<CoffeeSpawner>().active)
-                {
-                    machineEnt.get<CoffeeSpawner>().active = false;
-                    std::cout << "[Pour] OFF" << std::endl;
-                }
-                break;
             }
-        }
 
-        behaviorSystem(dt);
-        coffeeSpawnerSystem(dt, getAssetManager());
-        PhysicsContext::step(dt);
-        sensorEventSystem();
-        syncTransformFromBody();
-        hierarchySystem();
-        orderSystem();
-        cleanupSystem();
-        dumpDebugStatsEvery(dt);
+            coffeeSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
+            PhysicsContext::step(dt);
+            sensorEventSystem();        // count drops into cup; cleanup spilled
+            dropSpaceDetectionSystem(); // update Held.dropSpaceEntity
+            syncTransformFromBody();    // physics position -> Transform
 
-        SDL_RenderClear(_renderer);
-        drawSystem(_renderer);
-        SDL_RenderPresent(_renderer);
+            behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)
+            orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
+            reportLeavingCustomers();   // log SUCCESSFUL / FAILED
+            hierarchySystem();          // children follow parents; orphan children of Leaving
+            cleanupSystem();            // destroy all Leaving entities
+
+            SDL_RenderClear(_renderer);
+            drawSystem(_renderer);       // sorted by renderLayer ascending
+            SDL_RenderPresent(_renderer);
 
         constexpr Uint64 frameDeltaT = static_cast<Uint64>(FRAME_DELTA_MS);
         auto             frameEnd    = SDL_GetTicks();

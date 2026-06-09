@@ -36,7 +36,7 @@ bagel::Entity createLiquidDropCommon(WorldPos pos, SDL_Texture* tex, SDL_FRect s
     ent.addAll(
         Liquid{},
         Transform{ .x = pos.x, .y = pos.y, .w = r, .h = r },
-        Drawable{ tex, src },
+        Drawable{ tex, src, LAYER_LIQUID },
         PhysicsBody{ body }
     );
     return ent;

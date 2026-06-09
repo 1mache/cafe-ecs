@@ -49,7 +49,7 @@ bagel::Entity createCustomer(AssetManager& assets,
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{.x = pos.x, .y = pos.y, .w = screenToWorldScale(w), .h = screenToWorldScale(h)},
-        Drawable{tex.get(), tex.getFullSrcRect()},
+        Drawable{tex.get(), tex.getFullSrcRect(), LAYER_CUSTOMER},
         order,
         Behavior{.patience = patience});
 

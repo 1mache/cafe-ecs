@@ -1,11 +1,13 @@
 #pragma once
 
+#include "CafeEnvironmentFactory.h"
 #include "CleanupZoneFactory.h"
 #include "CoffeeMachineFactory.h"
 #include "CupFactory.h"
 #include "CustomerFactory.h"
 #include "LiquidDropFactory.h"
 #include "OrderIconFactory.h"
+#include "PastryFactory.h"
 #include "SpeechBubbleFactory.h"
 #include <bagel.h>
 
