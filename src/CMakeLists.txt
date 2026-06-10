@@ -28,8 +28,8 @@ target_sources(
     system/RenderSystem.cpp
     system/TransformSystem.h
     system/TransformSystem.cpp
-    system/CoffeeSystem.h
-    system/CoffeeSystem.cpp
+    system/LiquidSystem.h
+    system/LiquidSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
     system/DragAndDropSystem.h

@@ -20,7 +20,7 @@ add_executable(UnitTestSpawner
     test_spawner.cpp
     ${CMAKE_SOURCE_DIR}/src/system/RenderSystem.cpp
     ${CMAKE_SOURCE_DIR}/src/system/TransformSystem.cpp
-    ${CMAKE_SOURCE_DIR}/src/system/CoffeeSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/LiquidSystem.cpp
     ${CMAKE_SOURCE_DIR}/src/component/Transform.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CupFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/LiquidDropFactory.cpp
@@ -63,7 +63,7 @@ add_executable(UnitTestFill
     test_fill.cpp
     ${CMAKE_SOURCE_DIR}/src/system/RenderSystem.cpp
     ${CMAKE_SOURCE_DIR}/src/system/TransformSystem.cpp
-    ${CMAKE_SOURCE_DIR}/src/system/CoffeeSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/LiquidSystem.cpp
     ${CMAKE_SOURCE_DIR}/src/component/Transform.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CupFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/LiquidDropFactory.cpp

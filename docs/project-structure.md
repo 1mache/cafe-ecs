@@ -60,7 +60,7 @@ Systems that share file-local state or operate on the same feature area live in 
 system/
   RenderSystem.h / .cpp      # drawSystem
   TransformSystem.h / .cpp   # syncTransformFromBody, hierarchySystem
-  CoffeeSystem.h / .cpp      # coffeeSpawnerSystem, sensorEventSystem, dumpDebugStatsEvery
+  LiquidSystem.h / .cpp      # coffeeSpawnerSystem, sensorEventSystem, dumpDebugStatsEvery
   CustomerSystem.h / .cpp      # behaviorSystem, orderSystem, cleanupSystem
   Systems.h                  # umbrella: #includes all system headers
 ```
