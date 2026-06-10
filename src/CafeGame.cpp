@@ -59,7 +59,7 @@ void CafeGame::init()
     createBg(_currentScene.getBgTexture());
     createBartop(assets);
 
-    _machineEnt = createCoffeeMachine(assets, {-4.f, 1.f}, {0.f, -0.5f});
+    _machineEnt = createCoffeeMachine(assets, {-6.f, -1.f}, {0.f, -0.5f});
 
     createCup(assets, {-4.f, -1.f}, CUP_CAPACITY);
     createPastry({4.f, -3.f},  assets);
@@ -70,10 +70,10 @@ void CafeGame::init()
 
     // --- Customer ---
     Order customerOrder{ .ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true };
-    auto customerEnt = createCustomer(assets, { 3.f, -1.f }, customerOrder, 60.f);
+    auto customerEnt = createCustomer(assets, { 5.f, -1.f }, customerOrder, 60.f);
 
     // --- Speech bubble + order icons (children of customer) ---
-    auto bubbleEnt = createSpeechBubble(assets, customerEnt, {PERSON_DIMS.x, PERSON_DIMS.y * 0.25f});
+    auto bubbleEnt = createSpeechBubble(assets, customerEnt, {-PERSON_DIMS.x, PERSON_DIMS.y * 0.25f});
     // --- Order icons (children of the bubble) ---
     constexpr float ICON_SIZE = 8.f / 1.5f; // TODO:move somewhere else
     constexpr float ICON_DX   = 3.f;

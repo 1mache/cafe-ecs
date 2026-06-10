@@ -76,7 +76,14 @@ void drawSystem(SDL_Renderer* renderer)
         if (e.has<Cup>())
             drawCupLiquid(renderer, dstRect, e.get<Cup>());
 
+        // tint particles to coffee color
+        if (e.has<Liquid>())
+            SDL_SetTextureColorMod(d.texture, kCoffeeR, kCoffeeG, kCoffeeB);
+
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
+
+        if (e.has<Liquid>())
+            SDL_SetTextureColorMod(d.texture, 255, 255, 255);
     }
 }
 } // namespace cafe
