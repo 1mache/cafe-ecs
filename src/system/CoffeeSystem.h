@@ -16,7 +16,7 @@ void coffeeSpawnerSystemImpl(float dtSeconds,
                              const std::function<void(WorldPos)>& spawnDrop);
 
 /** @brief Drains Box2D sensor events: counts cup fills and destroys drops on contact. */
-void sensorEventSystem();
+void liquidSensorEventSystem();
 
 /** @brief Prints a one-line debug summary every 0.5 s of accumulated dt. */
 void dumpDebugStatsEvery(float dtSeconds);

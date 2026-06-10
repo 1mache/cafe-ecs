@@ -185,7 +185,7 @@ void CafeGame::run()
 
             coffeeSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
             PhysicsContext::step(dt);
-            sensorEventSystem();        // count drops into cup; cleanup spilled
+            liquidSensorEventSystem();        // count drops into cup; cleanup spilled
             dropSpaceDetectionSystem(); // update Held.dropSpaceEntity
             syncTransformFromBody();    // physics position -> Transform
 

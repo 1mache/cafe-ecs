@@ -59,7 +59,7 @@ void coffeeSpawnerSystem(float dtSeconds, AssetManager& assets)
     });
 }
 
-void sensorEventSystem()
+void liquidSensorEventSystem()
 {
     const b2SensorEvents events = b2World_GetSensorEvents(PhysicsContext::world());
 

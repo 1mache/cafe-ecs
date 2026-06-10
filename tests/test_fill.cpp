@@ -16,7 +16,7 @@ static void stepFor(int frames)
     for (int i = 0; i < frames; ++i)
     {
         PhysicsContext::step(1.f / 60.f);
-        sensorEventSystem();
+        liquidSensorEventSystem();
     }
 }
 
