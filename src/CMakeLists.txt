@@ -70,9 +70,6 @@ target_sources(
 
     WorldPos.h
 
-    Assets.h
-    Assets.cpp
-
     Scene.h
     Scene.cpp
     AssetManager.h

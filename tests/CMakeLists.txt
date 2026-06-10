@@ -27,7 +27,6 @@ add_executable(UnitTestSpawner
     ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
-    ${CMAKE_SOURCE_DIR}/src/Assets.cpp
     ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp)
 target_link_libraries(UnitTestSpawner
     PRIVATE
@@ -70,8 +69,7 @@ add_executable(UnitTestFill
     ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
-    ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp
-    ${CMAKE_SOURCE_DIR}/src/Assets.cpp)
+    ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp)
 target_link_libraries(UnitTestFill
     PRIVATE
         Catch2::Catch2WithMain
