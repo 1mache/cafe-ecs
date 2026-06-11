@@ -72,6 +72,9 @@ target_sources(
 
     Scene.h
     Scene.cpp
+    MainGameScene.h
+    MainGameScene.cpp
+
     AssetManager.h
     AssetManager.cpp
     Texture.h
