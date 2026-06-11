@@ -6,9 +6,7 @@ namespace cafe
 class Scene
 {
 public:
-    explicit Scene(std::string_view bgTexturePath)
-    : _bgTexturePath(bgTexturePath)
-    {}
+    Scene() = default;
 
     // template method pattern
     void init(SDL_Renderer* renderer);
@@ -16,15 +14,16 @@ public:
     void cleanup();
 
     AssetManager& getAssetManager() { return _assetManager; }
-    const Texture& getBgTexture() { return _assetManager.getTexture(_bgTexturePath);}
+    SDL_Renderer* getRenderer() const { return _renderer; }
 
     virtual ~Scene() = default;
+    Scene(const Scene&)            = delete;
+    Scene& operator=(const Scene&) = delete;
 protected:
-    virtual void onInit()    = 0;
-    virtual void onRun()     = 0;
-    virtual void onCleanup() = 0;
+    virtual void onInit()              = 0;
+    virtual bool onUpdate(float dt)    = 0;
+    virtual void onCleanup()           = 0;
 private:
-    const std::string _bgTexturePath;
     SDL_Renderer*     _renderer{};
     AssetManager      _assetManager;
 };

@@ -11,8 +11,9 @@ namespace
 static constexpr auto TEX_BARTOP = "counter.png";
 }
 
-bagel::Entity createBg(const Texture& bgTex)
+bagel::Entity createBg(AssetManager& assets, std::string_view bgPath)
 {
+    auto& bgTex = assets.getTexture(bgPath);
     const auto bgSrcRect = bgTex.getFullSrcRect();
 
     auto bgEnt = bagel::Entity::create();

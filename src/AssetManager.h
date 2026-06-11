@@ -8,6 +8,12 @@ namespace cafe
 class AssetManager final
 {
 public:
+    AssetManager() = default;
+    AssetManager(const AssetManager&) = delete;
+    AssetManager& operator=(const AssetManager&) = delete;
+    AssetManager(AssetManager&&) = default;
+    AssetManager& operator=(AssetManager&&) = default;
+
     void init(SDL_Renderer* renderer);
     // loads a texture with path (inside res/ dir), if not in map already
     const Texture& getTexture(std::string_view filename);
