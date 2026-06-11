@@ -1,5 +1,6 @@
 #pragma once
 
+#include "OrderMatch.h"
 #include <bagel.h>
 
 namespace cafe
@@ -7,8 +8,9 @@ namespace cafe
 /** @brief Tracks what a client has been served so far. */
 struct Served
 {
-    bool drink{};
-    bool pastry{};
+    bool       drink{};
+    bool       pastry{};
+    DrinkGrade drinkGrade{ DrinkGrade::Wrong }; // quality of the delivered drink
 };
 } // namespace cafe
 

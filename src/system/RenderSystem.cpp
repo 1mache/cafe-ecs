@@ -13,28 +13,48 @@ namespace cafe
 {
 namespace
 {
-// Coffee fill color (#4B2F1E) and rim inset in screen pixels.
-constexpr Uint8 kCoffeeR = 75, kCoffeeG = 47, kCoffeeB = 30;
+// Rim inset in screen pixels.
 constexpr float kCupRimPx = 1.f;
 
+// Per-ingredient color, shared by drop tinting and the cup fill bands.
+SDL_Color ingredientColor(Ingredient kind)
+{
+    switch (kind)
+    {
+    case Ingredient::Coffee: return { 75,  47,  30,  255 }; // #4B2F1E
+    case Ingredient::Milk:   return { 240, 234, 214, 255 }; // #F0EAD6
+    case Ingredient::Water:  return { 111, 183, 224, 255 }; // #6FB7E0
+    default:                 return { 255, 255, 255, 255 };
+    }
+}
+
 // Drawn before the cup sprite so the sprite's rim masks the rect edges.
+// Each ingredient is a colored band, stacked from the bottom up, so the cup
+// visibly shows its mix.
 void drawCupLiquid(SDL_Renderer* r, const SDL_FRect& cupRect, const Cup& c)
 {
     const float interiorW = cupRect.w - 2.f * kCupRimPx;
     const float interiorH = cupRect.h - 2.f * kCupRimPx;
-    if (interiorW <= 0.f || interiorH <= 0.f) return;
+    if (interiorW <= 0.f || interiorH <= 0.f || c.capacity <= 0) return;
 
-    const float fillH = std::floor(c.fillPercent() * interiorH);
-    if (fillH <= 0.f) return;
+    const float x      = std::floor(cupRect.x + kCupRimPx);
+    const float w      = std::floor(interiorW);
+    const float bottom = cupRect.y + kCupRimPx + interiorH; // interior bottom edge
+    float stacked = 0.f; // height already drawn up from the bottom
 
-    const SDL_FRect fillRect{
-        std::floor(cupRect.x + kCupRimPx),
-        std::floor(cupRect.y + kCupRimPx + (interiorH - fillH)),
-        std::floor(interiorW),
-        fillH
-    };
-    SDL_SetRenderDrawColor(r, kCoffeeR, kCoffeeG, kCoffeeB, 255);
-    SDL_RenderFillRect(r, &fillRect);
+    for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
+    {
+        if (c.filled[i] <= 0) continue;
+        const float frac  = static_cast<float>(c.filled[i]) / static_cast<float>(c.capacity);
+        const float bandH = std::floor(frac * interiorH);
+        if (bandH <= 0.f) continue;
+
+        const SDL_FRect band{ x, std::floor(bottom - stacked - bandH), w, bandH };
+        const SDL_Color col = ingredientColor(static_cast<Ingredient>(i));
+        SDL_SetRenderDrawColor(r, col.r, col.g, col.b, 255);
+        SDL_RenderFillRect(r, &band);
+        stacked += bandH;
+    }
 }
 } // namespace
 
@@ -76,9 +96,12 @@ void drawSystem(SDL_Renderer* renderer)
         if (e.has<Cup>())
             drawCupLiquid(renderer, dstRect, e.get<Cup>());
 
-        // tint particles to coffee color
+        // tint particles to their ingredient color (shared particle.png)
         if (e.has<Liquid>())
-            SDL_SetTextureColorMod(d.texture, kCoffeeR, kCoffeeG, kCoffeeB);
+        {
+            const SDL_Color col = ingredientColor(e.get<Liquid>().kind);
+            SDL_SetTextureColorMod(d.texture, col.r, col.g, col.b);
+        }
 
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
 

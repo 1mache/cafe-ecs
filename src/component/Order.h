@@ -1,13 +1,11 @@
 #pragma once
 
+#include "Ingredient.h"
 #include <bagel.h>
 
 namespace cafe
 {
 
-/** @brief Indices into Order::ratio — [Coffee=0, Milk=1, Water=2]. */
-enum class Ingredient { Coffee = 0, Milk, Water, count };
-static constexpr size_t INGREDIENT_COUNT = static_cast<int>(Ingredient::count);
 /** @brief A client's order: a desired drink composition and/or a pastry.
  *  Invariant: hasDrink || hasPastry must be true. */
 struct Order

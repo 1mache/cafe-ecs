@@ -43,7 +43,7 @@ TEST_CASE("A coffee drop falls into the cup, fills it by 1, and is destroyed", "
 
     stepFor(60);
 
-    REQUIRE(cupEnt.get<Cup>().filled == 1);
+    REQUIRE(cupEnt.get<Cup>().totalFilled() == 1);
     REQUIRE(countLiquidEntities() == 0);
 
     destroyPhysicalEntity(cupEnt.entity());
@@ -62,7 +62,7 @@ TEST_CASE("Cup at capacity: counter does not exceed capacity", "[fill]")
     // Overflow drop — deflected, not absorbed. Counter stays at 1.
     auto extraEnt = createLiquidDropHeadless({ 0.2f, 3.f });
     stepFor(35);
-    REQUIRE(cupEnt.get<Cup>().filled == 1);
+    REQUIRE(cupEnt.get<Cup>().totalFilled() == 1);
 
     destroyPhysicalEntity(extraEnt.entity());
     destroyPhysicalEntity(cupEnt.entity());
@@ -98,8 +98,8 @@ TEST_CASE("Two independent cups have independent fill counters", "[fill]")
 
     stepFor(60);
 
-    REQUIRE(cupA.get<Cup>().filled == 1);
-    REQUIRE(cupB.get<Cup>().filled == 1);
+    REQUIRE(cupA.get<Cup>().totalFilled() == 1);
+    REQUIRE(cupB.get<Cup>().totalFilled() == 1);
     REQUIRE(countLiquidEntities() == 0);
 
     destroyPhysicalEntity(cupA.entity());
@@ -118,7 +118,30 @@ TEST_CASE("Two drops into one cup: both counted, both destroyed", "[fill]")
 
     stepFor(60);
 
-    REQUIRE(cupEnt.get<Cup>().filled == 2);
+    REQUIRE(cupEnt.get<Cup>().totalFilled() == 2);
+    REQUIRE(countLiquidEntities() == 0);
+
+    destroyPhysicalEntity(cupEnt.entity());
+    PhysicsContext::shutdown();
+}
+
+TEST_CASE("Cup tracks fill per ingredient", "[fill]")
+{
+    PhysicsContext::init();
+    auto cupEnt = createCupHeadless({ 0.f, 0.f }, 32.f, 24.f, 50);
+
+    // Two coffee drops, one milk drop — spaced vertically so they don't collide.
+    createLiquidDropHeadless({ 0.f, 5.f }, Ingredient::Coffee);
+    createLiquidDropHeadless({ 0.f, 6.f }, Ingredient::Coffee);
+    createLiquidDropHeadless({ 0.f, 7.f }, Ingredient::Milk);
+
+    stepFor(90);
+
+    const auto& c = cupEnt.get<Cup>();
+    REQUIRE(c.filled[static_cast<size_t>(Ingredient::Coffee)] == 2);
+    REQUIRE(c.filled[static_cast<size_t>(Ingredient::Milk)]   == 1);
+    REQUIRE(c.filled[static_cast<size_t>(Ingredient::Water)]  == 0);
+    REQUIRE(c.totalFilled() == 3);
     REQUIRE(countLiquidEntities() == 0);
 
     destroyPhysicalEntity(cupEnt.entity());
@@ -143,11 +166,11 @@ TEST_CASE("Cup::fillPercent and Cup::isFull behave correctly at edges", "[compon
     // No physics needed for this — pure component logic.
     REQUIRE(Cup{}.fillPercent() == 0.f);           // capacity = 0 → 0, no div-by-zero
     REQUIRE(Cup{}.isFull());                       // capacity = 0 → already full
-    REQUIRE(Cup{ 10, 0  }.fillPercent() == 0.f);
-    REQUIRE(Cup{ 10, 5  }.fillPercent() == 0.5f);
-    REQUIRE(Cup{ 10, 10 }.fillPercent() == 1.f);
-    REQUIRE(Cup{ 10, 10 }.isFull());
-    REQUIRE_FALSE(Cup{ 10, 9 }.isFull());
+    REQUIRE(Cup{ 10, {0}  }.fillPercent() == 0.f);
+    REQUIRE(Cup{ 10, {5}  }.fillPercent() == 0.5f);
+    REQUIRE(Cup{ 10, {10} }.fillPercent() == 1.f);
+    REQUIRE(Cup{ 10, {10} }.isFull());
+    REQUIRE_FALSE(Cup{ 10, {9} }.isFull());
 }
 
 TEST_CASE("Full cup deflects new drops upward instead of destroying them", "[overflow]")
@@ -166,7 +189,7 @@ TEST_CASE("Full cup deflects new drops upward instead of destroying them", "[ove
     stepFor(35); // deflected once, not yet re-entered
 
     REQUIRE(countLiquidEntities() == 1);
-    REQUIRE(cupEnt.get<Cup>().filled == 1);
+    REQUIRE(cupEnt.get<Cup>().totalFilled() == 1);
     REQUIRE(b2Body_GetLinearVelocity(dropBody).y > 0.f);
 
     destroyPhysicalEntity(dropEnt.entity());
@@ -189,7 +212,7 @@ TEST_CASE("Full cup overflow: deflected drop is destroyed by CLEANUP", "[overflo
     stepFor(300);
 
     REQUIRE(countLiquidEntities() == 0);
-    REQUIRE(cupEnt.get<Cup>().filled == 1);
+    REQUIRE(cupEnt.get<Cup>().totalFilled() == 1);
 
     destroyPhysicalEntity(cleanupEnt.entity());
     destroyPhysicalEntity(cupEnt.entity());
