@@ -16,7 +16,7 @@ static void stepFor(int frames)
     for (int i = 0; i < frames; ++i)
     {
         PhysicsContext::step(1.f / 60.f);
-        sensorEventSystem();
+        liquidSensorEventSystem();
     }
 }
 
@@ -39,7 +39,7 @@ TEST_CASE("A coffee drop falls into the cup, fills it by 1, and is destroyed", "
     // Cup 4 m x 3 m at the origin; drop spawned 5 m above it.
     // With GRAVITY=25, a 4 m fall takes ~0.566 s — 60 fixed steps (1 s) is plenty.
     auto cupEnt = createCupHeadless({ 0.f, 0.f }, 32.f, 24.f, 50);
-    createLiquidDrop({ 0.f, 5.f });
+    createLiquidDropHeadless({ 0.f, 5.f });
 
     stepFor(60);
 
@@ -55,12 +55,12 @@ TEST_CASE("Cup at capacity: counter does not exceed capacity", "[fill]")
     PhysicsContext::init();
     auto cupEnt = createCupHeadless({ 0.f, 0.f }, 8.f, 8.f, 1);
 
-    createLiquidDrop({ 0.f, 3.f });
+    createLiquidDropHeadless({ 0.f, 3.f });
     stepFor(60);
     REQUIRE(cupEnt.get<Cup>().isFull());
 
     // Overflow drop — deflected, not absorbed. Counter stays at 1.
-    auto extraEnt = createLiquidDrop({ 0.2f, 3.f });
+    auto extraEnt = createLiquidDropHeadless({ 0.2f, 3.f });
     stepFor(35);
     REQUIRE(cupEnt.get<Cup>().filled == 1);
 
@@ -76,7 +76,7 @@ TEST_CASE("A drop that misses the cup is destroyed by the cleanup zone", "[fill]
 
     // Spawn high up; no cup in the world, so the drop will fall past where the
     // cup would be and into the cleanup sensor (centered at y = -8).
-    createLiquidDrop({ 0.f, 5.f });
+    createLiquidDropHeadless({ 0.f, 5.f });
     REQUIRE(countLiquidEntities() == 1);
 
     // 2 s of simulated time is enough to fall ~50 m under gravity = 25.
@@ -93,8 +93,8 @@ TEST_CASE("Two independent cups have independent fill counters", "[fill]")
 
     auto cupA = createCupHeadless({ -5.f, 0.f }, 32.f, 24.f, 50);
     auto cupB = createCupHeadless({  5.f, 0.f }, 32.f, 24.f, 50);
-    createLiquidDrop({ -5.f, 5.f });
-    createLiquidDrop({  5.f, 5.f });
+    createLiquidDropHeadless({ -5.f, 5.f });
+    createLiquidDropHeadless({  5.f, 5.f });
 
     stepFor(60);
 
@@ -113,8 +113,8 @@ TEST_CASE("Two drops into one cup: both counted, both destroyed", "[fill]")
     auto cupEnt = createCupHeadless({ 0.f, 0.f }, 32.f, 24.f, 50);
 
     // Spawn the second drop a bit higher so they don't collide mid-air.
-    createLiquidDrop({ 0.f, 5.f });
-    createLiquidDrop({ 0.f, 6.f });
+    createLiquidDropHeadless({ 0.f, 5.f });
+    createLiquidDropHeadless({ 0.f, 6.f });
 
     stepFor(60);
 
@@ -156,12 +156,12 @@ TEST_CASE("Full cup deflects new drops upward instead of destroying them", "[ove
 
     // Tiny cup so the (±3, +5) deflection clears it easily.
     auto cupEnt = createCupHeadless({ 0.f, 0.f }, 8.f, 8.f, 1);
-    createLiquidDrop({ 0.f, 3.f });
+    createLiquidDropHeadless({ 0.f, 3.f });
     stepFor(60);
     REQUIRE(cupEnt.get<Cup>().isFull());
 
     // x offset → deterministic deflection sign.
-    auto dropEnt = createLiquidDrop({ 0.2f, 3.f });
+    auto dropEnt = createLiquidDropHeadless({ 0.2f, 3.f });
     const b2BodyId dropBody = dropEnt.get<PhysicsBody>().id;
     stepFor(35); // deflected once, not yet re-entered
 
@@ -180,12 +180,12 @@ TEST_CASE("Full cup overflow: deflected drop is destroyed by CLEANUP", "[overflo
     auto cupEnt     = createCupHeadless({ 0.f, 0.f }, 8.f, 8.f, 1);
     auto cleanupEnt = createCleanupZone();
 
-    createLiquidDrop({ 0.f, 3.f });
+    createLiquidDropHeadless({ 0.f, 3.f });
     stepFor(60);
     REQUIRE(cupEnt.get<Cup>().isFull());
 
     // Overflow drop — bounces out, falls, hits CLEANUP at y=-8.
-    createLiquidDrop({ 0.2f, 3.f });
+    createLiquidDropHeadless({ 0.2f, 3.f });
     stepFor(300);
 
     REQUIRE(countLiquidEntities() == 0);

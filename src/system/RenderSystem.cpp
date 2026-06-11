@@ -2,6 +2,8 @@
 #include "Components.h"
 #include "RenderContext.h"
 #include "Transform.h"
+#include <algorithm>
+#include <vector>
 #include <SDL3/SDL.h>
 #include <bagel.h>
 #include <vector>
@@ -36,40 +38,52 @@ void drawCupLiquid(SDL_Renderer* r, const SDL_FRect& cupRect, const Cup& c)
 }
 } // namespace
 
-void drawSystem()
+void drawSystem(SDL_Renderer* renderer)
 {
+    using Entity = bagel::Entity;
+
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<Drawable>().set<Transform>().build();
 
-    struct DrawItem
+    std::vector<Entity> drawables{};
+    for (auto e = Entity::first(); !e.eof(); e.next())
     {
-        bagel::ent_type id;
-        int             renderLayer;
-    };
+        if (!e.test(mask))
+            continue;
 
-    std::vector<DrawItem> drawOrder;
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(mask)) continue;
-        drawOrder.push_back({ e.entity(), e.get<Drawable>().renderLayer });
+        drawables.emplace_back(e);
     }
 
-    std::sort(drawOrder.begin(), drawOrder.end(),
-              [](const DrawItem& a, const DrawItem& b) { return a.renderLayer < b.renderLayer; });
-
-    SDL_Renderer* renderer = RenderContext::getRenderer();
-    for (const DrawItem& item : drawOrder)
+    // TODO: replace dummy sorting with performant storage type
+    auto layerLess = [](const Entity a, const Entity b)
     {
-        bagel::Entity e{ item.id };
-        const auto&   d = e.get<Drawable>();
-        const auto&   t = e.get<Transform>();
+        const auto& da = a.get<Drawable>();
+        const auto& db = b.get<Drawable>();
+
+        return da.renderLayer < db.renderLayer;
+    };
+
+    // sort based on render layer
+    std::ranges::sort(drawables, layerLess);
+
+    for (auto e: drawables)
+    {
+        const auto& d = e.get<Drawable>();
+        const auto& t = e.get<Transform>();
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
         if (e.has<Cup>())
             drawCupLiquid(renderer, dstRect, e.get<Cup>());
 
+        // tint particles to coffee color
+        if (e.has<Liquid>())
+            SDL_SetTextureColorMod(d.texture, kCoffeeR, kCoffeeG, kCoffeeB);
+
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
+
+        if (e.has<Liquid>())
+            SDL_SetTextureColorMod(d.texture, 255, 255, 255);
     }
 }
 } // namespace cafe

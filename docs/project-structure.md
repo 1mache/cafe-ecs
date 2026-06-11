@@ -60,8 +60,8 @@ Systems that share file-local state or operate on the same feature area live in 
 system/
   RenderSystem.h / .cpp      # drawSystem
   TransformSystem.h / .cpp   # syncTransformFromBody, hierarchySystem
-  CoffeeSystem.h / .cpp      # coffeeSpawnerSystem, sensorEventSystem, dumpDebugStatsEvery
-  ClientSystem.h / .cpp      # behaviorSystem, orderSystem, cleanupSystem
+  LiquidSystem.h / .cpp      # coffeeSpawnerSystem, sensorEventSystem, dumpDebugStatsEvery
+  CustomerSystem.h / .cpp      # behaviorSystem, orderSystem, cleanupSystem
   Systems.h                  # umbrella: #includes all system headers
 ```
 
@@ -83,7 +83,7 @@ entity/
   LiquidDropFactory.h / .cpp       # createLiquidDrop
   CoffeeMachineFactory.h / .cpp    # createCoffeeMachine
   CleanupZoneFactory.h / .cpp      # createCleanupZone
-  ClientFactory.h / .cpp           # createClient
+  CustomerFactory.h / .cpp           # createClient
   SpeechBubbleFactory.h / .cpp     # createSpeechBubble
   OrderIconFactory.h / .cpp        # createOrderIcon
   Entities.h / .cpp                # umbrella + destroyPhysicalEntity
@@ -110,6 +110,30 @@ AssetManager.h/cpp # path-keyed texture cache (instance-based)
 Texture.h/cpp      # RAII SDL_Texture wrapper
 Utils.h            # assertFatal and other small utilities
 ```
+
+---
+
+## Shared infrastructure — usage notes
+
+### Size and position conversions (`Transform.h`)
+
+Use the free functions in `Transform.h` for any conversion between screen coordinates/sizes (pixels) and game world coordinates (meters). Do not do these conversions manually — manual code silently breaks if `SCALE_FACTOR` or camera position changes.
+
+### `CafeGame` and `Scene`
+
+`CafeGame` owns the `window`, `renderer`, and the active `Scene`. `Scene` is a polymorphic base; game loop logic lives in `Scene::run` and overridden `update` methods. When you need to add per-scene logic, subclass `Scene` — do not add it to `CafeGame`.
+
+### `AssetManager`
+
+Path-keyed texture cache. Pass a `ref` to `AssetManager` whenever a factory or system needs to load a texture. File names are consistent across the codebase and serve as the universal key — don't hardcode paths or load textures ad-hoc.
+
+### `Texture`
+
+RAII wrapper around `SDL_Texture` — texture is destroyed in the destructor. You will mostly deal with references to it. `getFullSrcRect()` returns the full texture rectangle. Be careful with sprite sheets: the stored size is the full sheet, not the frame.
+
+### Global state
+
+We currently have a global `PhysicsContext` and `RenderContext`. High usage of globals is bug-prone — the goal is to eliminate them by encapsulating each inside the appropriate `Scene`. **Prefer passing everything a system needs as parameters** so its behavior is visible from its signature.
 
 ---
 

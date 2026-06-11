@@ -1,18 +1,29 @@
 #include "CoffeeMachineFactory.h"
-#include "Assets.h"
+#include "AssetManager.h"
 #include "Components.h"
-#include "GameConfig.h"
+#include "RenderLayers.h"
 #include "PhysicsContext.h"
+#include "Texture.h"
+
 #include <box2d/box2d.h>
 
 namespace cafe
 {
-bagel::Entity createCoffeeMachine(WorldPos pos, WorldPos spoutOffset)
+namespace
 {
+static constexpr auto TEX = "machine.png";
+}
+
+bagel::Entity createCoffeeMachine(AssetManager& assets,
+                                  WorldPos      pos,
+                                  WorldPos      spoutOffset)
+{
+    const Texture& tex = assets.getTexture(TEX);
+    auto [x, y] = tex.getSize();
     auto ent = bagel::Entity::create();
 
-    const float halfW = Assets::machineW() / (2.f * PTM);
-    const float halfH = Assets::machineH() / (2.f * PTM);
+    const float halfW = screenToWorldScale(x);
+    const float halfH = screenToWorldScale(y);
     Transform t{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH };
 
     // Kinematic body, no fixtures — the machine is just a position anchor for spawning.
@@ -24,7 +35,7 @@ bagel::Entity createCoffeeMachine(WorldPos pos, WorldPos spoutOffset)
 
     ent.addAll(
         t,
-        Drawable{ Assets::machine(), Assets::machineSrcRect() },
+        Drawable{ tex.get(), tex.getFullSrcRect(), layer::STATIC_ON_BARTOP },
         PhysicsBody{ body },
         CoffeeSpawner{
             .interval    = 0.05f,

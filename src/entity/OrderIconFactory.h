@@ -5,7 +5,9 @@
 
 namespace cafe
 {
-bagel::Entity createOrderIcon(SDL_Texture* tex, SDL_FRect srcRect,
+class AssetManager;
+
+bagel::Entity createOrderIcon(AssetManager& assets, int propId,
                               float displayW, float displayH,
                               bagel::Entity parentBubble, SDL_FPoint offsetPx);
 } // namespace cafe

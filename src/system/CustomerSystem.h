@@ -3,6 +3,8 @@
 namespace cafe
 {
 void behaviorSystem(float dtSeconds);
+void deliverySystem();
 void orderSystem();
-void cleanupSystem();
+void reportLeavingCustomers();
+void customerCleanupSystem();
 } // namespace cafe

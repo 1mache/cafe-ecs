@@ -47,8 +47,8 @@ void hierarchySystem()
 
         auto& t       = e.get<Transform>();
         auto& parentT = parent.get<Transform>();
-        t.x   = parentT.x + screenToWorldSize(childComp.localOffset.x);
-        t.y   = parentT.y + screenToWorldSize(childComp.localOffset.y);
+        t.x   = parentT.x + screenToWorldDistance(childComp.localOffset.x);
+        t.y   = parentT.y + screenToWorldDistance(childComp.localOffset.y);
         t.rot = parentT.rot;
     }
 }

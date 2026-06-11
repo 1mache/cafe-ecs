@@ -1,19 +1,28 @@
 #include "SpeechBubbleFactory.h"
+#include "AssetManager.h"
 #include "Components.h"
-#include "GameConfig.h"
+#include "RenderLayers.h"
+#include "Texture.h"
 #include <bagel.h>
 
 namespace cafe
 {
 
-bagel::Entity createSpeechBubble(SDL_Texture* tex, SDL_FRect srcRect,
-                                 float displayW, float displayH,
+namespace
+{
+static constexpr auto TEX = "bubble.png";
+}
+
+bagel::Entity createSpeechBubble(AssetManager& assets,
                                  bagel::Entity parent, SDL_FPoint offsetPx)
 {
+    const Texture& tex = assets.getTexture(TEX);
+    auto [w, h] = tex.getSize();
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{.w = displayW / (2.f * PTM), .h = displayH / (2.f * PTM)},
-        Drawable{tex, srcRect, /*renderLayer*/ 10},
+        Transform{.w = screenToWorldScale(static_cast<float>(w)),
+                  .h = screenToWorldScale(static_cast<float>(h))},
+        Drawable{tex.get(), tex.getFullSrcRect(), layer::UI1},
         ChildOf{parent, offsetPx});
     return ent;
 }

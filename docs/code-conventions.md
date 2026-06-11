@@ -16,6 +16,24 @@ Keep test entry points out of the main `main.cpp`. Remove them before merging to
 
 # ECS Design Practices
 
+## Render Layers
+
+Every `Drawable` entity must specify which render layer it belongs to. Use the existing layers defined in `RenderLayers.h`; add a new layer there if none fit. Do not draw directly at an implicit z-order.
+
+---
+
+## Event Polling
+
+Do not capture SDL events outside of a dedicated system. Implement an `InputSystem` that polls all events internally and exposes input state via a component (e.g. `InputState`). Other systems read that component — they never touch SDL event queues directly.
+
+---
+
+## Global State
+
+Avoid reaching for global variables inside systems. Currently `PhysicsContext` and `RenderContext` are global — this is known tech debt. Do not add new globals. If a system needs context, receive it as a parameter.
+
+---
+
 ## Systems Communicate Through Components
 
 Systems must not call into each other. If system A needs to affect system B's behavior, A writes a component — B reads it next frame.

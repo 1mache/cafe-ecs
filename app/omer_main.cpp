@@ -79,8 +79,10 @@ int main()
 
     // Coffee machine + cup, both aligned on x = -4 so drops actually land in the cup.
     // Cleanup zone is the off-screen sensor that destroys spilled drops.
-    auto machineEnt = createCoffeeMachine({ -4.f, 1.f }, { 0.f, -0.5f });
-    auto cupEnt     = createCup         ({ -4.f, -1.f }, 50);
+    auto machineEnt = createCoffeeMachine({ -4.f, 1.f }, { 0.f, -0.5f },
+                                          Assets::machine(), Assets::machineW(), Assets::machineH());
+    auto cupEnt     = createCup({ -4.f, -1.f },
+                                Assets::cup(), Assets::cupW(), Assets::cupH(), 50);
     (void)            createCleanupZone();
 
     bool   isRunning = true;
@@ -127,14 +129,14 @@ int main()
         // Spawn -> step physics -> consume sensor events -> sync transforms -> draw.
         // Order matters: spawn before step so new drops participate this frame,
         // sensor events come after the step, transforms last so we don't sync dead entities.
-        coffeeSpawnerSystem(dt);
+        coffeeSpawnerSystem(dt, Assets::particle());
         PhysicsContext::step(dt);
         sensorEventSystem();
         syncTransformFromBody();
         dumpDebugStatsEvery(dt);
 
         SDL_RenderClear(renderer);
-        drawSystem();
+        drawSystem(renderer);
         SDL_RenderPresent(renderer);
 
         // Frame pacing — cap at FPS. SDL_GetTicks is Uint64, SDL_Delay takes Uint32.

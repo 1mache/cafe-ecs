@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RenderLayers.h"
 #include <SDL3/SDL_render.h>
 #include <bagel.h>
 
@@ -9,7 +10,7 @@ struct Drawable
 {
     SDL_Texture* texture{};
     SDL_FRect    srcRect{};
-    int          renderLayer{};
+    layer::RenderLayer  renderLayer{layer::BG};
 };
 } // namespace cafe
 

@@ -1,19 +1,30 @@
 #include "OrderIconFactory.h"
+#include "AssetManager.h"
 #include "Components.h"
-#include "GameConfig.h"
+#include "RenderLayers.h"
+#include "SpriteDims.h"
+#include "Texture.h"
 #include <bagel.h>
 
 namespace cafe
 {
 
-bagel::Entity createOrderIcon(SDL_Texture* tex, SDL_FRect srcRect,
+namespace
+{
+static constexpr auto TEX = "props.png";
+}
+
+bagel::Entity createOrderIcon(AssetManager& assets, int propId,
                               float displayW, float displayH,
                               bagel::Entity parentBubble, SDL_FPoint offsetPx)
 {
+    const Texture& tex = assets.getTexture(TEX);
+    float propIdF = static_cast<float>(propId);
+    SDL_FRect srcRect{PROP_DIMS.x * propIdF, 0, PROP_DIMS.x, PROP_DIMS.y};
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{.w = displayW / (2.f * PTM), .h = displayH / (2.f * PTM)},
-        Drawable{tex, srcRect, /*renderLayer*/ 20},
+        Transform{.w = screenToWorldScale(displayW), .h = screenToWorldScale(displayH)},
+        Drawable{tex.get(), srcRect, layer::UI2},
         ChildOf{parentBubble, offsetPx});
     return ent;
 }

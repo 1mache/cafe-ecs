@@ -1,13 +1,17 @@
 #include "LiquidDropFactory.h"
-#include "Assets.h"
+#include "AssetManager.h"
 #include "Components.h"
+#include "RenderLayers.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
+#include "Texture.h"
 #include <box2d/box2d.h>
 
 namespace cafe
 {
-bagel::Entity createLiquidDrop(WorldPos pos)
+namespace
+{
+bagel::Entity createLiquidDropCommon(WorldPos pos, SDL_Texture* tex, SDL_FRect src)
 {
     auto ent = bagel::Entity::create();
     constexpr float r = 0.06f; // ~0.5 px radius. Raise to 0.10f if drops jitter.
@@ -30,16 +34,25 @@ bagel::Entity createLiquidDrop(WorldPos pos)
     b2Circle circle{ {0.f, 0.f}, r };
     b2CreateCircleShape(body, &sd, &circle);
 
-    // Assets::particle() may be null in unit tests — fall back to a 2x2 stub rect.
-    SDL_Texture* tex = Assets::particle();
-    SDL_FRect    src = tex ? Assets::particleSrcRect() : SDL_FRect{ 0.f, 0.f, 2.f, 2.f };
-
     ent.addAll(
         Liquid{},
         Transform{ .x = pos.x, .y = pos.y, .w = r, .h = r },
-        Drawable{ tex, src },
+        Drawable{ tex, src, layer::LIQUID },
         PhysicsBody{ body }
     );
     return ent;
+}
+} // namespace
+
+bagel::Entity createLiquidDrop(AssetManager& assets, WorldPos pos)
+{
+    static constexpr auto TEX = "particle.png";
+    const Texture& tex = assets.getTexture(TEX);
+    return createLiquidDropCommon(pos, tex.get(), tex.getFullSrcRect());
+}
+
+bagel::Entity createLiquidDropHeadless(WorldPos pos)
+{
+    return createLiquidDropCommon(pos, nullptr, { 0.f, 0.f, 2.f, 2.f });
 }
 } // namespace cafe

@@ -26,11 +26,10 @@ public:
     Texture& operator=(const Texture&) = delete;
     Texture& operator=(Texture&& other) noexcept;
 
-    bool       loadFromFile(const std::string_view& path, SDL_Renderer* renderer);
-    SDL_FPoint getSize() const
-    {
-        return _size;
-    }
+    bool         loadFromFile(const std::string_view& path, SDL_Renderer* renderer);
+    SDL_Texture* get() const { return _texture; }
+    SDL_FPoint   getSize() const { return _size; }
+    SDL_FRect    getFullSrcRect() const { return {0.f, 0.f, _size.x, _size.y}; }
 private:
     SDL_Texture* _texture{};
     SDL_FPoint   _size{};

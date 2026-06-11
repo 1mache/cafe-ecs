@@ -1,11 +1,12 @@
-#include "CoffeeSystem.h"
+#include "AssetManager.h"
 #include "Components.h"
 #include "Entities.h"
+#include "LiquidSystem.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
+#include <algorithm>
 #include <bagel.h>
 #include <box2d/box2d.h>
-#include <algorithm>
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -48,17 +49,17 @@ void coffeeSpawnerSystemImpl(float dtSeconds,
     }
 }
 
-void coffeeSpawnerSystem(float dtSeconds)
+void coffeeSpawnerSystem(float dtSeconds, AssetManager& assets)
 {
     // We don't need to track each drop's entity; the sensor system finds them
     // again through their bodies' userData when destroying them.
-    coffeeSpawnerSystemImpl(dtSeconds, [](WorldPos p) {
-        (void)createLiquidDrop(p);
+    coffeeSpawnerSystemImpl(dtSeconds, [&assets](WorldPos p) {
+        (void)createLiquidDrop(assets, p);
         ++g_stats.spawned;
     });
 }
 
-void sensorEventSystem()
+void liquidSensorEventSystem()
 {
     const b2SensorEvents events = b2World_GetSensorEvents(PhysicsContext::world());
 

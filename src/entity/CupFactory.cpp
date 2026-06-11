@@ -1,26 +1,33 @@
 #include "CupFactory.h"
-#include "Assets.h"
+#include "AssetManager.h"
 #include "Components.h"
-#include "GameConfig.h"
+#include "RenderLayers.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
+#include "Texture.h"
+#include "SpriteDims.h"
 #include <box2d/box2d.h>
 
 namespace cafe
 {
 // Cup geometry shared between the SDL-driven and headless factories.
 // Three solid wall shapes + one interior sensor on a single kinematic body.
-static bagel::Entity createCupCommon(WorldPos pos, float halfW, float halfH,
-                                     int capacity, SDL_Texture* tex, SDL_FRect src)
+static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* tex)
 {
-    auto ent = bagel::Entity::create();
-    const float wallT = 0.5f / PTM; // wall thickness in world units (~half a pixel)
+    const float halfW = screenToWorldScale(CUP_DIMS.x);
+    const float halfH = screenToWorldScale(CUP_DIMS.y);
+
+    // wall thickness in world units (1 pixel)
+    const float wallT = screenToWorldScale(1.f);
     Transform t{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH };
+
+    auto cupBack  = bagel::Entity::create();
+    auto cupFront = bagel::Entity::create();
 
     b2BodyDef bd = b2DefaultBodyDef();
     bd.type     = b2_kinematicBody; // kinematic so drag-and-drop can move the cup later
     bd.position = { t.x, t.y };
-    bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
+    bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(cupBack.entity().id));
     b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
 
     // Solid walls + bottom — stop drops from passing through.
@@ -45,27 +52,39 @@ static bagel::Entity createCupCommon(WorldPos pos, float halfW, float halfH,
                                          { 0.f, wallT * 0.5f }, b2Rot_identity);
     b2CreatePolygonShape(body, &sensor, &interior);
 
-    ent.addAll(
+    SDL_FRect frontSrcRect = {0, 0, CUP_DIMS.x, CUP_DIMS.y};
+    SDL_FRect backSrcRect = {CUP_DIMS.x, 0, CUP_DIMS.x, CUP_DIMS.y};
+
+    cupBack.addAll(
         t,
-        Drawable{ tex, src },
+        Drawable{ tex, backSrcRect, layer::CONTAINER_BACK },
         PhysicsBody{ body },
-        Cup{ .capacity = capacity }
+        Cup{ .capacity = capacity },
+        Draggable{ DropType::Any }
     );
-    return ent;
+
+    addDraggableVisitorShape(body, halfW, halfH);
+
+    cupFront.addAll(
+        Transform(t),
+        Drawable{ tex, frontSrcRect, layer::CONTAINER_FRONT },
+        ChildOf(cupBack, {}));
+
+    return cupBack;
 }
 
-bagel::Entity createCup(WorldPos pos, int capacity)
+bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
 {
-    const float halfW = Assets::cupW() / (2.f * PTM);
-    const float halfH = Assets::cupH() / (2.f * PTM);
-    return createCupCommon(pos, halfW, halfH, capacity,
-                           Assets::cup(), Assets::cupSrcRect());
+    static constexpr auto TEX = "big_cup.png";
+    const Texture& tex = assets.getTexture(TEX);
+    auto [w, h] = tex.getSize();
+    return createCupCommon(pos, capacity, tex.get());
 }
 
 bagel::Entity createCupHeadless(WorldPos pos, float texW, float texH, int capacity)
 {
-    const float halfW = texW / (2.f * PTM);
-    const float halfH = texH / (2.f * PTM);
-    return createCupCommon(pos, halfW, halfH, capacity, nullptr, { 0.f, 0.f, texW, texH });
+    const float halfW = screenToWorldScale(CUP_DIMS.x);
+    const float halfH = screenToWorldScale(CUP_DIMS.y);
+    return createCupCommon(pos, capacity, nullptr);
 }
 } // namespace cafe

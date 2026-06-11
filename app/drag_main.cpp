@@ -1,5 +1,6 @@
 #include "Assets.h"
 #include "Components.h"
+#include "Draggable.h"
 #include "Entities.h"
 #include "GameConfig.h"
 #include "PhysicsContext.h"
@@ -12,7 +13,6 @@
 #include <box2d/box2d.h>
 #include <iostream>
 #include <optional>
-#include <vector>
 
 namespace
 {
@@ -34,38 +34,6 @@ const char* dropTypeName(cafe::DropType dropType)
         return "Any";
     }
     return "Unknown";
-}
-
-void setBodySensorEvents(b2BodyId body, bool enabled)
-{
-    if (!b2Body_IsValid(body)) return;
-    const int count = b2Body_GetShapeCount(body);
-    if (count <= 0) return;
-    std::vector<b2ShapeId> shapes(static_cast<size_t>(count));
-    b2Body_GetShapes(body, shapes.data(), count);
-    for (b2ShapeId shapeId : shapes)
-        b2Shape_EnableSensorEvents(shapeId, enabled);
-}
-
-void enableSensorEventsOnHeldEntities()
-{
-    static const bagel::Mask heldMask = bagel::MaskBuilder().set<cafe::Held>().build();
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(heldMask)) continue;
-        if (!e.has<cafe::PhysicsBody>()) continue;
-        setBodySensorEvents(e.get<cafe::PhysicsBody>().id, true);
-    }
-}
-
-void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH)
-{
-    b2ShapeDef visitor = b2DefaultShapeDef();
-    visitor.filter.categoryBits    = cafe::filter::DRAGGABLE;
-    visitor.filter.maskBits        = cafe::filter::MASK_DRAGGABLE;
-    visitor.enableSensorEvents     = true;
-    b2Polygon box = b2MakeOffsetBox(halfW, halfH, { 0.f, 0.f }, b2Rot_identity);
-    b2CreatePolygonShape(body, &visitor, &box);
 }
 
 void logEntityCreation(const char* label, bagel::ent_type id, cafe::WorldPos pos, Uint64 ms)
@@ -237,7 +205,7 @@ int main()
               << "[DragTest]          dropSpaceDetectionSystem (sensor overlap), dragReleaseSystem (snap/drop).\n"
               << "[DragTest] Controls: left mouse drag; close window to quit.\n";
 
-    auto cupEnt = createCup({ -3.f, 0.f }, 50);
+    auto cupEnt = createCup({ -3.f, 0.f }, Assets::cup(), Assets::cupW(), Assets::cupH(), 50);
     cupEnt.add(Draggable{ DropType::Any });
     cupEnt.get<Drawable>().renderLayer = kCupRenderLayer;
 
@@ -349,7 +317,7 @@ int main()
         syncTransformFromBody();
 
         SDL_RenderClear(renderer);
-        drawSystem();
+        drawSystem(renderer);
         SDL_RenderPresent(renderer);
 
         constexpr Uint64 frameDeltaT = static_cast<Uint64>(FRAME_DELTA_MS);

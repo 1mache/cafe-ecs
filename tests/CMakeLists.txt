@@ -20,14 +20,13 @@ add_executable(UnitTestSpawner
     test_spawner.cpp
     ${CMAKE_SOURCE_DIR}/src/system/RenderSystem.cpp
     ${CMAKE_SOURCE_DIR}/src/system/TransformSystem.cpp
-    ${CMAKE_SOURCE_DIR}/src/system/CoffeeSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/LiquidSystem.cpp
     ${CMAKE_SOURCE_DIR}/src/component/Transform.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CupFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/LiquidDropFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
-    ${CMAKE_SOURCE_DIR}/src/Assets.cpp
     ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp)
 target_link_libraries(UnitTestSpawner
     PRIVATE
@@ -63,15 +62,14 @@ add_executable(UnitTestFill
     test_fill.cpp
     ${CMAKE_SOURCE_DIR}/src/system/RenderSystem.cpp
     ${CMAKE_SOURCE_DIR}/src/system/TransformSystem.cpp
-    ${CMAKE_SOURCE_DIR}/src/system/CoffeeSystem.cpp
+    ${CMAKE_SOURCE_DIR}/src/system/LiquidSystem.cpp
     ${CMAKE_SOURCE_DIR}/src/component/Transform.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CupFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/LiquidDropFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
-    ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp
-    ${CMAKE_SOURCE_DIR}/src/Assets.cpp)
+    ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp)
 target_link_libraries(UnitTestFill
     PRIVATE
         Catch2::Catch2WithMain

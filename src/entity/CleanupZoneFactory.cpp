@@ -10,12 +10,10 @@ bagel::Entity createCleanupZone()
 {
     auto ent = bagel::Entity::create();
 
-    // Static body just below the visible play area. Top of the sensor sits at
-    // y = -6 (screen bottom is ~-5.625) so missed drops are cleaned up quickly
-    // instead of living as physics bodies for a full second.
+    // Static body just below the visible play area.
     b2BodyDef bd = b2DefaultBodyDef();
     bd.type     = b2_staticBody;
-    bd.position = { 0.f, -8.f };
+    bd.position = { 0.f, -screenToWorldDistance(LOGICAL_H)};
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
     b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
 

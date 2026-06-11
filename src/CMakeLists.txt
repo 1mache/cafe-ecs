@@ -14,12 +14,13 @@ target_sources(
     component/CleanupZone.h
     component/Behavior.h
     component/Draggable.h
+    component/Draggable.cpp
     component/DropSpace.h
     component/DropType.h
     component/Held.h
     component/Leaving.h
     component/Order.h
-    component/SpeechAnchor.h
+    component/Served.h
     component/Components.h
 
     # systems
@@ -27,12 +28,13 @@ target_sources(
     system/RenderSystem.cpp
     system/TransformSystem.h
     system/TransformSystem.cpp
-    system/CoffeeSystem.h
-    system/CoffeeSystem.cpp
-    system/ClientSystem.h
-    system/ClientSystem.cpp
+    system/LiquidSystem.h
+    system/LiquidSystem.cpp
+    system/CustomerSystem.h
+    system/CustomerSystem.cpp
     system/DragAndDropSystem.h
     system/DragAndDropSystem.cpp
+    system/InputSystem.h
     system/Systems.h
 
     # entities
@@ -44,31 +46,42 @@ target_sources(
     entity/CoffeeMachineFactory.cpp
     entity/CleanupZoneFactory.h
     entity/CleanupZoneFactory.cpp
-    entity/ClientFactory.h
-    entity/ClientFactory.cpp
+    entity/CustomerFactory.h
+    entity/CustomerFactory.cpp
     entity/SpeechBubbleFactory.h
     entity/SpeechBubbleFactory.cpp
     entity/OrderIconFactory.h
     entity/OrderIconFactory.cpp
+    entity/CafeEnvironmentFactory.h
+    entity/CafeEnvironmentFactory.cpp
+    entity/PastryFactory.h
+    entity/PastryFactory.cpp
     entity/Entities.h
     entity/Entities.cpp
 
     # root helpers
     GameConfig.h
+    Utils.h
     RenderContext.h
+    RenderLayers.h
+
     PhysicsFilters.h
     PhysicsContext.h
     PhysicsContext.cpp
 
     WorldPos.h
 
-    Assets.h
-    Assets.cpp
+    Scene.h
+    Scene.cpp
+    MainGameScene.h
+    MainGameScene.cpp
+
     AssetManager.h
     AssetManager.cpp
     Texture.h
     Texture.cpp
-    Utils.h
+    CafeGame.h
+    CafeGame.cpp
 )
 
 target_include_directories(
