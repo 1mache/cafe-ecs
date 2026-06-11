@@ -1,7 +1,7 @@
 #include "CupFactory.h"
 #include "AssetManager.h"
 #include "Components.h"
-#include "GameConfig.h"
+#include "RenderLayers.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
 #include "Texture.h"
@@ -57,7 +57,7 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
 
     cupBack.addAll(
         t,
-        Drawable{ tex, backSrcRect, LAYER_CONTAINER_BACK },
+        Drawable{ tex, backSrcRect, layer::CONTAINER_BACK },
         PhysicsBody{ body },
         Cup{ .capacity = capacity },
         Draggable{ DropType::Any }
@@ -67,7 +67,7 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
 
     cupFront.addAll(
         Transform(t),
-        Drawable{ tex, frontSrcRect, LAYER_CONTAINER_FRONT },
+        Drawable{ tex, frontSrcRect, layer::CONTAINER_FRONT },
         ChildOf(cupBack, {}));
 
     return cupBack;

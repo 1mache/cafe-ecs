@@ -1,6 +1,7 @@
 #include "LiquidDropFactory.h"
 #include "AssetManager.h"
 #include "Components.h"
+#include "RenderLayers.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
 #include "Texture.h"
@@ -36,7 +37,7 @@ bagel::Entity createLiquidDropCommon(WorldPos pos, SDL_Texture* tex, SDL_FRect s
     ent.addAll(
         Liquid{},
         Transform{ .x = pos.x, .y = pos.y, .w = r, .h = r },
-        Drawable{ tex, src, LAYER_LIQUID },
+        Drawable{ tex, src, layer::LIQUID },
         PhysicsBody{ body }
     );
     return ent;

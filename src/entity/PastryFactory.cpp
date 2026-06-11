@@ -1,6 +1,7 @@
 #include "PastryFactory.h"
 
 #include "Components.h"
+#include "RenderLayers.h"
 #include "PhysicsContext.h"
 #include "SpriteDims.h"
 #include "box2d/types.h"
@@ -31,7 +32,7 @@ bagel::Entity createPastry(WorldPos pos, AssetManager& assets)
     auto&     propsTex = assets.getTexture(TEX_PROPS_PATH);
     ent.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ propsTex.get(), src, LAYER_PROP },
+        Drawable{ propsTex.get(), src, layer::PROP },
         PhysicsBody{ body },
         Draggable{ DropType::Any }
     );

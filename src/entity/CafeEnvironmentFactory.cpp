@@ -1,5 +1,6 @@
 #include "CafeEnvironmentFactory.h"
 #include "AssetManager.h"
+#include "RenderLayers.h"
 #include "Components.h"
 #include "Texture.h"
 
@@ -17,7 +18,7 @@ bagel::Entity createBg(AssetManager& assets, std::string_view bgPath)
     const auto bgSrcRect = bgTex.getFullSrcRect();
 
     auto bgEnt = bagel::Entity::create();
-    bgEnt.addAll(Drawable{bgTex.get(), bgSrcRect, LAYER_BG},
+    bgEnt.addAll(Drawable{bgTex.get(), bgSrcRect, layer::BG},
                  Transform{.x = 0.f,
                            .y = 0.f,
                            .w = screenToWorldScale(LOGICAL_W),
@@ -31,7 +32,7 @@ bagel::Entity createBartop(AssetManager& assets)
     const float bartopHalfHeight = screenToWorldScale(bartopSrcRect.h);
     auto  bartopEnt        = bagel::Entity::create();
     bartopEnt.addAll(
-        Drawable{bartopTex.get(), bartopSrcRect, LAYER_BARTOP},
+        Drawable{bartopTex.get(), bartopSrcRect, layer::BARTOP},
         Transform{.x = 0.f,
                   .y = -(screenToWorldDistance(LOGICAL_H / 2) - bartopHalfHeight),
                   .w = screenToWorldScale(bartopSrcRect.w),

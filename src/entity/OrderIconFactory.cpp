@@ -1,7 +1,7 @@
 #include "OrderIconFactory.h"
 #include "AssetManager.h"
 #include "Components.h"
-#include "GameConfig.h"
+#include "RenderLayers.h"
 #include "SpriteDims.h"
 #include "Texture.h"
 #include <bagel.h>
@@ -24,7 +24,7 @@ bagel::Entity createOrderIcon(AssetManager& assets, int propId,
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{.w = screenToWorldScale(displayW), .h = screenToWorldScale(displayH)},
-        Drawable{tex.get(), srcRect, LAYER_UI2},
+        Drawable{tex.get(), srcRect, layer::UI2},
         ChildOf{parentBubble, offsetPx});
     return ent;
 }

@@ -1,4 +1,5 @@
 #include "AssetManager.h"
+#include "RenderLayers.h"
 #include "Components.h"
 #include "CustomerFactory.h"
 #include "PhysicsContext.h"
@@ -49,7 +50,7 @@ bagel::Entity createCustomer(AssetManager& assets,
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{.x = pos.x, .y = pos.y, .w = screenToWorldScale(w), .h = screenToWorldScale(h)},
-        Drawable{tex.get(), tex.getFullSrcRect(), LAYER_CUSTOMER},
+        Drawable{tex.get(), tex.getFullSrcRect(), layer::CUSTOMER},
         order,
         Behavior{.patience = patience});
 

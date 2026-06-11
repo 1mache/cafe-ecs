@@ -1,7 +1,7 @@
 #include "CoffeeMachineFactory.h"
 #include "AssetManager.h"
 #include "Components.h"
-#include "GameConfig.h"
+#include "RenderLayers.h"
 #include "PhysicsContext.h"
 #include "Texture.h"
 
@@ -35,7 +35,7 @@ bagel::Entity createCoffeeMachine(AssetManager& assets,
 
     ent.addAll(
         t,
-        Drawable{ tex.get(), tex.getFullSrcRect(), LAYER_STATIC_ON_BARTOP },
+        Drawable{ tex.get(), tex.getFullSrcRect(), layer::STATIC_ON_BARTOP },
         PhysicsBody{ body },
         CoffeeSpawner{
             .interval    = 0.05f,

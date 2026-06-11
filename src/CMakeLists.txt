@@ -63,6 +63,7 @@ target_sources(
     GameConfig.h
     Utils.h
     RenderContext.h
+    RenderLayers.h
 
     PhysicsFilters.h
     PhysicsContext.h

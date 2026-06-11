@@ -1,7 +1,7 @@
 #include "SpeechBubbleFactory.h"
 #include "AssetManager.h"
 #include "Components.h"
-#include "GameConfig.h"
+#include "RenderLayers.h"
 #include "Texture.h"
 #include <bagel.h>
 
@@ -22,7 +22,7 @@ bagel::Entity createSpeechBubble(AssetManager& assets,
     ent.addAll(
         Transform{.w = screenToWorldScale(static_cast<float>(w)),
                   .h = screenToWorldScale(static_cast<float>(h))},
-        Drawable{tex.get(), tex.getFullSrcRect(), LAYER_UI1},
+        Drawable{tex.get(), tex.getFullSrcRect(), layer::UI1},
         ChildOf{parent, offsetPx});
     return ent;
 }
