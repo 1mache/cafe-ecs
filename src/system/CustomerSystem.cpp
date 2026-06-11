@@ -96,7 +96,7 @@ void reportLeavingCustomers()
     }
 }
 
-void cleanupSystem()
+void customerCleanupSystem()
 {
     static const bagel::Mask leavingMask =
         bagel::MaskBuilder().set<Leaving>().build();

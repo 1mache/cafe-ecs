@@ -6,5 +6,5 @@ void behaviorSystem(float dtSeconds);
 void deliverySystem();
 void orderSystem();
 void reportLeavingCustomers();
-void cleanupSystem();
+void customerCleanupSystem();
 } // namespace cafe

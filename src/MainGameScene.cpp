@@ -136,7 +136,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
         orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
         reportLeavingCustomers();   // log SUCCESSFUL / FAILED
         hierarchySystem();          // children follow parents; orphan children of Leaving
-        cleanupSystem();            // destroy all Leaving entities
+        customerCleanupSystem();            // destroy all Leaving entities
 
         SDL_RenderClear(renderer);
         drawSystem(renderer);       // sorted by renderLayer ascending
