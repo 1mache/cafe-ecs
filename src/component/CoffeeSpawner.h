@@ -7,7 +7,7 @@
 namespace cafe
 {
 /** @brief Emits a stream of drops of one ingredient while active. */
-struct CoffeeSpawner
+struct LiquidSpawner
 {
     Ingredient kind{ Ingredient::Coffee }; // which liquid this pipe pours
     float    interval{ 0.05f };  // seconds between drops
@@ -17,4 +17,4 @@ struct CoffeeSpawner
 };
 } // namespace cafe
 
-template <> struct bagel::Storage<cafe::CoffeeSpawner> final : NoInstance { using type = SparseStorage<cafe::CoffeeSpawner>; };
+template <> struct bagel::Storage<cafe::LiquidSpawner> final : NoInstance { using type = SparseStorage<cafe::LiquidSpawner>; };

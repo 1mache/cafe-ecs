@@ -26,7 +26,7 @@ bagel::Entity createPipe(WorldPos machinePos, Ingredient kind)
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{ .x = machinePos.x + off.x, .y = machinePos.y + off.y, .w = 0.f, .h = 0.f },
-        CoffeeSpawner{ .kind = kind, .interval = 0.05f, .accumulator = 0.f,
+        LiquidSpawner{ .kind = kind, .interval = 0.05f, .accumulator = 0.f,
                        .active = false, .offset = {} },
         PourIntent{}
     );

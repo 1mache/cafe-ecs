@@ -29,12 +29,12 @@ DebugStats g_stats;
 void pourControlSystem()
 {
     static const bagel::Mask mask =
-        bagel::MaskBuilder().set<CoffeeSpawner>().set<PourIntent>().build();
+        bagel::MaskBuilder().set<LiquidSpawner>().set<PourIntent>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(mask)) continue;
-        e.get<CoffeeSpawner>().active = e.get<PourIntent>().active;
+        e.get<LiquidSpawner>().active = e.get<PourIntent>().active;
     }
 }
 
@@ -42,12 +42,12 @@ void coffeeSpawnerSystemImpl(float dtSeconds,
                              const std::function<void(WorldPos, Ingredient)>& spawnDrop)
 {
     static const bagel::Mask mask =
-        bagel::MaskBuilder().set<CoffeeSpawner>().set<Transform>().build();
+        bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(mask)) continue;
-        auto& s = e.get<CoffeeSpawner>();
+        auto& s = e.get<LiquidSpawner>();
         if (!s.active) continue;
 
         const auto& t = e.get<Transform>();

@@ -14,7 +14,7 @@ TEST_CASE("coffeeSpawnerSystem emits at the configured interval",
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{ .x = 0.f, .y = 0.f, .w = 0.5f, .h = 0.5f },
-        CoffeeSpawner{ .interval = 0.1f, .accumulator = 0.f,
+        LiquidSpawner{ .interval = 0.1f, .accumulator = 0.f,
                        .active = true, .offset = {0.f, 0.f} });
 
     std::vector<WorldPos> drops;
@@ -40,7 +40,7 @@ TEST_CASE("coffeeSpawnerSystem does not emit while inactive",
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{ .x = 1.f, .y = 2.f, .w = 0.5f, .h = 0.5f },
-        CoffeeSpawner{ .interval = 0.05f, .accumulator = 0.f,
+        LiquidSpawner{ .interval = 0.05f, .accumulator = 0.f,
                        .active = false, .offset = {0.f, 0.f} });
 
     std::vector<WorldPos> drops;
@@ -55,7 +55,7 @@ TEST_CASE("coffeeSpawnerSystem applies spawn offset", "[spawner]")
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{ .x = 3.f, .y = 4.f, .w = 0.5f, .h = 0.5f },
-        CoffeeSpawner{ .interval = 0.1f, .accumulator = 0.f,
+        LiquidSpawner{ .interval = 0.1f, .accumulator = 0.f,
                        .active = true, .offset = { 1.f, -0.5f } });
 
     std::vector<WorldPos> drops;
@@ -73,12 +73,12 @@ TEST_CASE("each spawner emits drops of its own ingredient", "[spawner]")
     auto coffee = bagel::Entity::create();
     coffee.addAll(
         Transform{ .x = 0.f, .y = 0.f, .w = 0.5f, .h = 0.5f },
-        CoffeeSpawner{ .kind = Ingredient::Coffee, .interval = 0.1f,
+        LiquidSpawner{ .kind = Ingredient::Coffee, .interval = 0.1f,
                        .accumulator = 0.f, .active = true, .offset = {} });
     auto water = bagel::Entity::create();
     water.addAll(
         Transform{ .x = 0.f, .y = 0.f, .w = 0.5f, .h = 0.5f },
-        CoffeeSpawner{ .kind = Ingredient::Water, .interval = 0.1f,
+        LiquidSpawner{ .kind = Ingredient::Water, .interval = 0.1f,
                        .accumulator = 0.f, .active = true, .offset = {} });
 
     // 0.15 s with interval 0.1 → one drop from each spawner.
