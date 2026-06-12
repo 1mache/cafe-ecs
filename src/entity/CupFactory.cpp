@@ -1,6 +1,7 @@
 #include "CupFactory.h"
 #include "AssetManager.h"
 #include "Components.h"
+#include "DragAndDropSystem.h"
 #include "RenderLayers.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
@@ -60,7 +61,7 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
         Drawable{ tex, backSrcRect, layer::CONTAINER_BACK },
         PhysicsBody{ body },
         Cup{ .capacity = capacity },
-        Draggable{ DropType::Any }
+        DragIntent{ .dropType = DropType::cup }
     );
 
     addDraggableVisitorShape(body, halfW, halfH);

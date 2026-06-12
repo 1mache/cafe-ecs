@@ -12,6 +12,11 @@ void cafe::MainGameScene::onInit()
     PhysicsContext::init();
 
     auto& assets = getAssetManager();
+
+    // Single input-state entity: intentSystem polls SDL and publishes here.
+    _inputEnt = bagel::Entity::create();
+    _inputEnt.add(SdlEvents{});
+
     createBg(assets, BG_PATH);
     createBartop(assets);
 
@@ -61,75 +66,40 @@ bool cafe::MainGameScene::onUpdate(float dt)
 {
     auto* renderer = getRenderer();
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
+        // Single SDL poll: publishes SdlEvents and sets DragIntent transitions.
+        intentSystem(renderer);
+
+        const auto& input = _inputEnt.get<SdlEvents>();
+
+        if (isTriggeredEvent(_inputEnt.entity(), Controls::Quit))
+            return false;
+
+        // SPACE toggles coffee pour (key down/up edges).
+        if (isTriggeredEvent(_inputEnt.entity(), Controls::KeyDown)
+            && input.keyScancode == SDL_SCANCODE_SPACE
+            && !_machineEnt.get<CoffeeSpawner>().active)
         {
-            switch (event.type)
-            {
-            case SDL_EVENT_QUIT:
-                return false;
-
-            // TODO:move into input system
-            case SDL_EVENT_KEY_DOWN:
-                if (event.key.scancode == SDL_SCANCODE_SPACE
-                    && !_machineEnt.get<CoffeeSpawner>().active)
-                {
-                    _machineEnt.get<CoffeeSpawner>().active = true;
-                    std::cout << "[Pour] ON\n";
-                }
-                break;
-
-            case SDL_EVENT_KEY_UP:
-                if (event.key.scancode == SDL_SCANCODE_SPACE
-                    && _machineEnt.get<CoffeeSpawner>().active)
-                {
-                    _machineEnt.get<CoffeeSpawner>().active = false;
-                    std::cout << "[Pour] OFF\n";
-                }
-                break;
-
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                if (event.button.button == SDL_BUTTON_LEFT)
-                {
-                    const SDL_FPoint pos =
-                        mouseWindowToRenderPoint(renderer,
-                                                 event.button.x,
-                                                 event.button.y);
-                    dropSpacePickupSystem(pos);
-                    dragStartSystem(pos);
-                    enableSensorEventsOnHeldEntities();
-                    _isDragging = true;
-                }
-                break;
-
-            case SDL_EVENT_MOUSE_MOTION:
-                if (_isDragging)
-                {
-                    const SDL_FPoint pos =
-                        mouseWindowToRenderPoint(renderer,
-                                                 event.motion.x,
-                                                 event.motion.y);
-                    midDragSystem(pos);
-                }
-                break;
-
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-                if (event.button.button == SDL_BUTTON_LEFT && _isDragging)
-                {
-                    // deliverySystem reads Held.dropSpaceEntity before
-                    // dragReleaseSystem removes the Held component.
-                    deliverySystem();
-                    dragReleaseSystem();
-                    _isDragging = false;
-                }
-                break;
-            }
+            _machineEnt.get<CoffeeSpawner>().active = true;
+            std::cout << "[Pour] ON\n";
         }
+        if (isTriggeredEvent(_inputEnt.entity(), Controls::KeyUp)
+            && input.keyScancode == SDL_SCANCODE_SPACE
+            && _machineEnt.get<CoffeeSpawner>().active)
+        {
+            _machineEnt.get<CoffeeSpawner>().active = false;
+            std::cout << "[Pour] OFF\n";
+        }
+
+        // deliverySystem reads DragIntent.dropSpaceEntity on release before
+        // dragAndDropSystem resets the intent to None.
+        deliverySystem();
+        dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
         coffeeSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
         PhysicsContext::step(dt);
         liquidSensorEventSystem();        // count drops into cup; cleanup spilled
-        dropSpaceDetectionSystem(); // update Held.dropSpaceEntity
+        dropSpaceDetectionSystem(); // update DragIntent.dropSpaceEntity
+
         syncTransformFromBody();    // physics position -> Transform
 
         behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)

@@ -39,15 +39,20 @@ void doSomething(int x)
 | Exceptions | None — use `assert` for programmer errors, `std::expected`/error codes for recoverable failures |
 | `optional` | Nullable returns/optional params — not as a pointer substitute |
 | `final` / `= delete` | `final` when inheritance unintended; delete ctors on utility classes |
+| Operators | Overload only where it improves readability (math types, comparison) |
+| Assertions | `assert` for internal preconditions; `static_assert` for compile-time rules |
 
 ```cpp
-// ✅ Component struct
+// ✅ Component struct — no behavior
 struct Health
 {
     int  points{};
     bool isInvulnerable{};
     bool isDead{};
 };
+
+// ✅ Designated initializers — explicit field names
+auto t = Transform{.x = x, .y = y, .w = sw, .h = sh};
 
 // ✅ Utility system — no instantiation
 class MovementSystem final : bagel::NoInstance {};

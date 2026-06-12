@@ -13,7 +13,7 @@ protected:
 
 private:
     bagel::Entity _machineEnt{static_cast<bagel::ent_type>(-1)};
-    bool          _isDragging{false};
+    bagel::Entity _inputEnt{static_cast<bagel::ent_type>(-1)};
 
     static constexpr int  CUP_CAPACITY = 50;
     static constexpr auto BG_PATH = "bg.png";

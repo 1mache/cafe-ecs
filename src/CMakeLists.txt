@@ -13,11 +13,9 @@ target_sources(
     component/CoffeeSpawner.h
     component/CleanupZone.h
     component/Behavior.h
-    component/Draggable.h
-    component/Draggable.cpp
+    component/DragIntent.h
     component/DropSpace.h
     component/DropType.h
-    component/Held.h
     component/InSensorArea.h
     component/Leaving.h
     component/Order.h
@@ -38,8 +36,8 @@ target_sources(
     system/CustomerSystem.cpp
     system/DragAndDropSystem.h
     system/DragAndDropSystem.cpp
-    system/InputSystem.h
-    system/InputSystem.cpp
+    system/IntentSystem.h
+    system/IntentSystem.cpp
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/Systems.h
