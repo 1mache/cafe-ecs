@@ -18,9 +18,13 @@ target_sources(
     component/DropSpace.h
     component/DropType.h
     component/Held.h
+    component/InSensorArea.h
     component/Leaving.h
     component/Order.h
     component/Served.h
+    component/SdlEvents.h
+    component/Sensor.h
+    component/Sensor.cpp
     component/Components.h
 
     # systems
@@ -35,6 +39,9 @@ target_sources(
     system/DragAndDropSystem.h
     system/DragAndDropSystem.cpp
     system/InputSystem.h
+    system/InputSystem.cpp
+    system/SensorSystem.h
+    system/SensorSystem.cpp
     system/Systems.h
 
     # entities

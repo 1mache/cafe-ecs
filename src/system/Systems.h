@@ -5,4 +5,5 @@
 #include "InputSystem.h"
 #include "LiquidSystem.h"
 #include "RenderSystem.h"
+#include "SensorSystem.h"
 #include "TransformSystem.h"
