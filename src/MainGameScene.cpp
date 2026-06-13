@@ -7,6 +7,23 @@
 
 #include <iostream>
 
+namespace
+{
+// TODO: move pour-key handling into the InputSystem/InputManager once it exists;
+// the scene should read a PourIntent-writing input system, not poll SDL directly.
+// Maps a key to a pour pipe index (Ingredient order). -1 if the key isn't a pour key.
+int pipeIndexForScancode(SDL_Scancode sc)
+{
+    switch (sc)
+    {
+    case SDL_SCANCODE_1: return static_cast<int>(cafe::Ingredient::Coffee);
+    case SDL_SCANCODE_2: return static_cast<int>(cafe::Ingredient::Milk);
+    case SDL_SCANCODE_3: return static_cast<int>(cafe::Ingredient::Water);
+    default:             return -1;
+    }
+}
+} // namespace
+
 void cafe::MainGameScene::onInit()
 {
     PhysicsContext::init();
@@ -20,7 +37,9 @@ void cafe::MainGameScene::onInit()
     createBg(assets, BG_PATH);
     createBartop(assets);
 
-    _machineEnt = createCoffeeMachine(assets, {-6.f, -1.f}, {0.f, -0.5f});
+    auto machine = createCoffeeMachine(assets, {-6.f, -1.f});
+    for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
+        _pipes[i] = machine.pipes[i];
 
     createCup(assets, {-4.f, -1.f}, CUP_CAPACITY);
     createPastry({4.f, -3.f},  assets);
@@ -28,8 +47,8 @@ void cafe::MainGameScene::onInit()
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone();
 
-    std::cout << "[Demo] Hold SPACE to pour coffee. Left-drag to move the cup or pastry.\n"
-              << "[Demo] Serve a FULL cup + pastry to the customer in 60 s.\n";
+    std::cout << "[Demo] Hold 1/2/3 to pour Coffee/Milk/Water. Left-drag to move the cup or pastry.\n"
+              << "[Demo] Serve a cup matching the order ratio + a pastry to the customer in 60 s.\n";
 
     // --- Customer ---
     Order customerOrder{ .ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true };
@@ -77,16 +96,16 @@ bool cafe::MainGameScene::onUpdate(float dt)
         // SPACE toggles coffee pour (key down/up edges).
         if (isTriggeredEvent(_inputEnt.entity(), Controls::KeyDown)
             && input.keyScancode == SDL_SCANCODE_SPACE
-            && !_machineEnt.get<CoffeeSpawner>().active)
+            && !_pipes[0].get<PourIntent>().active)
         {
-            _machineEnt.get<CoffeeSpawner>().active = true;
+            _pipes[0].get<PourIntent>().active = true;
             std::cout << "[Pour] ON\n";
         }
         if (isTriggeredEvent(_inputEnt.entity(), Controls::KeyUp)
             && input.keyScancode == SDL_SCANCODE_SPACE
-            && _machineEnt.get<CoffeeSpawner>().active)
+            && _pipes[0].get<PourIntent>().active)
         {
-            _machineEnt.get<CoffeeSpawner>().active = false;
+            _pipes[0].get<PourIntent>().active = false;
             std::cout << "[Pour] OFF\n";
         }
 
@@ -95,6 +114,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
         deliverySystem();
         dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
+        pourControlSystem();                           // PourIntent -> CoffeeSpawner.active
         coffeeSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
         PhysicsContext::step(dt);
         liquidSensorEventSystem();        // count drops into cup; cleanup spilled

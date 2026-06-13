@@ -27,6 +27,8 @@ add_executable(UnitTestSpawner
     ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
+    ${CMAKE_SOURCE_DIR}/src/AssetManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/Texture.cpp
     ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp)
 target_link_libraries(UnitTestSpawner
     PRIVATE
@@ -69,6 +71,8 @@ add_executable(UnitTestFill
     ${CMAKE_SOURCE_DIR}/src/entity/CoffeeMachineFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/CleanupZoneFactory.cpp
     ${CMAKE_SOURCE_DIR}/src/entity/Entities.cpp
+    ${CMAKE_SOURCE_DIR}/src/AssetManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/Texture.cpp
     ${CMAKE_SOURCE_DIR}/src/PhysicsContext.cpp)
 target_link_libraries(UnitTestFill
     PRIVATE
@@ -97,5 +101,32 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 endif()
 
 catch_discover_tests(UnitTestFill
+    DISCOVERY_MODE PRE_TEST
+    DL_PATHS "${_compiler_bin_dir}")
+
+# Pure ratio-grading logic — no SDL or Box2D needed.
+add_executable(UnitTestOrderMatch
+    test_order_match.cpp
+    ${CMAKE_SOURCE_DIR}/src/OrderMatch.cpp)
+target_link_libraries(UnitTestOrderMatch PRIVATE Catch2::Catch2WithMain)
+target_include_directories(UnitTestOrderMatch
+    SYSTEM PRIVATE
+        "${CMAKE_SOURCE_DIR}/dependencies/bagel")
+target_include_directories(UnitTestOrderMatch
+    PRIVATE
+        "${CMAKE_SOURCE_DIR}/src"
+        "${CMAKE_SOURCE_DIR}/src/component")
+
+if(${ENABLE_WARNINGS})
+    target_set_warnings(
+        TARGET UnitTestOrderMatch
+        ENABLE ${ENABLE_WARNINGS}
+        AS_ERRORS ${ENABLE_WARNINGS_AS_ERRORS})
+endif()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(UnitTestOrderMatch PRIVATE -Wno-old-style-cast)
+endif()
+
+catch_discover_tests(UnitTestOrderMatch
     DISCOVERY_MODE PRE_TEST
     DL_PATHS "${_compiler_bin_dir}")

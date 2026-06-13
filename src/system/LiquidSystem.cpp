@@ -26,16 +26,28 @@ struct DebugStats
 DebugStats g_stats;
 } // namespace
 
-void coffeeSpawnerSystemImpl(float dtSeconds,
-                             const std::function<void(WorldPos)>& spawnDrop)
+void pourControlSystem()
 {
     static const bagel::Mask mask =
-        bagel::MaskBuilder().set<CoffeeSpawner>().set<Transform>().build();
+        bagel::MaskBuilder().set<LiquidSpawner>().set<PourIntent>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(mask)) continue;
-        auto& s = e.get<CoffeeSpawner>();
+        e.get<LiquidSpawner>().active = e.get<PourIntent>().active;
+    }
+}
+
+void coffeeSpawnerSystemImpl(float dtSeconds,
+                             const std::function<void(WorldPos, Ingredient)>& spawnDrop)
+{
+    static const bagel::Mask mask =
+        bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+        auto& s = e.get<LiquidSpawner>();
         if (!s.active) continue;
 
         const auto& t = e.get<Transform>();
@@ -44,7 +56,7 @@ void coffeeSpawnerSystemImpl(float dtSeconds,
         while (s.accumulator >= s.interval)
         {
             s.accumulator -= s.interval;
-            spawnDrop({ t.x + s.offset.x, t.y + s.offset.y });
+            spawnDrop({ t.x + s.offset.x, t.y + s.offset.y }, s.kind);
         }
     }
 }
@@ -53,8 +65,8 @@ void coffeeSpawnerSystem(float dtSeconds, AssetManager& assets)
 {
     // We don't need to track each drop's entity; the sensor system finds them
     // again through their bodies' userData when destroying them.
-    coffeeSpawnerSystemImpl(dtSeconds, [&assets](WorldPos p) {
-        (void)createLiquidDrop(assets, p);
+    coffeeSpawnerSystemImpl(dtSeconds, [&assets](WorldPos p, Ingredient kind) {
+        (void)createLiquidDrop(assets, p, kind);
         ++g_stats.spawned;
     });
 }
@@ -99,27 +111,27 @@ void liquidSensorEventSystem()
                 static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(cupBody)))
             } };
 
-            // Cup full → deflect sideways + upward. CLEANUP destroys the drop later.
-            if (cup.test(cupMask) && cup.get<Cup>().isFull())
-            {
-                const b2BodyId dropBody = b2Shape_GetBody(be.visitorShapeId);
-                const b2Vec2   dropPos  = b2Body_GetPosition(dropBody);
-                const b2Vec2   cupPos   = b2Body_GetPosition(cupBody);
-                const float    side     = (dropPos.x >= cupPos.x) ? 1.f : -1.f;
-                b2Body_SetLinearVelocity(dropBody, { side * 3.f, 5.f });
-
-                if (g_stats.overflowed == 0)
-                    std::cout << "[Spill] cup overflowed for the first time" << std::endl;
-                ++g_stats.overflowed;
-                continue;
-            }
+            // // Cup full → deflect sideways + upward. CLEANUP destroys the drop later.
+            // if (cup.test(cupMask) && cup.get<Cup>().isFull())
+            // {
+            //     const b2BodyId dropBody = b2Shape_GetBody(be.visitorShapeId);
+            //     const b2Vec2   dropPos  = b2Body_GetPosition(dropBody);
+            //     const b2Vec2   cupPos   = b2Body_GetPosition(cupBody);
+            //     const float    side     = (dropPos.x >= cupPos.x) ? 1.f : -1.f;
+            //     b2Body_SetLinearVelocity(dropBody, { side * 3.f, 5.f });
+            //
+            //     if (g_stats.overflowed == 0)
+            //         std::cout << "[Spill] cup overflowed for the first time" << std::endl;
+            //     ++g_stats.overflowed;
+            //     continue;
+            // }
 
             if (cup.test(cupMask))
             {
                 auto& c = cup.get<Cup>();
-                ++c.filled;
-                if (c.filled == c.capacity)
-                    std::cout << "[CupFull] cup is full (" << c.filled
+                ++c.filled[static_cast<size_t>(visitor.get<Liquid>().kind)];
+                if (c.totalFilled() == c.capacity)
+                    std::cout << "[CupFull] cup is full (" << c.totalFilled()
                               << "/" << c.capacity << ")" << std::endl;
             }
             ++g_stats.caught;
@@ -158,7 +170,7 @@ void dumpDebugStatsEvery(float dtSeconds)
         if (e.test(cupMask))
         {
             const auto& c = e.get<Cup>();
-            totalFilled   += c.filled;
+            totalFilled   += c.totalFilled();
             totalCapacity += c.capacity;
         }
         if (e.test(liquidMask)) ++liveDrops;

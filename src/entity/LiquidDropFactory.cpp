@@ -11,7 +11,7 @@ namespace cafe
 {
 namespace
 {
-bagel::Entity createLiquidDropCommon(WorldPos pos, SDL_Texture* tex, SDL_FRect src)
+bagel::Entity createLiquidDropCommon(WorldPos pos, Ingredient kind, SDL_Texture* tex, SDL_FRect src)
 {
     auto ent = bagel::Entity::create();
     constexpr float r = 0.06f; // ~0.5 px radius. Raise to 0.10f if drops jitter.
@@ -35,7 +35,7 @@ bagel::Entity createLiquidDropCommon(WorldPos pos, SDL_Texture* tex, SDL_FRect s
     b2CreateCircleShape(body, &sd, &circle);
 
     ent.addAll(
-        Liquid{},
+        Liquid{ kind },
         Transform{ .x = pos.x, .y = pos.y, .w = r, .h = r },
         Drawable{ tex, src, layer::LIQUID },
         PhysicsBody{ body }
@@ -44,15 +44,15 @@ bagel::Entity createLiquidDropCommon(WorldPos pos, SDL_Texture* tex, SDL_FRect s
 }
 } // namespace
 
-bagel::Entity createLiquidDrop(AssetManager& assets, WorldPos pos)
+bagel::Entity createLiquidDrop(AssetManager& assets, WorldPos pos, Ingredient kind)
 {
     static constexpr auto TEX = "particle.png";
     const Texture& tex = assets.getTexture(TEX);
-    return createLiquidDropCommon(pos, tex.get(), tex.getFullSrcRect());
+    return createLiquidDropCommon(pos, kind, tex.get(), tex.getFullSrcRect());
 }
 
-bagel::Entity createLiquidDropHeadless(WorldPos pos)
+bagel::Entity createLiquidDropHeadless(WorldPos pos, Ingredient kind)
 {
-    return createLiquidDropCommon(pos, nullptr, { 0.f, 0.f, 2.f, 2.f });
+    return createLiquidDropCommon(pos, kind, nullptr, { 0.f, 0.f, 2.f, 2.f });
 }
 } // namespace cafe

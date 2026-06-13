@@ -7,8 +7,10 @@ target_sources(
     component/Transform.cpp
     component/Drawable.h
     component/ChildOf.h
+    component/Ingredient.h
     component/Liquid.h
     component/PhysicsBody.h
+    component/PourIntent.h
     component/Cup.h
     component/CoffeeSpawner.h
     component/CleanupZone.h
@@ -69,6 +71,8 @@ target_sources(
     Utils.h
     RenderContext.h
     RenderLayers.h
+    OrderMatch.h
+    OrderMatch.cpp
 
     PhysicsFilters.h
     PhysicsContext.h
