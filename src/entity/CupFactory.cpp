@@ -75,7 +75,7 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
 
 bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
 {
-    static constexpr auto TEX = "big_cup.png";
+    static constexpr auto TEX = "cup.png";
     const Texture& tex = assets.getTexture(TEX);
     auto [w, h] = tex.getSize();
     return createCupCommon(pos, capacity, tex.get());

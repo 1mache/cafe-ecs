@@ -38,7 +38,7 @@ void cafe::MainGameScene::onInit()
     constexpr float ICON_DY   = 2.f;
     if (customerOrder.hasDrink)
     {
-        // Drink icon (right) — front frame of big_cup (16x16).
+        // Drink icon (right) — front frame of cup (16x16).
         createOrderIcon(assets,
                         2,
                         ICON_SIZE,
