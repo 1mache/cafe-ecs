@@ -123,7 +123,6 @@ void liquidSensorEventSystem()
                               << "/" << c.capacity << ")" << std::endl;
             }
             ++g_stats.caught;
-            toDestroy.push_back(visitorId);
         }
         else if (sensorCat & filter::CLEANUP)
         {

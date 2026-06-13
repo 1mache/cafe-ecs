@@ -136,7 +136,7 @@ SDL_FRect transformToFrect(const Transform& t)
 ### `constexpr`
 
 Use `constexpr` wherever the value or computation can be known at compile time.
-
+Naming convention: all caps snake case. Example for coffee color: COFFEE_COLOR. not kCoffeeColor
 ```cpp
 static constexpr float PTM = 30.f;
 constexpr b2Vec2 transformToB2Pos(const Transform& t) { return {t.x, t.y}; }
