@@ -11,15 +11,41 @@
 
 namespace cafe
 {
-// Cup geometry shared between the SDL-driven and headless factories.
-// Three solid wall shapes + one interior sensor on a single kinematic body.
-static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* tex)
+namespace
 {
-    const float halfW = screenToWorldScale(CUP_DIMS.x);
-    const float halfH = screenToWorldScale(CUP_DIMS.y);
+constexpr auto  TEX                    = "cup.png";
+
+constexpr float WALL_W_PIX             = 1.f;
+constexpr float WALL_H_PIX             = 15.f;
+constexpr float L_WALL_X_OFFSET_PIX    = 0.f;
+constexpr float R_WALL_X_OFFSET_PIX    = 7.f;
+constexpr float CUP_WALLS_Y_OFFSET_PIX = 11.f;
+constexpr float CUP_BOTTOM_Y_OFFSET_PIX= 2.f;
+constexpr float BOTTOM_W_PIX           = 14.f;
+constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
+} // namespace
+
+bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
+{
+    const Texture& tex = assets.getTexture(TEX);
+    constexpr float halfW = screenToWorldScale(CUP_DIMS.x);
+    constexpr float halfH = screenToWorldScale(CUP_DIMS.y);
 
     // wall thickness in world units (1 pixel)
-    const float wallT = screenToWorldScale(1.f);
+    const float wallW     = screenToWorldDistance(WALL_W_PIX);
+    const float wallHalfH = screenToWorldScale(WALL_H_PIX);
+    const float wallHalfW = screenToWorldScale(WALL_W_PIX);
+    const float leftWallX =
+        (-halfW + screenToWorldDistance(L_WALL_X_OFFSET_PIX) + wallW);
+    const float rightWallX =
+        (halfW - screenToWorldDistance(R_WALL_X_OFFSET_PIX) - wallW);
+    const float wallY       = -halfH + screenToWorldDistance(CUP_WALLS_Y_OFFSET_PIX);
+    const float bottomHalfH = wallHalfW; // same thickness as walls
+    const float bottomHalfW = screenToWorldScale(BOTTOM_W_PIX);
+    const float bottomX     = (-halfW + screenToWorldDistance(BOTTOM_L_OFFSET_PIX) + bottomHalfW);
+    const float bottomY =
+        -halfH + wallW + screenToWorldDistance(CUP_BOTTOM_Y_OFFSET_PIX);
+
     Transform t{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH };
 
     auto cupBack  = bagel::Entity::create();
@@ -35,9 +61,9 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
     b2ShapeDef wall = b2DefaultShapeDef();
     wall.filter.categoryBits = filter::CUP_SOLID;
     wall.filter.maskBits     = filter::MASK_CUP_SOLID;
-    b2Polygon leftWall  = b2MakeOffsetBox(wallT, halfH, { -halfW + wallT, 0.f }, b2Rot_identity);
-    b2Polygon rightWall = b2MakeOffsetBox(wallT, halfH, {  halfW - wallT, 0.f }, b2Rot_identity);
-    b2Polygon bottom    = b2MakeOffsetBox(halfW, wallT, { 0.f, -halfH + wallT }, b2Rot_identity);
+    b2Polygon leftWall  = b2MakeOffsetBox(wallHalfW, wallHalfH, { leftWallX, wallY }, b2Rot_identity);
+    b2Polygon rightWall = b2MakeOffsetBox(wallHalfW, wallHalfH, { rightWallX, wallY }, b2Rot_identity);
+    b2Polygon bottom    = b2MakeOffsetBox(bottomHalfW, bottomHalfH, { bottomX, bottomY }, b2Rot_identity);
     b2CreatePolygonShape(body, &wall, &leftWall);
     b2CreatePolygonShape(body, &wall, &rightWall);
     b2CreatePolygonShape(body, &wall, &bottom);
@@ -49,8 +75,8 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
     sensor.enableSensorEvents  = true;
     sensor.filter.categoryBits = filter::CUP_INSIDE;
     sensor.filter.maskBits     = filter::MASK_CUP_INSIDE;
-    b2Polygon interior = b2MakeOffsetBox(halfW - wallT, halfH - wallT,
-                                         { 0.f, wallT * 0.5f }, b2Rot_identity);
+    b2Polygon interior = b2MakeOffsetBox(halfW - wallW, halfH - wallW,
+                                         { 0.f, wallW * 0.5f }, b2Rot_identity);
     b2CreatePolygonShape(body, &sensor, &interior);
 
     SDL_FRect frontSrcRect = {0, 0, CUP_DIMS.x, CUP_DIMS.y};
@@ -58,7 +84,7 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
 
     cupBack.addAll(
         t,
-        Drawable{ tex, backSrcRect, layer::CONTAINER_BACK },
+        Drawable{ tex.get(), backSrcRect, layer::CONTAINER_BACK },
         PhysicsBody{ body },
         Cup{ .capacity = capacity },
         DragIntent{ .dropType = DropType::cup }
@@ -68,24 +94,10 @@ static bagel::Entity createCupCommon(WorldPos pos, int capacity, SDL_Texture* te
 
     cupFront.addAll(
         Transform(t),
-        Drawable{ tex, frontSrcRect, layer::CONTAINER_FRONT },
+        Drawable{ tex.get(), frontSrcRect, layer::CONTAINER_FRONT },
         ChildOf(cupBack, {}));
 
     return cupBack;
 }
 
-bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
-{
-    static constexpr auto TEX = "big_cup.png";
-    const Texture& tex = assets.getTexture(TEX);
-    auto [w, h] = tex.getSize();
-    return createCupCommon(pos, capacity, tex.get());
-}
-
-bagel::Entity createCupHeadless(WorldPos pos, float texW, float texH, int capacity)
-{
-    const float halfW = screenToWorldScale(CUP_DIMS.x);
-    const float halfH = screenToWorldScale(CUP_DIMS.y);
-    return createCupCommon(pos, capacity, nullptr);
-}
 } // namespace cafe

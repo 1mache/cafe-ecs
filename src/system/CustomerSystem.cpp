@@ -1,10 +1,23 @@
 #include "Components.h"
 #include "CustomerSystem.h"
+#include "OrderMatch.h"
 #include <bagel.h>
 #include <iostream>
 
 namespace cafe
 {
+namespace
+{
+int gradeToRating(DrinkGrade g)
+{
+    switch (g)
+    {
+    case DrinkGrade::Perfect:    return 2;
+    case DrinkGrade::Acceptable: return 1;
+    default:                     return 0;
+    }
+}
+} // namespace
 
 void behaviorSystem(float dtSeconds)
 {
@@ -51,9 +64,20 @@ void deliverySystem()
 
         auto& served = target.get<Served>();
         if (e.has<Cup>())
-            served.drink = served.drink || e.get<Cup>().isFull();
+        {
+            const Cup& cup = e.get<Cup>();
+            // Only a sufficiently full cup counts as a served drink; its ratio
+            // sets the grade.
+            if (cup.fillPercent() >= MIN_SERVE_FILL && target.has<Order>())
+            {
+                served.drink      = true;
+                served.drinkGrade = gradeDrinkRatio(target.get<Order>(), cup);
+            }
+        }
         else
+        {
             served.pastry = true;
+        }
     }
 }
 
@@ -75,7 +99,9 @@ void orderSystem()
 
         if (drinkOk && pastryOk)
         {
-            e.get<Behavior>().rating = 1;
+            // Drink quality drives the rating; pastry-only orders just succeed.
+            e.get<Behavior>().rating =
+                order.hasDrink ? gradeToRating(served.drinkGrade) : 1;
             e.add(Leaving{});
         }
     }
