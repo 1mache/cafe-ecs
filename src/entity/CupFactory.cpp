@@ -82,10 +82,4 @@ bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
     return createCupCommon(pos, capacity, tex.get());
 }
 
-bagel::Entity createCupHeadless(WorldPos pos, float texW, float texH, int capacity)
-{
-    const float halfW = screenToWorldScale(CUP_DIMS.x);
-    const float halfH = screenToWorldScale(CUP_DIMS.y);
-    return createCupCommon(pos, capacity, nullptr);
-}
 } // namespace cafe

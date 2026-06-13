@@ -39,8 +39,7 @@ void pourControlSystem()
     }
 }
 
-void liquidSpawnerSystemImpl(float dtSeconds,
-                             const std::function<void(WorldPos, Ingredient)>& spawnDrop)
+void liquidSpawnerSystem(float dtSeconds, AssetManager& assets)
 {
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
@@ -56,24 +55,13 @@ void liquidSpawnerSystemImpl(float dtSeconds,
 
         const auto& t = e.get<Transform>();
         s.accumulator += dtSeconds;
-        // while() so a long frame can fire multiple drops in one tick
         while (s.accumulator >= s.interval)
         {
             s.accumulator -= s.interval;
-
-            spawnDrop({ t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
+            (void)createLiquidDrop(assets, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
+            ++g_stats.spawned;
         }
     }
-}
-
-void liquidSpawnerSystem(float dtSeconds, AssetManager& assets)
-{
-    // We don't need to track each drop's entity; the sensor system finds them
-    // again through their bodies' userData when destroying them.
-    liquidSpawnerSystemImpl(dtSeconds, [&assets](WorldPos p, Ingredient kind) {
-        (void)createLiquidDrop(assets, p, kind);
-        ++g_stats.spawned;
-    });
 }
 
 void liquidSensorEventSystem()

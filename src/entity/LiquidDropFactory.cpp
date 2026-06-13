@@ -27,7 +27,7 @@ bagel::Entity createLiquidDropCommon(WorldPos pos, Ingredient kind, SDL_Texture*
     // Visitor side of a sensor pair must also opt in to sensor events.
     b2ShapeDef sd = b2DefaultShapeDef();
     sd.density             = 0.1f;
-    sd.material.friction   = 1.f;
+    sd.material.friction   = 2.f;
     sd.enableSensorEvents  = true;
     sd.filter.categoryBits = filter::LIQUID;
     sd.filter.maskBits     = filter::MASK_LIQUID | filter::LIQUID;
@@ -52,8 +52,4 @@ bagel::Entity createLiquidDrop(AssetManager& assets, WorldPos pos, Ingredient ki
     return createLiquidDropCommon(pos, kind, tex.get(), tex.getFullSrcRect());
 }
 
-bagel::Entity createLiquidDropHeadless(WorldPos pos, Ingredient kind)
-{
-    return createLiquidDropCommon(pos, kind, nullptr, { 0.f, 0.f, 2.f, 2.f });
-}
 } // namespace cafe

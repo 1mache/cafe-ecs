@@ -4,4 +4,5 @@
 namespace cafe
 {
 void drawSystem(SDL_Renderer* renderer);
+void debugDrawCupWalls(SDL_Renderer* renderer);
 } // namespace cafe

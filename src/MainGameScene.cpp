@@ -130,6 +130,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
         SDL_RenderClear(renderer);
         drawSystem(renderer);       // sorted by renderLayer ascending
+        debugDrawCupWalls(renderer);
         SDL_RenderPresent(renderer);
 
     return true;
