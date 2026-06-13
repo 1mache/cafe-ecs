@@ -23,7 +23,7 @@ TEST_CASE("coffeeSpawnerSystem emits at the configured interval",
     // 10 ticks of dt = 0.05 s → total simulated time = 0.5 s
     // Interval = 0.1 s → expect 5 drops.
     for (int i = 0; i < 10; ++i)
-        coffeeSpawnerSystemImpl(0.05f, capture);
+        liquidSpawnerSystemImpl(0.05f, capture);
 
     REQUIRE(drops.size() == 5);
     for (const auto& d : drops) {
@@ -44,7 +44,7 @@ TEST_CASE("coffeeSpawnerSystem does not emit while inactive",
                        .active = false, .offset = {0.f, 0.f} });
 
     std::vector<WorldPos> drops;
-    coffeeSpawnerSystemImpl(1.0f, [&](WorldPos p, Ingredient){ drops.push_back(p); });
+    liquidSpawnerSystemImpl(1.0f, [&](WorldPos p, Ingredient){ drops.push_back(p); });
     REQUIRE(drops.empty());
 
     ent.destroy();
@@ -59,7 +59,7 @@ TEST_CASE("coffeeSpawnerSystem applies spawn offset", "[spawner]")
                        .active = true, .offset = { 1.f, -0.5f } });
 
     std::vector<WorldPos> drops;
-    coffeeSpawnerSystemImpl(0.15f, [&](WorldPos p, Ingredient){ drops.push_back(p); });
+    liquidSpawnerSystemImpl(0.15f, [&](WorldPos p, Ingredient){ drops.push_back(p); });
 
     REQUIRE(drops.size() == 1);
     REQUIRE(drops[0].x == 4.0f);   // 3 + 1
@@ -83,7 +83,7 @@ TEST_CASE("each spawner emits drops of its own ingredient", "[spawner]")
 
     // 0.15 s with interval 0.1 → one drop from each spawner.
     std::vector<Ingredient> kinds;
-    coffeeSpawnerSystemImpl(0.15f, [&](WorldPos, Ingredient k){ kinds.push_back(k); });
+    liquidSpawnerSystemImpl(0.15f, [&](WorldPos, Ingredient k){ kinds.push_back(k); });
 
     REQUIRE(kinds.size() == 2);
     const bool hasCoffee =

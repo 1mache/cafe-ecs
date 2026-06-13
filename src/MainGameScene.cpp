@@ -115,7 +115,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
         dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
         pourControlSystem();                           // PourIntent -> CoffeeSpawner.active
-        coffeeSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
+        liquidSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
         PhysicsContext::step(dt);
         liquidSensorEventSystem();        // count drops into cup; cleanup spilled
         dropSpaceDetectionSystem(); // update DragIntent.dropSpaceEntity

@@ -13,10 +13,10 @@ class AssetManager;
 void pourControlSystem();
 
 /** @brief Spawns drops from every active CoffeeSpawner, each of its own kind. */
-void coffeeSpawnerSystem(float dtSeconds, AssetManager& assets);
+void liquidSpawnerSystem(float dtSeconds, AssetManager& assets);
 
 /** @brief Same as coffeeSpawnerSystem but emits through @p spawnDrop — for tests without Box2D. */
-void coffeeSpawnerSystemImpl(float dtSeconds,
+void liquidSpawnerSystemImpl(float dtSeconds,
                              const std::function<void(WorldPos, Ingredient)>& spawnDrop);
 
 /** @brief Drains Box2D sensor events: counts cup fills and destroys drops on contact. */

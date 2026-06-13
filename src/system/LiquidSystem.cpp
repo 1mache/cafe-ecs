@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <random>
 
 namespace cafe
 {
@@ -38,11 +39,14 @@ void pourControlSystem()
     }
 }
 
-void coffeeSpawnerSystemImpl(float dtSeconds,
+void liquidSpawnerSystemImpl(float dtSeconds,
                              const std::function<void(WorldPos, Ingredient)>& spawnDrop)
 {
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
+
+    static std::mt19937 rng{ std::random_device{}() };
+    static std::uniform_real_distribution jitter(-0.025f, 0.025f);
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -56,16 +60,17 @@ void coffeeSpawnerSystemImpl(float dtSeconds,
         while (s.accumulator >= s.interval)
         {
             s.accumulator -= s.interval;
-            spawnDrop({ t.x + s.offset.x, t.y + s.offset.y }, s.kind);
+
+            spawnDrop({ t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
         }
     }
 }
 
-void coffeeSpawnerSystem(float dtSeconds, AssetManager& assets)
+void liquidSpawnerSystem(float dtSeconds, AssetManager& assets)
 {
     // We don't need to track each drop's entity; the sensor system finds them
     // again through their bodies' userData when destroying them.
-    coffeeSpawnerSystemImpl(dtSeconds, [&assets](WorldPos p, Ingredient kind) {
+    liquidSpawnerSystemImpl(dtSeconds, [&assets](WorldPos p, Ingredient kind) {
         (void)createLiquidDrop(assets, p, kind);
         ++g_stats.spawned;
     });
