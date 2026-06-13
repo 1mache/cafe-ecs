@@ -1,5 +1,5 @@
 ---
-description: ECS design practices — system boundaries, components, and isolated test entry points
+description: ECS design practices — system boundaries, components, input, and isolated test entry points
 alwaysApply: true
 ---
 
@@ -27,7 +27,7 @@ float dx = MoveIntent::get(ent).dx; // MovementSystem knows nothing about input
 
 ## Systems Are Cheap, Components Are Not
 
-Prefer more systems over bloated ones. A system per enemy type is fine. A component per enemy type is not — components should be general enough to reuse across entity types.
+Prefer more systems over bloated ones. A system per enemy type is fine. A component per enemy type is not — components should be general enough to reuse across entity types. Do not over-split into too many components/systems either; that makes relationships hard to follow.
 
 ```cpp
 // ❌ BAD — one component per enemy variant
@@ -40,6 +40,18 @@ class TurretSystem final : bagel::NoInstance {};
 ```
 
 Components are plain-data structs with no behavior — systems operate on them externally.
+
+## Render Layers
+
+Every `Drawable` entity must specify a render layer. Use existing layers in `RenderLayers.h`; add a new layer there if none fit. Do not draw at an implicit z-order.
+
+## Event Polling
+
+Do not poll SDL events outside a dedicated system. Implement an `InputSystem` that polls events and exposes state via a component (e.g. `InputState`). Other systems read that component — they never touch SDL event queues. Avoid global refs (e.g. coffee machine) and global flags (e.g. `isDragging`).
+
+## Global State
+
+`PhysicsContext` and `RenderContext` are known tech debt. Do not add new globals. Pass what a system needs as parameters so behavior is visible from its signature.
 
 ## Testing Independent Features
 

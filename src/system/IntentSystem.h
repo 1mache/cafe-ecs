@@ -3,6 +3,8 @@
 
 namespace cafe
 {
+void intentSystem(SDL_Renderer* renderer);
+
 inline SDL_FPoint mouseWindowToRenderPoint(SDL_Renderer* renderer,
                                            float         windowX,
                                            float         windowY)

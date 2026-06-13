@@ -1,36 +1,27 @@
 #pragma once
 
-#include <SDL3/SDL.h>
+#include <box2d/box2d.h>
 
 namespace cafe
 {
 /**
- * @brief Called on SDL_EVENT_MOUSE_BUTTON_DOWN.
- *        Hit-tests DropSpace entities at screenPos and re-enables sensor events on any hit body.
+ * @brief Adds a DRAGGABLE sensor shape to body for drag hit-testing via Box2D sensor events.
  */
-void dropSpacePickupSystem(SDL_FPoint screenPos);
+void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH);
 
 /**
- * @brief Called on SDL_EVENT_MOUSE_BUTTON_DOWN.
- *        Finds the topmost Draggable entity under screenPos and attaches a Held component.
+ * @brief Single-pass drag pipeline; run before PhysicsContext::step().
+ *        Switches on DragIntent.intentType per entity:
+ *          - held:     enables sensor events and follows the mouse.
+ *          - released: snaps valid drops / restores gravity, disables sensor
+ *                      events, and resets the intent to None.
+ *        Re-arms DropSpace sensors while anything is held.
  */
-void dragStartSystem(SDL_FPoint screenPos);
-
-/**
- * @brief Called every frame while a button is held.
- *        Moves all Held entities to follow the mouse (only when not hovering a DropSpace).
- */
-void midDragSystem(SDL_FPoint screenPos);
+void dragAndDropSystem();
 
 /**
  * @brief Called after PhysicsContext::step() each frame.
- *        Reads Box2D sensor begin/end events and updates Held.dropSpaceEntity accordingly.
+ *        Reads Box2D sensor begin/end events and updates DragIntent.dropSpaceEntity.
  */
 void dropSpaceDetectionSystem();
-
-/**
- * @brief Called on SDL_EVENT_MOUSE_BUTTON_UP.
- *        Snaps valid drops, restores/cancels gravity, disables sensor events, removes Held.
- */
-void dragReleaseSystem();
 } // namespace cafe
