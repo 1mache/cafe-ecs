@@ -7,5 +7,10 @@ static constexpr SDL_FPoint CUP_DIMS      = {24, 24};
 static constexpr SDL_FPoint MINI_CUP_DIMS = {16, 16};
 static constexpr SDL_FPoint PROP_DIMS     = {16, 16};
 static constexpr SDL_FPoint PERSON_DIMS   = {32, 48};
-static constexpr SDL_FPoint BUBBLE_DIMS   = {64, 24};
+static constexpr SDL_FPoint BUBBLE_DIMS   = {64, 36};
+static constexpr float      BUBBLE_SCALE  = 1.f / 1.7f;
+// Max icons that may stack vertically in one bubble column (e.g. up to 3
+// pastries / coffees per order). Stacking logic itself is not implemented yet;
+// the bubble height and icon size are sized so this many icons would fit.
+static constexpr int        BUBBLE_MAX_ICONS_PER_COLUMN = 3;
 } // namespace cafe

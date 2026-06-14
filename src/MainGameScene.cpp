@@ -44,31 +44,38 @@ void cafe::MainGameScene::onInit()
     // --- Speech bubble + order icons (children of customer) ---
     auto bubbleEnt = createSpeechBubble(
         assets, customerEnt,
-        {0.f, 24.f});
+        {0.f, 28.f});
     // --- Order icons (children of the bubble) ---
-    constexpr float ICON_SIZE = 8.f / 1.5f; // TODO:move somewhere else
-    constexpr float ICON_DX   = 3.f;
-    constexpr float ICON_DY   = 2.f;
+    // The bubble is split into 4 equal columns (quarters of its width):
+    //   0: beverage   1: beverage temp (blank)   2: pastry   3: pastry temp (blank)
+    // Each column can stack up to BUBBLE_MAX_ICONS_PER_COLUMN icons vertically
+    // (stacking logic not implemented yet — icons are sized so they would fit).
+    constexpr float BUBBLE_W  = BUBBLE_DIMS.x * BUBBLE_SCALE; // on-screen px
+    constexpr float BUBBLE_H  = BUBBLE_DIMS.y * BUBBLE_SCALE; // on-screen px
+    constexpr float COL_W     = BUBBLE_W / 4.f;
+    constexpr float ROW_H     = BUBBLE_H / BUBBLE_MAX_ICONS_PER_COLUMN;
+    // Icon must fit both a quarter-width column and one stacked row.
+    constexpr float ICON_SIZE = COL_W < ROW_H ? COL_W : ROW_H;
+    constexpr float ICON_Y    = 0.f;                          // bubble center
+    // Column centers, left -> right, relative to bubble center (+x = right).
+    constexpr float COL_X[4]  = {-1.5f * COL_W, -0.5f * COL_W,
+                                 +0.5f * COL_W, +1.5f * COL_W};
+
     if (customerOrder.hasDrink)
     {
-        // Drink icon (right) — front frame of cup (16x16).
-        createOrderIcon(assets,
-                        2,
-                        ICON_SIZE,
-                        ICON_SIZE,
-                        bubbleEnt,
-                        {ICON_DX, ICON_DY});
+        // Column 0: beverage icon — this drink's coffee frame in props.png.
+        createOrderIcon(assets, recipe.iconFrame, ICON_SIZE, ICON_SIZE,
+                        bubbleEnt, {COL_X[0], ICON_Y});
     }
+    // Column 1: beverage temperature — no art yet, intentionally blank.
+
     if (customerOrder.hasPastry)
     {
-        // Pastry icon (left) — frame 0 of props strip.
-        createOrderIcon(assets,
-                        0,
-                        ICON_SIZE,
-                        ICON_SIZE,
-                        bubbleEnt,
-                        {-ICON_DX, ICON_DY});
+        // Column 2: pastry icon — frame 0 of props strip.
+        createOrderIcon(assets, 0, ICON_SIZE, ICON_SIZE,
+                        bubbleEnt, {COL_X[2], ICON_Y});
     }
+    // Column 3: pastry temperature — no art yet, intentionally blank.
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {

@@ -14,15 +14,17 @@ struct DrinkRecipe
     float       ratio[INGREDIENT_COUNT]; // Coffee, Milk, Water — fractions, sum to 1.0
     bool        allowsHot;
     bool        allowsCold;
+    int         iconFrame;               // index into props.png (16x16 frames)
 };
 
 // Indexed by DrinkType (order MUST match the enum). Each ratio sums to 1.0.
 inline constexpr DrinkRecipe MENU[] = {
-    { "Espresso",   { 1.00f, 0.00f, 0.00f }, true,  false }, // no cold espresso
-    { "Americano",  { 0.33f, 0.00f, 0.67f }, true,  true  },
-    { "Cappuccino", { 0.50f, 0.50f, 0.00f }, true,  true  },
-    { "Latte",      { 0.25f, 0.75f, 0.00f }, true,  true  },
-    { "Macchiato",  { 0.75f, 0.25f, 0.00f }, true,  false },
+    // name           ratio                    hot    cold   iconFrame
+    { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false, 4 }, // no cold espresso
+    { "Americano",   { 0.33f, 0.00f, 0.67f }, true,  true,  5 },
+    { "Cappuccino",  { 0.50f, 0.50f, 0.00f }, true,  true,  7 },
+    { "Black coffee",{ 1.00f, 0.00f, 0.00f }, true,  true,  3 },
+    { "Macchiato",   { 0.75f, 0.25f, 0.00f }, true,  false, 6 },
 };
 static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
               "MENU must have one entry per DrinkType");
