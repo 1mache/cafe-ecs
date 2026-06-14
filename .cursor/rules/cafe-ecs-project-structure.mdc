@@ -1,5 +1,5 @@
 ---
-description: Where to put new code — folder layout and file conventions
+description: Where to put new code — folder layout, helper placement, and file conventions
 globs: src/**,app/**
 alwaysApply: false
 ---
@@ -10,9 +10,9 @@ alwaysApply: false
 app/           # main.cpp + isolated test entry points
 src/
   component/   # one .h per component (+ .cpp only if non-trivial helpers)
-  system/      # systems grouped by cohesion
+  system/      # systems grouped by cohesion (split for merge convenience)
   entity/      # one *Factory per entity type
-  (root)       # contexts, config, assets, utilities
+  (root)       # CafeGame, Scene, contexts, config, assets, utilities
 tests/         # Catch2 unit tests
 res/           # runtime assets
 ```
@@ -21,17 +21,21 @@ res/           # runtime assets
 
 Header contains: (1) plain-data `struct`, (2) `bagel::Storage<>` specialization, (3) conversion/inspect helpers that only touch that component (e.g. `Transform.h`). Add new headers to `Components.h`.
 
+Creation-only helpers tied to a component (e.g. coordinate translation) belong here. Per-frame update helpers may live in the related system file instead.
+
 ## `system/` — grouped by cohesion
 
-Share a file when systems share file-local `static` state or are always one logical unit. Split when a `.cpp` is hard to navigate or concerns diverge. Register in `Systems.h`.
+Share a file when systems share file-local `static` state or are always one logical unit (e.g. fluid-particle systems). Split when a `.cpp` is hard to navigate or concerns diverge — grouping eases merges when teammates work on separate features. Register in `Systems.h`.
 
 ## `entity/` — one `*Factory` per type
 
-`*Factory` suffix avoids collisions with component headers (`Cup.h` vs `CupFactory.h`). Factory creates entity, calls `addAll(...)`, returns it. File-local helpers stay in the same `.cpp`, never in headers. Register in `Entities.h`.
+`*Factory` suffix avoids collisions with component headers (`Cup.h` vs `CupFactory.h`). Factory creates entity, calls `addAll(...)`, returns it. File-local helpers (e.g. `createCupCommon`) stay in the same `.cpp`, never in headers. Register in `Entities.h`.
+
+Logically related creation helpers can sit in the same factory file. Alternative: helpers for drag-and-drop placement may live near the dropspace system if they are about placement, not construction.
 
 ## `src/` root
 
-Contexts (`RenderContext`, `PhysicsContext`), config (`GameConfig.h`), asset wrappers (`Assets`, `AssetManager`, `Texture`), and small utilities — not components or systems.
+`CafeGame`, `Scene`/`MainGameScene`, contexts (`RenderContext`, `PhysicsContext`), config (`GameConfig.h`), asset wrappers (`Assets`, `AssetManager`, `Texture`), and small utilities — not components or systems.
 
 ## `app/` — entry points
 

@@ -13,6 +13,7 @@ protected:
     void onCleanup() override;
 
 private:
+    bagel::Entity _inputEnt{ static_cast<bagel::ent_type>(-1) };
     // One pour pipe per ingredient (indexed by Ingredient).
     bagel::Entity _pipes[INGREDIENT_COUNT]{
         bagel::Entity{ static_cast<bagel::ent_type>(-1) },

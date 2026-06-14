@@ -1,22 +1,22 @@
 #include "RenderSystem.h"
 #include "Components.h"
+#include "PhysicsContext.h"
 #include "RenderContext.h"
 #include "Transform.h"
-#include <algorithm>
-#include <vector>
 #include <SDL3/SDL.h>
+#include <algorithm>
 #include <bagel.h>
-#include <vector>
+#include <box2d/box2d.h>
 #include <cmath>
+#include <iostream>
+#include <ostream>
+#include <vector>
 
 namespace cafe
 {
 namespace
 {
-// Rim inset in screen pixels.
-constexpr float kCupRimPx = 1.f;
-
-// Per-ingredient color, shared by drop tinting and the cup fill bands.
+// Per-ingredient color, shared by drop tinting.
 SDL_Color ingredientColor(Ingredient kind)
 {
     switch (kind)
@@ -28,34 +28,7 @@ SDL_Color ingredientColor(Ingredient kind)
     }
 }
 
-// Drawn before the cup sprite so the sprite's rim masks the rect edges.
-// Each ingredient is a colored band, stacked from the bottom up, so the cup
-// visibly shows its mix.
-void drawCupLiquid(SDL_Renderer* r, const SDL_FRect& cupRect, const Cup& c)
-{
-    const float interiorW = cupRect.w - 2.f * kCupRimPx;
-    const float interiorH = cupRect.h - 2.f * kCupRimPx;
-    if (interiorW <= 0.f || interiorH <= 0.f || c.capacity <= 0) return;
 
-    const float x      = std::floor(cupRect.x + kCupRimPx);
-    const float w      = std::floor(interiorW);
-    const float bottom = cupRect.y + kCupRimPx + interiorH; // interior bottom edge
-    float stacked = 0.f; // height already drawn up from the bottom
-
-    for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
-    {
-        if (c.filled[i] <= 0) continue;
-        const float frac  = static_cast<float>(c.filled[i]) / static_cast<float>(c.capacity);
-        const float bandH = std::floor(frac * interiorH);
-        if (bandH <= 0.f) continue;
-
-        const SDL_FRect band{ x, std::floor(bottom - stacked - bandH), w, bandH };
-        const SDL_Color col = ingredientColor(static_cast<Ingredient>(i));
-        SDL_SetRenderDrawColor(r, col.r, col.g, col.b, 255);
-        SDL_RenderFillRect(r, &band);
-        stacked += bandH;
-    }
-}
 } // namespace
 
 void drawSystem(SDL_Renderer* renderer)
@@ -93,9 +66,6 @@ void drawSystem(SDL_Renderer* renderer)
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
-        if (e.has<Cup>())
-            drawCupLiquid(renderer, dstRect, e.get<Cup>());
-
         // tint particles to their ingredient color (shared particle.png)
         if (e.has<Liquid>())
         {
@@ -107,6 +77,41 @@ void drawSystem(SDL_Renderer* renderer)
 
         if (e.has<Liquid>())
             SDL_SetTextureColorMod(d.texture, 255, 255, 255);
+    }
+}
+void debugDrawCupWalls(SDL_Renderer* renderer)
+{
+    static const bagel::Mask mask =
+        bagel::MaskBuilder().set<Cup>().set<PhysicsBody>().build();
+
+    const WorldPos cam = RenderContext::getCameraPos();
+    SDL_SetRenderDrawColor(renderer, 255, 20, 147, 255); // hot pink
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+
+        const b2BodyId body = e.get<PhysicsBody>().id;
+        const b2Transform xf = b2Body_GetTransform(body);
+
+        b2ShapeId shapes[16];
+        const int count = b2Body_GetShapes(body, shapes, 16);
+        for (int i = 0; i < count; ++i)
+        {
+            if (b2Shape_GetType(shapes[i]) != b2_polygonShape) continue;
+            if (b2Shape_IsSensor(shapes[i])) continue;
+
+            const b2Polygon poly = b2Shape_GetPolygon(shapes[i]);
+            for (int v = 0; v < poly.count; ++v)
+            {
+                const b2Vec2 wA = b2TransformPoint(xf, poly.vertices[v]);
+                const b2Vec2 wB = b2TransformPoint(xf, poly.vertices[(v + 1) % poly.count]);
+
+                const SDL_FPoint sA = worldToScreenPoint({ wA.x, wA.y }, cam);
+                const SDL_FPoint sB = worldToScreenPoint({ wB.x, wB.y }, cam);
+                SDL_RenderLine(renderer, sA.x, sA.y, sB.x, sB.y);
+            }
+        }
     }
 }
 } // namespace cafe

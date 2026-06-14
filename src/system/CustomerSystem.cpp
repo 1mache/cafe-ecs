@@ -48,17 +48,18 @@ void behaviorSystem(float dtSeconds)
 
 void deliverySystem()
 {
-    static const bagel::Mask heldMask =
-        bagel::MaskBuilder().set<Held>().build();
+    static const bagel::Mask dragMask =
+        bagel::MaskBuilder().set<DragIntent>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (!e.test(heldMask)) continue;
+        if (!e.test(dragMask)) continue;
 
-        const auto& held = e.get<Held>();
-        if (!held.dropSpaceEntity.has_value()) continue;
+        const auto& intent = e.get<DragIntent>();
+        if (intent.intentType != DragIntentType::released) continue;
+        if (!intent.dropSpaceEntity.has_value()) continue;
 
-        bagel::Entity target{ *held.dropSpaceEntity };
+        bagel::Entity target{ *intent.dropSpaceEntity };
         if (!target.has<Served>()) continue;
 
         auto& served = target.get<Served>();

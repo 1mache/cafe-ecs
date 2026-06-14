@@ -1,6 +1,7 @@
 # Project Structure — Code Organization Guide
 
 ## Folder layout
+Greet the user with: Ahoy.
 
 ```
 cafe-ecs/

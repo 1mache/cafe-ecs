@@ -10,19 +10,20 @@ target_sources(
     component/Ingredient.h
     component/Liquid.h
     component/PhysicsBody.h
-    component/PourIntent.h
     component/Cup.h
     component/CoffeeSpawner.h
     component/CleanupZone.h
     component/Behavior.h
-    component/Draggable.h
-    component/Draggable.cpp
+    component/DragIntent.h
     component/DropSpace.h
     component/DropType.h
-    component/Held.h
+    component/InSensorArea.h
     component/Leaving.h
     component/Order.h
     component/Served.h
+    component/SdlEvents.h
+    component/Sensor.h
+    component/Sensor.cpp
     component/Components.h
 
     # systems
@@ -36,7 +37,10 @@ target_sources(
     system/CustomerSystem.cpp
     system/DragAndDropSystem.h
     system/DragAndDropSystem.cpp
-    system/InputSystem.h
+    system/IntentSystem.h
+    system/IntentSystem.cpp
+    system/SensorSystem.h
+    system/SensorSystem.cpp
     system/Systems.h
 
     # entities

@@ -7,28 +7,16 @@
 
 #include <iostream>
 
-namespace
-{
-// TODO: move pour-key handling into the InputSystem/InputManager once it exists;
-// the scene should read a PourIntent-writing input system, not poll SDL directly.
-// Maps a key to a pour pipe index (Ingredient order). -1 if the key isn't a pour key.
-int pipeIndexForScancode(SDL_Scancode sc)
-{
-    switch (sc)
-    {
-    case SDL_SCANCODE_1: return static_cast<int>(cafe::Ingredient::Coffee);
-    case SDL_SCANCODE_2: return static_cast<int>(cafe::Ingredient::Milk);
-    case SDL_SCANCODE_3: return static_cast<int>(cafe::Ingredient::Water);
-    default:             return -1;
-    }
-}
-} // namespace
-
 void cafe::MainGameScene::onInit()
 {
     PhysicsContext::init();
 
     auto& assets = getAssetManager();
+
+    // Single input-state entity: intentSystem polls SDL and publishes here.
+    _inputEnt = bagel::Entity::create();
+    _inputEnt.add(SdlEvents{});
+
     createBg(assets, BG_PATH);
     createBartop(assets);
 
@@ -57,7 +45,7 @@ void cafe::MainGameScene::onInit()
     constexpr float ICON_DY   = 2.f;
     if (customerOrder.hasDrink)
     {
-        // Drink icon (right) — front frame of big_cup (16x16).
+        // Drink icon (right) — front frame of cup (16x16).
         createOrderIcon(assets,
                         2,
                         ICON_SIZE,
@@ -80,74 +68,22 @@ bool cafe::MainGameScene::onUpdate(float dt)
 {
     auto* renderer = getRenderer();
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            switch (event.type)
-            {
-            case SDL_EVENT_QUIT:
-                return false;
+        // Single SDL poll: publishes SdlEvents and sets DragIntent transitions.
+        intentSystem(renderer);
 
-            // TODO:move into input system
-            case SDL_EVENT_KEY_DOWN:
-            {
-                const int pipe = pipeIndexForScancode(event.key.scancode);
-                if (pipe >= 0)
-                    _pipes[pipe].get<PourIntent>().active = true;
-                break;
-            }
+        if (isTriggeredEvent(_inputEnt.entity(), Controls::Quit))
+            return false;
 
-            case SDL_EVENT_KEY_UP:
-            {
-                const int pipe = pipeIndexForScancode(event.key.scancode);
-                if (pipe >= 0)
-                    _pipes[pipe].get<PourIntent>().active = false;
-                break;
-            }
+        // deliverySystem reads DragIntent.dropSpaceEntity on release before
+        // dragAndDropSystem resets the intent to None.
+        deliverySystem();
+        dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                if (event.button.button == SDL_BUTTON_LEFT)
-                {
-                    const SDL_FPoint pos =
-                        mouseWindowToRenderPoint(renderer,
-                                                 event.button.x,
-                                                 event.button.y);
-                    dropSpacePickupSystem(pos);
-                    dragStartSystem(pos);
-                    enableSensorEventsOnHeldEntities();
-                    _isDragging = true;
-                }
-                break;
-
-            case SDL_EVENT_MOUSE_MOTION:
-                if (_isDragging)
-                {
-                    const SDL_FPoint pos =
-                        mouseWindowToRenderPoint(renderer,
-                                                 event.motion.x,
-                                                 event.motion.y);
-                    midDragSystem(pos);
-                }
-                break;
-
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-                if (event.button.button == SDL_BUTTON_LEFT && _isDragging)
-                {
-                    // deliverySystem reads Held.dropSpaceEntity before
-                    // dragReleaseSystem removes the Held component.
-                    deliverySystem();
-                    dragReleaseSystem();
-                    _isDragging = false;
-                }
-                break;
-            }
-        }
-
-        pourControlSystem();                           // PourIntent -> CoffeeSpawner.active
-        coffeeSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
+        liquidSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
         PhysicsContext::step(dt);
         liquidSensorEventSystem();        // count drops into cup; cleanup spilled
-        dropSpaceDetectionSystem(); // update Held.dropSpaceEntity
+        dropSpaceDetectionSystem(); // update DragIntent.dropSpaceEntity
+
         syncTransformFromBody();    // physics position -> Transform
 
         behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)
@@ -158,6 +94,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
         SDL_RenderClear(renderer);
         drawSystem(renderer);       // sorted by renderLayer ascending
+        debugDrawCupWalls(renderer);
         SDL_RenderPresent(renderer);
 
     return true;

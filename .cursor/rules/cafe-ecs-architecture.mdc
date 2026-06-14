@@ -1,5 +1,5 @@
 ---
-description: Runtime architecture — coordinates, contexts, assets, and bagel ECS wiring
+description: Runtime architecture — scenes, coordinates, contexts, assets, and bagel ECS wiring
 globs: src/**,app/**
 alwaysApply: false
 ---
@@ -7,6 +7,12 @@ alwaysApply: false
 # cafe-ecs Architecture
 
 C++ ECS game (SDL3 + Box2D + bagel). All game code in `namespace cafe`. No exceptions — use `assert` for programmer errors, `assertFatal` for unrecoverable failures.
+
+## Game Loop & Scenes
+
+- `CafeGame` owns `window`, `renderer`, and the active `Scene` (future: multiple scenes — menu, game, etc.).
+- `Scene` is the polymorphic base; loop logic lives in `Scene::run`, per-frame logic in subclass `onUpdate` (e.g. `MainGameScene`).
+- Add per-scene logic by subclassing `Scene` — not by growing `CafeGame`.
 
 ## Components & Storage
 
@@ -32,17 +38,23 @@ struct bagel::Storage<cafe::Health> final : bagel::NoInstance
 ## Coordinate System
 
 - **World**: meters, Y-up (Box2D). **Screen**: logical pixels, Y-down (`LOGICAL_W`×`LOGICAL_H` in `GameConfig.h`).
-- World↔screen math lives in `component/Transform.h` (`worldToScreenPoint`, `transformToFrect`, Box2D helpers). Do not duplicate elsewhere.
+- World↔screen math lives in `component/Transform.h` (`worldToScreenPoint`, `transformToFrect`, Box2D helpers). **Always use these** — manual conversion ignores camera and `SCALE_FACTOR` and breaks if zoom/camera changes.
 
 ## Key Utilities
 
 | Utility | Location | Use |
 |---------|----------|-----|
 | `WorldPos` | `src/WorldPos.h` | `{x, y}` world points without a full `Transform` |
-| `RenderContext` | `src/RenderContext.h` | Global SDL window/renderer |
-| `PhysicsContext` | `src/PhysicsContext.h` | `b2WorldId` singleton + step |
+| `RenderContext` | `src/RenderContext.h` | Global SDL window/renderer (tech debt) |
+| `PhysicsContext` | `src/PhysicsContext.h` | `b2WorldId` singleton + step (tech debt — move into `Scene`) |
 | `assertFatal` | `src/Utils.h` | Unrecoverable failures — log, message box, exit |
+| `AssetManager` | `src/AssetManager.h` | Path-keyed texture cache — pass `AssetManager&` to factories/systems that load |
+| `Texture` | `src/Texture.h` | RAII `SDL_Texture` wrapper; use refs; `getFullSrcRect()` for full texture (careful with sprite sheets) |
+
+## Domain Naming
+
+Use game-domain names, not legacy aliases: **Customer** (not Client), **Bartop** (not Counter).
 
 ## Assets
 
-Sprites in `res/`: `bg.png`, `counter.png`, `cup.png`, `machine.png`, `particle.png`, `def_customer.png`.
+Sprites in `res/`. File names are consistent keys across the codebase — load via `AssetManager`, not ad-hoc paths. Pass `AssetManager&` rather than individual `Texture` refs unless there is a specific reason.

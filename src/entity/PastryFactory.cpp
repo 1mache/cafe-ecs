@@ -1,6 +1,7 @@
 #include "PastryFactory.h"
 
 #include "Components.h"
+#include "DragAndDropSystem.h"
 #include "RenderLayers.h"
 #include "PhysicsContext.h"
 #include "SpriteDims.h"
@@ -34,7 +35,7 @@ bagel::Entity createPastry(WorldPos pos, AssetManager& assets)
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
         Drawable{ propsTex.get(), src, layer::PROP },
         PhysicsBody{ body },
-        Draggable{ DropType::Any }
+        DragIntent{ .dropType = DropType::pastry }
     );
     return ent;
 }
