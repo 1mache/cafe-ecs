@@ -42,7 +42,9 @@ void cafe::MainGameScene::onInit()
     auto customerEnt = createCustomer(assets, { 5.f, -1.f }, customerOrder, 60.f);
 
     // --- Speech bubble + order icons (children of customer) ---
-    auto bubbleEnt = createSpeechBubble(assets, customerEnt, {-PERSON_DIMS.x, PERSON_DIMS.y * 0.25f});
+    auto bubbleEnt = createSpeechBubble(
+        assets, customerEnt,
+        {0.f, 24.f});
     // --- Order icons (children of the bubble) ---
     constexpr float ICON_SIZE = 8.f / 1.5f; // TODO:move somewhere else
     constexpr float ICON_DX   = 3.f;

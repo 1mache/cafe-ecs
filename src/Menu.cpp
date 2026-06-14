@@ -11,7 +11,7 @@ constexpr bool ratiosSumToOne()
 {
     for (const DrinkRecipe& r : MENU)
     {
-        float sum = 0.f;
+float sum = 0.f;
         for (float x : r.ratio)
             sum += x;
         if (sum < 0.99f || sum > 1.01f)
