@@ -1,0 +1,39 @@
+#pragma once
+
+#include "Ingredient.h"
+#include "DrinkType.h"
+#include "Order.h"
+#include <iterator>
+
+namespace cafe
+{
+/** @brief A named drink: its ingredient ratio and which temperatures it may be served at. */
+struct DrinkRecipe
+{
+    const char* name;
+    float       ratio[INGREDIENT_COUNT]; // Coffee, Milk, Water — fractions, sum to 1.0
+    bool        allowsHot;
+    bool        allowsCold;
+};
+
+// Indexed by DrinkType (order MUST match the enum). Each ratio sums to 1.0.
+inline constexpr DrinkRecipe MENU[] = {
+    { "Espresso",   { 1.00f, 0.00f, 0.00f }, true,  false }, // no cold espresso
+    { "Americano",  { 0.33f, 0.00f, 0.67f }, true,  true  },
+    { "Cappuccino", { 0.50f, 0.50f, 0.00f }, true,  true  },
+    { "Latte",      { 0.25f, 0.75f, 0.00f }, true,  true  },
+    { "Macchiato",  { 0.75f, 0.25f, 0.00f }, true,  false },
+};
+static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
+              "MENU must have one entry per DrinkType");
+
+constexpr const DrinkRecipe& recipeFor(DrinkType d) { return MENU[static_cast<size_t>(d)]; }
+
+/** @brief Builds an order that references the given drink at the given temperature. */
+Order makeDrinkOrder(DrinkType d, Temperature t, bool hasPastry);
+
+/** @brief Builds an order for a random menu drink at a random allowed temperature. */
+Order randomDrinkOrder(bool hasPastry);
+
+const char* temperatureName(Temperature t);
+} // namespace cafe

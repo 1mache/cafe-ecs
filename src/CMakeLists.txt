@@ -8,6 +8,7 @@ target_sources(
     component/Drawable.h
     component/ChildOf.h
     component/Ingredient.h
+    component/DrinkType.h
     component/Liquid.h
     component/PhysicsBody.h
     component/Cup.h
@@ -73,6 +74,8 @@ target_sources(
     RenderLayers.h
     OrderMatch.h
     OrderMatch.cpp
+    Menu.h
+    Menu.cpp
 
     PhysicsFilters.h
     PhysicsContext.h

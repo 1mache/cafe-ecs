@@ -10,6 +10,7 @@
 #include "DragIntent.h"
 #include "DragItemType.h"
 #include "DropSpace.h"
+#include "DrinkType.h"
 #include "DropType.h"
 #include "Sensor.h"
 #include "InSensorArea.h"

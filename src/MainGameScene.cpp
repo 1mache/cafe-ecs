@@ -1,6 +1,7 @@
 #include "MainGameScene.h"
 #include "Components.h"
 #include "Entities.h"
+#include "Menu.h"
 #include "PhysicsContext.h"
 #include "SpriteDims.h"
 #include "Systems.h"
@@ -34,7 +35,10 @@ void cafe::MainGameScene::onInit()
               << "[Demo] Serve a cup matching the order ratio + a pastry to the customer in 60 s.\n";
 
     // --- Customer ---
-    Order customerOrder{ .ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true };
+    Order customerOrder = randomDrinkOrder(/*hasPastry=*/ true);
+    const DrinkRecipe& recipe = recipeFor(customerOrder.drink);
+    std::cout << "[Order] " << temperatureName(customerOrder.temperature)
+              << ' ' << recipe.name << '\n';
     auto customerEnt = createCustomer(assets, { 5.f, -1.f }, customerOrder, 60.f);
 
     // --- Speech bubble + order icons (children of customer) ---

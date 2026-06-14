@@ -1,18 +1,19 @@
 #pragma once
 
-#include "Ingredient.h"
+#include "DrinkType.h"
 #include <bagel.h>
 
 namespace cafe
 {
 
-/** @brief A client's order: a desired drink composition and/or a pastry.
+/** @brief A client's order: a menu drink (its ratio lives on the recipe) and/or a pastry.
  *  Invariant: hasDrink || hasPastry must be true. */
 struct Order
 {
-    int  ratio[INGREDIENT_COUNT]{}; // desired drink mix: [coffee, milk, water]
-    bool hasDrink{};
-    bool hasPastry{};               // single pastry type for now
+    DrinkType   drink{ DrinkType::Espresso }; // which menu drink (ratio comes from recipeFor)
+    Temperature temperature{ Temperature::Hot };
+    bool        hasDrink{};
+    bool        hasPastry{};                   // single pastry type for now
 };
 } // namespace cafe
 
