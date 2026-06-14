@@ -39,6 +39,9 @@ Order randomDrinkOrder(bool hasPastry);
 
 const char* temperatureName(Temperature t);
 
+/** @brief props.png frame index for a temperature icon (Hot = fire, Cold = ice). */
+constexpr int temperatureFrame(Temperature t) { return t == Temperature::Hot ? 8 : 9; }
+
 /** @brief Display name for a pastry type. */
 const char* pastryName(PastryType p);
 } // namespace cafe

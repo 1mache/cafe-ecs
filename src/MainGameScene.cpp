@@ -72,8 +72,11 @@ void cafe::MainGameScene::onInit()
         // Column 0: beverage icon — this drink's coffee frame in props.png.
         createOrderIcon(assets, recipe.iconFrame, ICON_SIZE, ICON_SIZE,
                         bubbleEnt, {COL_X[0], ICON_Y});
+        // Column 1: beverage temperature — fire (Hot) or ice (Cold).
+        createOrderIcon(assets, temperatureFrame(customerOrder.drinkTemperature),
+                        ICON_SIZE, ICON_SIZE,
+                        bubbleEnt, {COL_X[1], ICON_Y});
     }
-    // Column 1: beverage temperature — no art yet, intentionally blank.
 
     if (customerOrder.hasPastry)
     {
@@ -81,8 +84,11 @@ void cafe::MainGameScene::onInit()
         createOrderIcon(assets, static_cast<int>(customerOrder.pastry),
                         ICON_SIZE, ICON_SIZE,
                         bubbleEnt, {COL_X[2], ICON_Y});
+        // Column 3: pastry temperature — fire (Hot) or ice (Cold).
+        createOrderIcon(assets, temperatureFrame(customerOrder.pastryTemperature),
+                        ICON_SIZE, ICON_SIZE,
+                        bubbleEnt, {COL_X[3], ICON_Y});
     }
-    // Column 3: pastry temperature — no art yet, intentionally blank.
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
