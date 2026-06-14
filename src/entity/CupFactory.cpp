@@ -87,7 +87,8 @@ bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
         Drawable{ tex.get(), backSrcRect, layer::CONTAINER_BACK },
         PhysicsBody{ body },
         Cup{ .capacity = capacity },
-        DragIntent{ .dropType = DropType::cup }
+        DragIntent{},
+        DragItemType{ .dropType = DropType::cup }
     );
 
     addDraggableVisitorShape(body, halfW, halfH);

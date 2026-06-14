@@ -3,7 +3,7 @@
 #include <bagel.h>
 #include <SDL3/SDL.h>
 #include <optional>
-#include "DropType.h"
+
 enum class DragIntentType
 {
     None,
@@ -18,7 +18,6 @@ struct DragIntent
 {
     DragIntentType                 intentType{ DragIntentType::None };
     SDL_FPoint                     mousePos{};
-    DropType                       dropType{ DropType::Any };//what entity is being dragged
     std::optional<bagel::ent_type> dropSpaceEntity{ std::nullopt };
 };
 } // namespace cafe
