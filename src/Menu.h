@@ -38,4 +38,7 @@ Order makeDrinkOrder(DrinkType d, Temperature t, bool hasPastry);
 Order randomDrinkOrder(bool hasPastry);
 
 const char* temperatureName(Temperature t);
+
+/** @brief Display name for a pastry type. */
+const char* pastryName(PastryType p);
 } // namespace cafe

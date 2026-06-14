@@ -37,8 +37,14 @@ void cafe::MainGameScene::onInit()
     // --- Customer ---
     Order customerOrder = randomDrinkOrder(/*hasPastry=*/ true);
     const DrinkRecipe& recipe = recipeFor(customerOrder.drink);
-    std::cout << "[Order] " << temperatureName(customerOrder.temperature)
-              << ' ' << recipe.name << '\n';
+    std::cout << "[Order]";
+    if (customerOrder.hasDrink)
+        std::cout << " drink=" << temperatureName(customerOrder.drinkTemperature)
+                  << ' ' << recipe.name;
+    if (customerOrder.hasPastry)
+        std::cout << " pastry=" << temperatureName(customerOrder.pastryTemperature)
+                  << ' ' << pastryName(customerOrder.pastry);
+    std::cout << '\n';
     auto customerEnt = createCustomer(assets, { 5.f, -1.f }, customerOrder, 60.f);
 
     // --- Speech bubble + order icons (children of customer) ---
@@ -71,8 +77,9 @@ void cafe::MainGameScene::onInit()
 
     if (customerOrder.hasPastry)
     {
-        // Column 2: pastry icon — frame 0 of props strip.
-        createOrderIcon(assets, 0, ICON_SIZE, ICON_SIZE,
+        // Column 2: pastry icon — this order's pastry frame in props.png.
+        createOrderIcon(assets, static_cast<int>(customerOrder.pastry),
+                        ICON_SIZE, ICON_SIZE,
                         bubbleEnt, {COL_X[2], ICON_Y});
     }
     // Column 3: pastry temperature — no art yet, intentionally blank.

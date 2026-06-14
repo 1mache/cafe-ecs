@@ -9,6 +9,7 @@ target_sources(
     component/ChildOf.h
     component/Ingredient.h
     component/DrinkType.h
+    component/PastryType.h
     component/Liquid.h
     component/PhysicsBody.h
     component/Cup.h

@@ -32,7 +32,7 @@ int randInt(int below)
 
 Order makeDrinkOrder(DrinkType d, Temperature t, bool hasPastry)
 {
-    return Order{ .drink = d, .temperature = t, .hasDrink = true, .hasPastry = hasPastry };
+    return Order{ .drink = d, .drinkTemperature = t, .hasDrink = true, .hasPastry = hasPastry };
 }
 
 Order randomDrinkOrder(bool hasPastry)
@@ -46,7 +46,24 @@ Order randomDrinkOrder(bool hasPastry)
     else if (r.allowsCold)
         t = Temperature::Cold;
 
-    return makeDrinkOrder(d, t, hasPastry);
+    Order o = makeDrinkOrder(d, t, hasPastry);
+    if (hasPastry)
+    {
+        o.pastry = static_cast<PastryType>(randInt(static_cast<int>(PastryType::count)));
+        o.pastryTemperature = randInt(2) ? Temperature::Cold : Temperature::Hot;
+    }
+    return o;
+}
+
+const char* pastryName(PastryType p)
+{
+    switch (p)
+    {
+    case PastryType::Croissant:    return "Croissant";
+    case PastryType::CinnamonRoll: return "Cinnamon roll";
+    case PastryType::Toast:        return "Toast";
+    default:                       return "Unknown";
+    }
 }
 
 const char* temperatureName(Temperature t)

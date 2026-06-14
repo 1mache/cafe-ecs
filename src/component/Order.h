@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DrinkType.h"
+#include "PastryType.h"
 #include <bagel.h>
 
 namespace cafe
@@ -11,7 +12,9 @@ namespace cafe
 struct Order
 {
     DrinkType   drink{ DrinkType::Espresso }; // which menu drink (ratio comes from recipeFor)
-    Temperature temperature{ Temperature::Hot };
+    Temperature drinkTemperature{ Temperature::Hot };
+    PastryType  pastry{ PastryType::Croissant }; // which pastry (props.png frame)
+    Temperature pastryTemperature{ Temperature::Hot };
     bool        hasDrink{};
     bool        hasPastry{};                   // single pastry type for now
 };
