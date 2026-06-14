@@ -1,5 +1,7 @@
 #include "Components.h"
 #include "CustomerSystem.h"
+#include "Entities.h"
+#include "Menu.h"
 #include "OrderMatch.h"
 #include <bagel.h>
 #include <iostream>
@@ -19,6 +21,39 @@ int gradeToRating(DrinkGrade g)
 }
 } // namespace
 
+void customerSpawnerSystem(float dtSeconds, AssetManager& assets)
+{
+    static const bagel::Mask spawnerMask =
+        bagel::MaskBuilder().set<Spawner>().build();
+    static const bagel::Mask customerMask =
+        bagel::MaskBuilder().set<Order>().set<Behavior>().build();
+
+    // The seat is "occupied" while any customer exists.
+    int customers = 0;
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+        if (e.test(customerMask)) ++customers;
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(spawnerMask)) continue;
+        auto& sp = e.get<Spawner>();
+
+        // Seat busy: hold the timer armed so the full interval is waited once it frees.
+        if (customers > 0)
+        {
+            sp.cooldown = sp.interval;
+            continue;
+        }
+
+        sp.cooldown -= dtSeconds;
+        if (sp.cooldown <= 0.f)
+        {
+            spawnCustomer(assets, sp.seat, randomDrinkOrder(/*hasPastry=*/ true), sp.patience);
+            sp.cooldown = sp.interval;
+        }
+    }
+}
+
 void behaviorSystem(float dtSeconds)
 {
     static const bagel::Mask behaviorMask =
@@ -30,16 +65,6 @@ void behaviorSystem(float dtSeconds)
 
         auto& behavior = e.get<Behavior>();
         behavior.patience -= dtSeconds;
-
-        // DEBUG: print patience once per second
-        static float printAccum = 0.f;
-        printAccum += dtSeconds;
-        if (printAccum >= 1.f)
-        {
-            std::cout << "[behaviorSystem] entity " << e.entity().id
-                      << " patience: " << behavior.patience << "s\n";
-            printAccum = 0.f;
-        }
 
         if (behavior.patience <= 0.f && !e.has<Leaving>())
             e.add(Leaving{});
@@ -131,7 +156,7 @@ void customerCleanupSystem()
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(leavingMask)) continue;
-        e.destroy();
+        destroyPhysicalEntity(e.entity());
     }
 }
 

@@ -34,39 +34,15 @@ void cafe::MainGameScene::onInit()
     std::cout << "[Demo] Hold 1/2/3 to pour Coffee/Milk/Water. Left-drag to move the cup or pastry.\n"
               << "[Demo] Serve a cup matching the order ratio + a pastry to the customer in 60 s.\n";
 
-    // --- Customer ---
-    Order customerOrder = randomDrinkOrder(/*hasPastry=*/ true);
-    const DrinkRecipe& recipe = recipeFor(customerOrder.drink);
-    std::cout << "[Order] " << temperatureName(customerOrder.temperature)
-              << ' ' << recipe.name << '\n';
-    auto customerEnt = createCustomer(assets, { 5.f, -1.f }, customerOrder, 60.f);
-
-    // --- Speech bubble + order icons (children of customer) ---
-    auto bubbleEnt = createSpeechBubble(assets, customerEnt, {-PERSON_DIMS.x, PERSON_DIMS.y * 0.25f});
-    // --- Order icons (children of the bubble) ---
-    constexpr float ICON_SIZE = 8.f / 1.5f; // TODO:move somewhere else
-    constexpr float ICON_DX   = 3.f;
-    constexpr float ICON_DY   = 2.f;
-    if (customerOrder.hasDrink)
-    {
-        // Drink icon (right) — front frame of cup (16x16).
-        createOrderIcon(assets,
-                        2,
-                        ICON_SIZE,
-                        ICON_SIZE,
-                        bubbleEnt,
-                        {ICON_DX, ICON_DY});
-    }
-    if (customerOrder.hasPastry)
-    {
-        // Pastry icon (left) — frame 0 of props strip.
-        createOrderIcon(assets,
-                        0,
-                        ICON_SIZE,
-                        ICON_SIZE,
-                        bubbleEnt,
-                        {-ICON_DX, ICON_DY});
-    }
+    // --- Customer cycle ---
+    // One spawner entity drives the loop: it keeps a single customer at the seat,
+    // spawning the next (with a fresh random order) SPAWN_INTERVAL s after it leaves.
+    // cooldown = 0 so the first customer appears on the first frame.
+    auto spawner = bagel::Entity::create();
+    spawner.add(Spawner{ .seat     = { 5.f, -1.f },
+                         .patience = CUSTOMER_PATIENCE,
+                         .interval = SPAWN_INTERVAL,
+                         .cooldown = 0.f });
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
@@ -90,6 +66,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
         syncTransformFromBody();    // physics position -> Transform
 
+        customerSpawnerSystem(dt, getAssetManager()); // keep one customer at the seat
         behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)
         orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
         reportLeavingCustomers();   // log SUCCESSFUL / FAILED

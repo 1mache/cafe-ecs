@@ -22,7 +22,9 @@ private:
     };
     bool          _isDragging{false};
 
-    static constexpr int  CUP_CAPACITY = 50;
-    static constexpr auto BG_PATH = "bg.png";
+    static constexpr int   CUP_CAPACITY      = 50;
+    static constexpr float CUSTOMER_PATIENCE = 60.f; // seconds before a customer leaves unhappy
+    static constexpr float SPAWN_INTERVAL    = 2.f;  // seconds between one customer leaving and the next
+    static constexpr auto  BG_PATH = "bg.png";
 };
 }

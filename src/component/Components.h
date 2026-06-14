@@ -20,4 +20,5 @@
 #include "Ingredient.h"
 #include "PhysicsBody.h"
 #include "Served.h"
+#include "Spawner.h"
 #include "Transform.h"

@@ -2,8 +2,11 @@
 #include "RenderLayers.h"
 #include "Components.h"
 #include "CustomerFactory.h"
+#include "OrderIconFactory.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
+#include "SpeechBubbleFactory.h"
+#include "SpriteDims.h"
 #include "Texture.h"
 #include <bagel.h>
 #include <cassert>
@@ -57,6 +60,26 @@ bagel::Entity createCustomer(AssetManager& assets,
     makeCustomerDeliverable(ent);
 
     return ent;
+}
+
+bagel::Entity spawnCustomer(AssetManager& assets,
+                            WorldPos pos, Order order, float patience)
+{
+    auto customer = createCustomer(assets, pos, order, patience);
+
+    // Speech bubble is a child of the customer; order icons are children of the bubble.
+    auto bubble = createSpeechBubble(assets, customer,
+                                     { -PERSON_DIMS.x, PERSON_DIMS.y * 0.25f });
+
+    constexpr float ICON_SIZE = 8.f / 1.5f;
+    constexpr float ICON_DX   = 3.f;
+    constexpr float ICON_DY   = 2.f;
+    if (order.hasDrink)
+        createOrderIcon(assets, 2, ICON_SIZE, ICON_SIZE, bubble, { ICON_DX, ICON_DY });
+    if (order.hasPastry)
+        createOrderIcon(assets, 0, ICON_SIZE, ICON_SIZE, bubble, { -ICON_DX, ICON_DY });
+
+    return customer;
 }
 
 } // namespace cafe
