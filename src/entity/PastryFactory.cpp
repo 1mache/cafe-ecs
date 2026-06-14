@@ -36,7 +36,8 @@ bagel::Entity createPastry(WorldPos pos, AssetManager& assets)
         Drawable{ propsTex.get(), src, layer::PROP },
         PhysicsBody{ body },
         DragIntent{},
-        DragItemType{ .dropType = DropType::pastry }
+        DragItemType{ .dropType = DropType::pastry },
+        HomeSlot{ pos }
     );
     return ent;
 }

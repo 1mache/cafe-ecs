@@ -1,6 +1,7 @@
 #pragma once
 #include "Ingredient.h"
 #include "Scene.h"
+#include "WorldPos.h"
 #include "bagel.h"
 
 namespace cafe
@@ -26,5 +27,9 @@ private:
     static constexpr float CUSTOMER_PATIENCE = 60.f; // seconds before a customer leaves unhappy
     static constexpr float SPAWN_INTERVAL    = 2.f;  // seconds between one customer leaving and the next
     static constexpr auto  BG_PATH = "bg.png";
+
+    // Bottom-of-screen supply slots (negative y = lower on screen; on the counter).
+    static constexpr WorldPos CUP_SLOT    = { -3.f, -3.f };
+    static constexpr WorldPos PASTRY_SLOT = {  3.f, -3.f };
 };
 }

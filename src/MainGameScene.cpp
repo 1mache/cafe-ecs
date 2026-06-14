@@ -25,8 +25,8 @@ void cafe::MainGameScene::onInit()
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
         _pipes[i] = machine.pipes[i];
 
-    createCup(assets, {-4.f, -1.f}, CUP_CAPACITY);
-    createPastry({4.f, -3.f},  assets);
+    createCup(assets, CUP_SLOT, CUP_CAPACITY);
+    createPastry(PASTRY_SLOT, assets);
 
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone();
@@ -71,6 +71,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
         orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
         reportLeavingCustomers();   // log SUCCESSFUL / FAILED
         hierarchySystem();          // children follow parents; orphan children of Leaving
+        recycleDeliveredItems();    // order done/abandoned -> send cup+pastry home, purge drops
         customerCleanupSystem();            // destroy all Leaving entities
 
         SDL_RenderClear(renderer);

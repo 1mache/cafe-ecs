@@ -12,6 +12,7 @@
 #include "DropSpace.h"
 #include "DrinkType.h"
 #include "DropType.h"
+#include "HomeSlot.h"
 #include "Sensor.h"
 #include "InSensorArea.h"
 #include "Leaving.h"
