@@ -30,28 +30,46 @@ int randInt(int below)
 }
 } // namespace
 
-Order makeDrinkOrder(DrinkType d, Temperature t, bool hasPastry)
+namespace
 {
-    return Order{ .drink = d, .drinkTemperature = t, .hasDrink = true, .hasPastry = hasPastry };
-}
-
-Order randomDrinkOrder(bool hasPastry)
+// Picks an allowed serving temperature for a drink (respects allowsHot/allowsCold).
+Temperature randomDrinkTemp(const DrinkRecipe& r)
 {
-    const auto d = static_cast<DrinkType>(randInt(static_cast<int>(DrinkType::count)));
-
-    const DrinkRecipe& r = recipeFor(d);
-    Temperature t = Temperature::Hot;
     if (r.allowsHot && r.allowsCold)
-        t = randInt(2) ? Temperature::Cold : Temperature::Hot;
-    else if (r.allowsCold)
-        t = Temperature::Cold;
+        return randInt(2) ? Temperature::Cold : Temperature::Hot;
+    return r.allowsCold ? Temperature::Cold : Temperature::Hot;
+}
+} // namespace
 
-    Order o = makeDrinkOrder(d, t, hasPastry);
-    if (hasPastry)
+Order randomOrder()
+{
+    Order o;
+    o.drinkCount  = randInt(MAX_DRINKS + 1);    // 0..MAX_DRINKS
+    o.pastryCount = randInt(MAX_PASTRIES + 1);  // 0..MAX_PASTRIES
+
+    // Invariant: an order must have at least one item.
+    if (o.drinkCount == 0 && o.pastryCount == 0)
     {
-        o.pastry = static_cast<PastryType>(randInt(static_cast<int>(PastryType::count)));
-        o.pastryTemperature = randInt(2) ? Temperature::Cold : Temperature::Hot;
+        if (randInt(2))
+            o.drinkCount = 1;
+        else
+            o.pastryCount = 1;
     }
+
+    for (int i = 0; i < o.drinkCount; ++i)
+    {
+        const auto d = static_cast<DrinkType>(randInt(static_cast<int>(DrinkType::count)));
+        o.drinks[i] = { .type = d, .temp = randomDrinkTemp(recipeFor(d)) };
+    }
+    for (int i = 0; i < o.pastryCount; ++i)
+    {
+        const auto p = static_cast<PastryType>(randInt(static_cast<int>(PastryType::count)));
+        o.pastries[i] = { .type = p,
+                          .temp = randInt(2) ? Temperature::Cold : Temperature::Hot };
+    }
+
+    o.hasDrink  = o.drinkCount  > 0;
+    o.hasPastry = o.pastryCount > 0;
     return o;
 }
 

@@ -8,8 +8,6 @@ target_sources(
     component/Drawable.h
     component/ChildOf.h
     component/Ingredient.h
-    component/DrinkType.h
-    component/PastryType.h
     component/Liquid.h
     component/PhysicsBody.h
     component/Cup.h
@@ -73,6 +71,8 @@ target_sources(
     Utils.h
     RenderContext.h
     RenderLayers.h
+    DrinkType.h
+    PastryType.h
     OrderMatch.h
     OrderMatch.cpp
     Menu.h

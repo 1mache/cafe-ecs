@@ -31,11 +31,9 @@ static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
 
 constexpr const DrinkRecipe& recipeFor(DrinkType d) { return MENU[static_cast<size_t>(d)]; }
 
-/** @brief Builds an order that references the given drink at the given temperature. */
-Order makeDrinkOrder(DrinkType d, Temperature t, bool hasPastry);
-
-/** @brief Builds an order for a random menu drink at a random allowed temperature. */
-Order randomDrinkOrder(bool hasPastry);
+/** @brief Builds a random order: 0-MAX_DRINKS beverages and 0-MAX_PASTRIES
+ *  pastries (at least one item total), each with a random type and temperature. */
+Order randomOrder();
 
 const char* temperatureName(Temperature t);
 
