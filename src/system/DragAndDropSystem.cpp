@@ -215,7 +215,10 @@ void dropSpaceDetectionSystem()
         if (!sensor.test(dropSpaceMask)) continue;
 
         auto& intent = visitor.get<DragIntent>();
-        if (sensor.get<DropSpace>().dropType == visitor.get<DragItemType>().dropType)
+        // DropType::Any accepts any draggable; otherwise the types must match.
+        const DropType accepts = sensor.get<DropSpace>().dropType;
+        const DropType carried = visitor.get<DragItemType>().dropType;
+        if (accepts == DropType::Any || accepts == carried)
             intent.dropSpaceEntity = sensor.entity();
     }
 
