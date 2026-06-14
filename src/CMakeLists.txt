@@ -16,6 +16,7 @@ target_sources(
     component/CleanupZone.h
     component/Behavior.h
     component/DragIntent.h
+    component/DragItemType.h
     component/DropSpace.h
     component/DropType.h
     component/InSensorArea.h

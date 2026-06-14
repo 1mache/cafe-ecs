@@ -8,6 +8,7 @@
 #include "Drawable.h"
 #include "SdlEvents.h"
 #include "DragIntent.h"
+#include "DragItemType.h"
 #include "DropSpace.h"
 #include "DropType.h"
 #include "Sensor.h"

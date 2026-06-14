@@ -193,7 +193,8 @@ void dragAndDropSystem()
 
 void dropSpaceDetectionSystem()
 {
-    static const bagel::Mask heldMask      = bagel::MaskBuilder().set<DragIntent>().build();
+    static const bagel::Mask heldMask =
+        bagel::MaskBuilder().set<DragIntent>().set<DragItemType>().build();
     static const bagel::Mask dropSpaceMask = bagel::MaskBuilder().set<DropSpace>().build();
 
     const b2SensorEvents events = b2World_GetSensorEvents(PhysicsContext::world());
@@ -214,7 +215,7 @@ void dropSpaceDetectionSystem()
         if (!sensor.test(dropSpaceMask)) continue;
 
         auto& intent = visitor.get<DragIntent>();
-        if (sensor.get<DropSpace>().dropType == intent.dropType)
+        if (sensor.get<DropSpace>().dropType == visitor.get<DragItemType>().dropType)
             intent.dropSpaceEntity = sensor.entity();
     }
 

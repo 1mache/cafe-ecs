@@ -22,6 +22,7 @@ void dragAndDropSystem();
 /**
  * @brief Called after PhysicsContext::step() each frame.
  *        Reads Box2D sensor begin/end events and updates DragIntent.dropSpaceEntity.
+ *        Drop-type matching uses DragItemType.dropType on the visitor.
  */
 void dropSpaceDetectionSystem();
 } // namespace cafe
