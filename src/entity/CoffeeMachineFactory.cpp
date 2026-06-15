@@ -33,7 +33,7 @@ bagel::Entity createPipe(WorldPos machinePos, Ingredient kind)
 }
 } // namespace
 
-CoffeeMachine createCoffeeMachine(AssetManager& assets, WorldPos pos)
+CoffeeMachine createCoffeeMachine(PhysicsContext& physics, AssetManager& assets, WorldPos pos)
 {
     const Texture& tex = assets.getTexture(TEX);
     auto [x, y] = tex.getSize();
@@ -48,7 +48,7 @@ CoffeeMachine createCoffeeMachine(AssetManager& assets, WorldPos pos)
     bd.type     = b2_kinematicBody;
     bd.position = { t.x, t.y };
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     ent.addAll(
         t,

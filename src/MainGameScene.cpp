@@ -10,7 +10,7 @@
 
 void cafe::MainGameScene::onInit()
 {
-    PhysicsContext::init();
+    _physics.init();
 
     auto& assets = getAssetManager();
 
@@ -21,15 +21,15 @@ void cafe::MainGameScene::onInit()
     createBg(assets, BG_PATH);
     createBartop(assets);
 
-    auto machine = createCoffeeMachine(assets, {-7.f, -1.f});
+    auto machine = createCoffeeMachine(_physics, assets, {-7.f, -1.f});
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
         _pipes[i] = machine.pipes[i];
 
-    createCup(assets, {-4.f, -1.f}, CUP_CAPACITY);
-    createPastry({4.f, -3.f},  assets);
+    createCup(_physics, assets, {-4.f, -1.f}, CUP_CAPACITY);
+    createPastry(_physics, {4.f, -3.f},  assets);
 
     // Cleanup zone: off-screen sensor destroys spilled drops.
-    createCleanupZone();
+    createCleanupZone(_physics);
 
     std::cout << "[Demo] Hold 1/2/3 to pour Coffee/Water/Milk. Left-drag to move the cup or pastry.\n"
               << "[Demo] Serve a cup matching the order ratio + a pastry to the customer in 60 s.\n";
@@ -46,7 +46,7 @@ void cafe::MainGameScene::onInit()
         std::cout << "  pastry " << (i + 1) << ": "
                   << temperatureName(customerOrder.pastries[i].temp) << ' '
                   << pastryName(customerOrder.pastries[i].type) << '\n';
-    auto customerEnt = createCustomer(assets, { 5.f, -1.f }, customerOrder, 60.f);
+    auto customerEnt = createCustomer(_physics, assets, { 5.f, -1.f }, customerOrder, 60.f);
 
     // --- Speech bubble + order icons (children of customer) ---
     auto bubbleEnt = createSpeechBubble(
@@ -113,10 +113,10 @@ bool cafe::MainGameScene::onUpdate(float dt)
         deliverySystem();
         dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
-        liquidSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
-        PhysicsContext::step(dt);
-        liquidSensorEventSystem();        // count drops into cup; cleanup spilled
-        dropSpaceDetectionSystem(); // update DragIntent.dropSpaceEntity
+        liquidSpawnerSystem(_physics, dt, getAssetManager());    // spawn drops while pouring
+        _physics.step(dt);
+        liquidSensorEventSystem(_physics);        // count drops into cup; cleanup spilled
+        dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 
         syncTransformFromBody();    // physics position -> Transform
 
@@ -135,6 +135,6 @@ bool cafe::MainGameScene::onUpdate(float dt)
 }
 void cafe::MainGameScene::onCleanup()
 {
-    PhysicsContext::shutdown();
+    _physics.cleanup();
     std::cout << "[Main scene] Ended\n";
 }

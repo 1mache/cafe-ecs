@@ -10,7 +10,7 @@
 namespace cafe
 {
 // Creates a kinematic pastry entity sitting on the counter, draggable.
-bagel::Entity createPastry(WorldPos pos, AssetManager& assets)
+bagel::Entity createPastry(PhysicsContext& physics, WorldPos pos, AssetManager& assets)
 {
     constexpr auto TEX_PROPS_PATH = "props.png";
 
@@ -25,7 +25,7 @@ bagel::Entity createPastry(WorldPos pos, AssetManager& assets)
     bd.type      = b2_kinematicBody;
     bd.position  = { pos.x, pos.y };
     bd.userData  = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    b2BodyId body = b2CreateBody(physics.world(), &bd);
     addDraggableVisitorShape(body, halfW, halfH);
 
     // Frame 0 of the 3-frame props strip = cinnamon roll.

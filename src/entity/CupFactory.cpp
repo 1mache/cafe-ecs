@@ -25,7 +25,7 @@ constexpr float BOTTOM_W_PIX           = 14.f;
 constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
 } // namespace
 
-bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
+bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos pos, int capacity)
 {
     const Texture& tex = assets.getTexture(TEX);
     constexpr float halfW = screenToWorldScale(CUP_DIMS.x);
@@ -56,7 +56,7 @@ bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
     bd.position = { t.x, t.y };
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(cupBack.entity().id));
     bd.isBullet = true;
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     // Solid walls + bottom — stop drops from passing through.
     b2ShapeDef wall = b2DefaultShapeDef();

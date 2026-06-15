@@ -6,6 +6,8 @@
 #include "Transform.h"
 #include <bagel.h>
 #include <box2d/box2d.h>
+#include <iostream>
+#include <ostream>
 #include <vector>
 
 namespace cafe
@@ -191,13 +193,13 @@ void dragAndDropSystem()
         enableDropSpaceSensors();
 }
 
-void dropSpaceDetectionSystem()
+void dropSpaceDetectionSystem(PhysicsContext& physics)
 {
     static const bagel::Mask heldMask =
         bagel::MaskBuilder().set<DragIntent>().set<DragItemType>().build();
     static const bagel::Mask dropSpaceMask = bagel::MaskBuilder().set<DropSpace>().build();
 
-    const b2SensorEvents events = b2World_GetSensorEvents(PhysicsContext::world());
+    const b2SensorEvents events = b2World_GetSensorEvents(physics.world());
 
     for (int i = 0; i < events.beginCount; ++i)
     {

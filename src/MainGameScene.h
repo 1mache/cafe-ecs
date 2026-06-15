@@ -1,5 +1,6 @@
 #pragma once
 #include "Ingredient.h"
+#include "PhysicsContext.h"
 #include "Scene.h"
 #include "bagel.h"
 
@@ -21,6 +22,8 @@ private:
         bagel::Entity{ static_cast<bagel::ent_type>(-1) },
     };
     bool          _isDragging{false};
+
+    PhysicsContext _physics{};
 
     static constexpr int  CUP_CAPACITY = 50;
     static constexpr auto BG_PATH = "bg.png";

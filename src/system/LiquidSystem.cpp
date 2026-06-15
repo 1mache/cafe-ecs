@@ -27,7 +27,7 @@ struct DebugStats
 DebugStats g_stats;
 } // namespace
 
-void liquidSpawnerSystem(float dtSeconds, AssetManager& assets)
+void liquidSpawnerSystem(PhysicsContext& physics, float dtSeconds, AssetManager& assets)
 {
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
@@ -46,15 +46,15 @@ void liquidSpawnerSystem(float dtSeconds, AssetManager& assets)
         while (s.accumulator >= s.interval)
         {
             s.accumulator -= s.interval;
-            (void)createLiquidDrop(assets, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
+            (void)createLiquidDrop(physics, assets, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
             ++g_stats.spawned;
         }
     }
 }
 
-void liquidSensorEventSystem()
+void liquidSensorEventSystem(PhysicsContext& physics)
 {
-    const b2SensorEvents events = b2World_GetSensorEvents(PhysicsContext::world());
+    const b2SensorEvents events = b2World_GetSensorEvents(physics.world());
 
     // A drop can show up in more than one begin-event per step (e.g. it enters
     // CUP_INSIDE while also brushing CLEANUP, or overlaps two cups). Collect

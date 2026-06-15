@@ -8,6 +8,7 @@
 namespace cafe
 {
 class AssetManager;
+class PhysicsContext;
 
 /** @brief A coffee machine: a kinematic body plus one pour pipe per ingredient.
  *  Each pipe carries a LiquidSpawner; intentSystem sets its active flag from
@@ -18,5 +19,5 @@ struct CoffeeMachine
     bagel::Entity pipes[INGREDIENT_COUNT];
 };
 
-CoffeeMachine createCoffeeMachine(AssetManager& assets, WorldPos pos);
+CoffeeMachine createCoffeeMachine(PhysicsContext& physics, AssetManager& assets, WorldPos pos);
 } // namespace cafe

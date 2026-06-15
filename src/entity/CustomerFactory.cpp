@@ -12,7 +12,7 @@ namespace cafe
 {
 // Attaches a static DropSpace sensor + Served to an existing client entity so
 // dragged items can be "dropped on" the customer.
-void makeCustomerDeliverable(bagel::Entity client)
+void makeCustomerDeliverable(PhysicsContext& physics, bagel::Entity client)
 {
     using namespace cafe;
 
@@ -22,7 +22,7 @@ void makeCustomerDeliverable(bagel::Entity client)
     bd.type      = b2_staticBody;
     bd.position  = { t.x, t.y };
     bd.userData  = reinterpret_cast<void*>(static_cast<uintptr_t>(client.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     b2ShapeDef sensor          = b2DefaultShapeDef();
     sensor.isSensor            = true;
@@ -39,7 +39,7 @@ void makeCustomerDeliverable(bagel::Entity client)
     );
 }
 
-bagel::Entity createCustomer(AssetManager& assets,
+bagel::Entity createCustomer(PhysicsContext& physics, AssetManager& assets,
                            WorldPos pos, Order order, float patience)
 {
     assert((order.hasDrink || order.hasPastry) && "createClient: order must have at least one item");
@@ -54,7 +54,7 @@ bagel::Entity createCustomer(AssetManager& assets,
         order,
         Behavior{.patience = patience});
 
-    makeCustomerDeliverable(ent);
+    makeCustomerDeliverable(physics, ent);
 
     return ent;
 }

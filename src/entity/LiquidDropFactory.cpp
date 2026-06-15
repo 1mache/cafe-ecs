@@ -9,7 +9,7 @@
 
 namespace cafe
 {
-bagel::Entity createLiquidDrop(AssetManager& assets, WorldPos pos, Ingredient kind)
+bagel::Entity createLiquidDrop(PhysicsContext& physics, AssetManager& assets, WorldPos pos, Ingredient kind)
 {
     static constexpr auto TEX = "particle.png";
     const Texture& tex = assets.getTexture(TEX);
@@ -24,7 +24,7 @@ bagel::Entity createLiquidDrop(AssetManager& assets, WorldPos pos, Ingredient ki
     bd.linearDamping = 4.f;
     bd.isBullet = true; // CCD — prevents tunneling through the thin cup walls
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     // Visitor side of a sensor pair must also opt in to sensor events.
     b2ShapeDef sd = b2DefaultShapeDef();

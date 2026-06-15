@@ -4,6 +4,8 @@
 
 namespace cafe
 {
+class PhysicsContext;
+
 /**
  * @brief Adds a DRAGGABLE sensor shape to body for drag hit-testing via Box2D sensor events.
  */
@@ -24,5 +26,5 @@ void dragAndDropSystem();
  *        Reads Box2D sensor begin/end events and updates DragIntent.dropSpaceEntity.
  *        Drop-type matching uses DragItemType.dropType on the visitor.
  */
-void dropSpaceDetectionSystem();
+void dropSpaceDetectionSystem(PhysicsContext& physics);
 } // namespace cafe

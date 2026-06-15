@@ -8,7 +8,8 @@
 namespace cafe
 {
 class AssetManager;
+class PhysicsContext;
 
-bagel::Entity createCustomer(AssetManager& assets,
+bagel::Entity createCustomer(PhysicsContext& physics, AssetManager& assets,
                            WorldPos pos, const Order order, float patience);
 } // namespace cafe

@@ -4,6 +4,8 @@
 
 namespace cafe
 {
+class PhysicsContext;
+
 /** @brief Static off-screen sensor that destroys spilled coffee drops. */
-bagel::Entity createCleanupZone();
+bagel::Entity createCleanupZone(PhysicsContext& physics);
 } // namespace cafe
