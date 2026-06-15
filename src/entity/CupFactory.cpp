@@ -16,16 +16,16 @@ namespace
 constexpr auto  TEX                    = "cup.png";
 
 constexpr float WALL_W_PIX             = 1.f;
-constexpr float WALL_H_PIX             = 15.f;
+constexpr float WALL_H_PIX             = 17.f;
 constexpr float L_WALL_X_OFFSET_PIX    = 0.f;
 constexpr float R_WALL_X_OFFSET_PIX    = 7.f;
-constexpr float CUP_WALLS_Y_OFFSET_PIX = 11.f;
+constexpr float CUP_WALLS_Y_OFFSET_PIX = 12.f;
 constexpr float CUP_BOTTOM_Y_OFFSET_PIX= 2.f;
 constexpr float BOTTOM_W_PIX           = 14.f;
 constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
 } // namespace
 
-bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
+bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos pos, int capacity)
 {
     const Texture& tex = assets.getTexture(TEX);
     constexpr float halfW = screenToWorldScale(CUP_DIMS.x);
@@ -52,10 +52,12 @@ bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
     auto cupFront = bagel::Entity::create();
 
     b2BodyDef bd = b2DefaultBodyDef();
-    bd.type     = b2_kinematicBody; // kinematic so drag-and-drop can move the cup later
+    bd.type     = b2_dynamicBody;
     bd.position = { t.x, t.y };
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(cupBack.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    bd.isBullet = true;
+    bd.fixedRotation = true;
+    b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     // Solid walls + bottom — stop drops from passing through.
     b2ShapeDef wall = b2DefaultShapeDef();

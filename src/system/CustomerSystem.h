@@ -3,9 +3,10 @@
 namespace cafe
 {
 class AssetManager;
+class PhysicsContext;
 
 /** @brief Keeps one customer at the seat: spawns the next after the seat empties. */
-void customerSpawnerSystem(float dtSeconds, AssetManager& assets);
+void customerSpawnerSystem(PhysicsContext& physics, float dtSeconds, AssetManager& assets);
 void behaviorSystem(float dtSeconds);
 void deliverySystem();
 void clearDeliveredItems();

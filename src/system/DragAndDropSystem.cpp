@@ -6,13 +6,15 @@
 #include "Transform.h"
 #include <bagel.h>
 #include <box2d/box2d.h>
+#include <iostream>
+#include <ostream>
 #include <vector>
 
 namespace cafe
 {
 namespace
 {
-constexpr float FOLLOW_SPEED        = 40.f; // m/s the held body chases the cursor
+constexpr float FOLLOW_SPEED        = 20.f; // m/s the held body chases the cursor
 constexpr float ARRIVE_THRESHOLD    = 0.f; // m; within this, stop (deadzone)
 constexpr float ARRIVE_THRESHOLD_SQ = ARRIVE_THRESHOLD * ARRIVE_THRESHOLD;
 
@@ -146,8 +148,8 @@ void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH)
 {
     b2ShapeDef visitor = b2DefaultShapeDef();
     visitor.isSensor            = true;
-    visitor.filter.categoryBits = filter::DRAGGABLE;
-    visitor.filter.maskBits     = filter::MASK_DRAGGABLE;
+    visitor.filter.categoryBits |= filter::DRAGGABLE;
+    visitor.filter.maskBits     |= filter::MASK_DRAGGABLE;
     visitor.enableSensorEvents  = true;
     b2Polygon box = b2MakeOffsetBox(halfW, halfH, { 0.f, 0.f }, b2Rot_identity);
     b2CreatePolygonShape(body, &visitor, &box);
@@ -191,13 +193,13 @@ void dragAndDropSystem()
         enableDropSpaceSensors();
 }
 
-void dropSpaceDetectionSystem()
+void dropSpaceDetectionSystem(PhysicsContext& physics)
 {
     static const bagel::Mask heldMask =
         bagel::MaskBuilder().set<DragIntent>().set<DragItemType>().build();
     static const bagel::Mask dropSpaceMask = bagel::MaskBuilder().set<DropSpace>().build();
 
-    const b2SensorEvents events = b2World_GetSensorEvents(PhysicsContext::world());
+    const b2SensorEvents events = b2World_GetSensorEvents(physics.world());
 
     for (int i = 0; i < events.beginCount; ++i)
     {

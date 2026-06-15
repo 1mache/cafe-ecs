@@ -5,6 +5,7 @@
 namespace cafe
 {
 class AssetManager;
+class PhysicsContext;
 
 // --- Supply layout (tune positions in-editor; world units, negative y = down) ---
 namespace supply
@@ -20,8 +21,9 @@ inline constexpr WorldPos CUP_BUTTON     = { -8.5f, -4.7f };
 inline constexpr WorldPos PASTRY_BUTTON  = {  8.5f, -4.7f };
 } // namespace supply
 
-/** @brief On a mouse click, summons a cup/pastry into the first free supply slot. */
-void buttonSystem(AssetManager& assets);
+/** @brief Summons a cup/pastry into the first free supply slot when its button was
+ *  clicked this frame (SpawnButton.justPressed, set by intentSystem). */
+void supplyButtonSystem(PhysicsContext& physics, AssetManager& assets);
 
 /** @brief Advances the cartoonish drop-in tween; makes items draggable on landing. */
 void fallingSystem(float dtSeconds);

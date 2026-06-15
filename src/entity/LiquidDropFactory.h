@@ -8,7 +8,8 @@
 namespace cafe
 {
 class AssetManager;
+class PhysicsContext;
 
 /** @brief Dynamic liquid drop of @p kind. Falls under gravity, collides with cup walls. */
-bagel::Entity createLiquidDrop(AssetManager& assets, WorldPos pos, Ingredient kind);
+bagel::Entity createLiquidDrop(PhysicsContext& physics, AssetManager& assets, WorldPos pos, Ingredient kind);
 } // namespace cafe

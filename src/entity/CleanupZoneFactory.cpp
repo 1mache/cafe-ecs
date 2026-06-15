@@ -6,7 +6,7 @@
 
 namespace cafe
 {
-bagel::Entity createCleanupZone()
+bagel::Entity createCleanupZone(PhysicsContext& physics)
 {
     auto ent = bagel::Entity::create();
 
@@ -15,7 +15,7 @@ bagel::Entity createCleanupZone()
     bd.type     = b2_staticBody;
     bd.position = { 0.f, -screenToWorldDistance(LOGICAL_H)};
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     b2ShapeDef sd = b2DefaultShapeDef();
     sd.isSensor            = true;

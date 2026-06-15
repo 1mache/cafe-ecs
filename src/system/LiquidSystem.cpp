@@ -27,7 +27,7 @@ struct DebugStats
 DebugStats g_stats;
 } // namespace
 
-void liquidSpawnerSystem(float dtSeconds, AssetManager& assets)
+void liquidSpawnerSystem(PhysicsContext& physics, float dtSeconds, AssetManager& assets)
 {
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
@@ -46,15 +46,15 @@ void liquidSpawnerSystem(float dtSeconds, AssetManager& assets)
         while (s.accumulator >= s.interval)
         {
             s.accumulator -= s.interval;
-            (void)createLiquidDrop(assets, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
+            (void)createLiquidDrop(physics, assets, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
             ++g_stats.spawned;
         }
     }
 }
 
-void liquidSensorEventSystem()
+void liquidSensorEventSystem(PhysicsContext& physics)
 {
-    const b2SensorEvents events = b2World_GetSensorEvents(PhysicsContext::world());
+    const b2SensorEvents events = b2World_GetSensorEvents(physics.world());
 
     // A drop can show up in more than one begin-event per step (e.g. it enters
     // CUP_INSIDE while also brushing CLEANUP, or overlaps two cups). Collect
@@ -91,21 +91,6 @@ void liquidSensorEventSystem()
             bagel::Entity cup{ bagel::ent_type{
                 static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(cupBody)))
             } };
-
-            // // Cup full → deflect sideways + upward. CLEANUP destroys the drop later.
-            // if (cup.test(cupMask) && cup.get<Cup>().isFull())
-            // {
-            //     const b2BodyId dropBody = b2Shape_GetBody(be.visitorShapeId);
-            //     const b2Vec2   dropPos  = b2Body_GetPosition(dropBody);
-            //     const b2Vec2   cupPos   = b2Body_GetPosition(cupBody);
-            //     const float    side     = (dropPos.x >= cupPos.x) ? 1.f : -1.f;
-            //     b2Body_SetLinearVelocity(dropBody, { side * 3.f, 5.f });
-            //
-            //     if (g_stats.overflowed == 0)
-            //         std::cout << "[Spill] cup overflowed for the first time" << std::endl;
-            //     ++g_stats.overflowed;
-            //     continue;
-            // }
 
             if (cup.test(cupMask))
             {

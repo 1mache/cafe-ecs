@@ -1,7 +1,9 @@
 #include "CafeEnvironmentFactory.h"
 #include "AssetManager.h"
-#include "RenderLayers.h"
 #include "Components.h"
+#include "PhysicsContext.h"
+#include "PhysicsFilters.h"
+#include "RenderLayers.h"
 #include "Texture.h"
 
 namespace cafe
@@ -25,19 +27,41 @@ bagel::Entity createBg(AssetManager& assets, std::string_view bgPath)
                            .h = screenToWorldScale(LOGICAL_H)});
     return bgEnt;
 }
-bagel::Entity createBartop(AssetManager& assets)
+bagel::Entity createBartop(AssetManager& assets, PhysicsContext& physicsContext)
 {
     const Texture& bartopTex     = assets.getTexture(TEX_BARTOP);
     const auto  bartopSrcRect    = bartopTex.getFullSrcRect();
+    const float bartopHalfWidth  = screenToWorldScale(bartopSrcRect.w);
     const float bartopHalfHeight = screenToWorldScale(bartopSrcRect.h);
-    auto  bartopEnt        = bagel::Entity::create();
-    bartopEnt.addAll(
+    const float bartopY = -(screenToWorldDistance(LOGICAL_H / 2) - bartopHalfHeight);
+    auto  ent        = bagel::Entity::create();
+
+    auto world = physicsContext.world();
+    b2BodyDef bd = b2DefaultBodyDef();
+    bd.type = b2_staticBody;
+    bd.position = { 0.f, bartopY };
+    bd.userData  = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
+    auto bartopBodyId = b2CreateBody(world, &bd);
+
+    // Polygon covering the top 10% of the texture (a strip at the top edge).
+    const float stripHalfHeight = 0.1f * bartopHalfHeight; // 10% of full height
+    const float stripOffsetY     = bartopHalfHeight - stripHalfHeight - screenToWorldDistance(16.f); // top, body-local
+    const b2Polygon topStrip =
+        b2MakeOffsetBox(bartopHalfWidth, stripHalfHeight, { 0.f, stripOffsetY }, b2Rot_identity);
+
+    b2ShapeDef bartopShape = b2DefaultShapeDef();
+    bartopShape.filter.categoryBits = filter::FURNITURE;
+    bartopShape.filter.maskBits     = filter::MASK_FURNITURE;
+    b2CreatePolygonShape(bartopBodyId, &bartopShape, &topStrip);
+
+    ent.addAll(
         Drawable{bartopTex.get(), bartopSrcRect, layer::BARTOP},
         Transform{.x = 0.f,
-                  .y = -(screenToWorldDistance(LOGICAL_H / 2) - bartopHalfHeight),
-                  .w = screenToWorldScale(bartopSrcRect.w),
-                  .h = bartopHalfHeight});
+                  .y = bartopY,
+                  .w = bartopHalfWidth,
+                  .h = bartopHalfHeight},
+        PhysicsBody{bartopBodyId});
 
-    return bartopEnt;
+    return ent;
 }
 } // namespace cafe

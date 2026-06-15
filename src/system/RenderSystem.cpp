@@ -14,23 +14,6 @@
 
 namespace cafe
 {
-namespace
-{
-// Per-ingredient color, shared by drop tinting.
-SDL_Color ingredientColor(Ingredient kind)
-{
-    switch (kind)
-    {
-    case Ingredient::Coffee: return { 75,  47,  30,  255 }; // #4B2F1E
-    case Ingredient::Milk:   return { 240, 234, 214, 255 }; // #F0EAD6
-    case Ingredient::Water:  return { 111, 183, 224, 255 }; // #6FB7E0
-    default:                 return { 255, 255, 255, 255 };
-    }
-}
-
-
-} // namespace
-
 void drawSystem(SDL_Renderer* renderer)
 {
     using Entity = bagel::Entity;
@@ -69,23 +52,30 @@ void drawSystem(SDL_Renderer* renderer)
         // tint particles to their ingredient color (shared particle.png)
         if (e.has<Liquid>())
         {
-            const SDL_Color col = ingredientColor(e.get<Liquid>().kind);
+            const SDL_Color col = ingredientColors[static_cast<size_t>(e.get<Liquid>().kind)];
             SDL_SetTextureColorMod(d.texture, col.r, col.g, col.b);
+            SDL_SetTextureAlphaMod(d.texture, col.a);
+            SDL_SetTextureBlendMode(d.texture, col.a < 255 ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
         }
 
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
 
         if (e.has<Liquid>())
+        {
             SDL_SetTextureColorMod(d.texture, 255, 255, 255);
+            SDL_SetTextureAlphaMod(d.texture, 255);
+            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_BLEND); // restore default
+        }
     }
 }
-void debugDrawCupWalls(SDL_Renderer* renderer)
+void debugHighlightPhysics(SDL_Renderer* renderer)
 {
     static const bagel::Mask mask =
-        bagel::MaskBuilder().set<Cup>().set<PhysicsBody>().build();
+        bagel::MaskBuilder().set<PhysicsBody>().build();
 
     const WorldPos cam = RenderContext::getCameraPos();
-    SDL_SetRenderDrawColor(renderer, 255, 20, 147, 255); // hot pink
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 255, 20, 147, 100); // hot pink, half transparent
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -113,5 +103,7 @@ void debugDrawCupWalls(SDL_Renderer* renderer)
             }
         }
     }
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
 } // namespace cafe

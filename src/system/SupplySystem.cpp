@@ -2,13 +2,11 @@
 
 #include "Components.h"
 #include "Entities.h"
-#include "RenderContext.h"
 #include "Transform.h"
 #include <bagel.h>
 #include <box2d/box2d.h>
 #include <cmath>
 #include <cstddef>
-#include <cstdint>
 #include <iterator>
 #include <vector>
 
@@ -16,14 +14,6 @@ namespace cafe
 {
 namespace
 {
-constexpr uint32_t controlBit(Controls c) { return 1u << static_cast<int>(c); }
-
-bool pointInTransform(const WorldPos& p, const Transform& t)
-{
-    return p.x > t.x - t.w && p.x < t.x + t.w &&
-           p.y > t.y - t.h && p.y < t.y + t.h;
-}
-
 float distSq(float ax, float ay, float bx, float by)
 {
     const float dx = ax - bx, dy = ay - by;
@@ -61,11 +51,11 @@ bool slotOccupied(WorldPos slot, DropType item)
 }
 
 // Spawns the item at its slot, then lifts it above the screen and starts the fall.
-void spawnFalling(AssetManager& assets, DropType item, WorldPos slot)
+void spawnFalling(PhysicsContext& physics, AssetManager& assets, DropType item, WorldPos slot)
 {
     bagel::Entity e = (item == DropType::cup)
-                          ? createCup(assets, slot, supply::CUP_CAPACITY)
-                          : createPastry(slot, assets);
+                          ? createCup(physics, assets, slot, supply::CUP_CAPACITY)
+                          : createPastry(physics, slot, assets);
 
     e.get<Transform>().y = supply::DROP_FROM_Y;
     if (e.has<PhysicsBody>())
@@ -81,51 +71,37 @@ void spawnFalling(AssetManager& assets, DropType item, WorldPos slot)
 }
 } // namespace
 
-void buttonSystem(AssetManager& assets)
+void supplyButtonSystem(PhysicsContext& physics, AssetManager& assets)
 {
-    static const bagel::Mask inputMask  = bagel::MaskBuilder().set<SdlEvents>().build();
-    static const bagel::Mask buttonMask = bagel::MaskBuilder().set<SpawnButton>().set<Transform>().build();
+    static const bagel::Mask buttonMask = bagel::MaskBuilder().set<SpawnButton>().build();
 
-    // 1. Read this frame's input; act only on a fresh mouse-down.
-    SdlEvents input{};
-    bool haveInput = false;
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-        if (e.test(inputMask)) { input = e.get<SdlEvents>(); haveInput = true; break; }
-
-    if (!haveInput) return;
-    if (!(input.controls & controlBit(Controls::MouseButtonDown))) return;
-
-    const WorldPos m = screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
-
-    // 2. Hit-test buttons (read-only; defer the spawn until after the scan).
-    bool     hit = false;
-    DropType item{};
+    // Consume click flags during the scan (field mutation is safe); defer the
+    // actual spawns out of the loop since spawning creates entities.
+    std::vector<DropType> toSpawn;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(buttonMask)) continue;
-        if (pointInTransform(m, e.get<Transform>()))
-        {
-            item = e.get<SpawnButton>().item;
-            hit  = true;
-            break;
-        }
+        auto& b = e.get<SpawnButton>();
+        if (!b.justPressed) continue;
+        b.justPressed = false;
+        toSpawn.push_back(b.item);
     }
-    if (!hit) return;
 
-    // 3. Find the first free slot of that row.
-    const WorldPos* slots = (item == DropType::cup) ? supply::CUP_SLOTS : supply::PASTRY_SLOTS;
-    const size_t    count = (item == DropType::cup) ? std::size(supply::CUP_SLOTS)
-                                                    : std::size(supply::PASTRY_SLOTS);
-
-    for (size_t i = 0; i < count; ++i)
+    for (DropType item : toSpawn)
     {
-        if (!slotOccupied(slots[i], item))
+        const WorldPos* slots = (item == DropType::cup) ? supply::CUP_SLOTS : supply::PASTRY_SLOTS;
+        const size_t    count = (item == DropType::cup) ? std::size(supply::CUP_SLOTS)
+                                                        : std::size(supply::PASTRY_SLOTS);
+        for (size_t i = 0; i < count; ++i)
         {
-            spawnFalling(assets, item, slots[i]);
-            return;
+            if (!slotOccupied(slots[i], item))
+            {
+                spawnFalling(physics, assets, item, slots[i]);
+                break;
+            }
         }
+        // All slots full: ignore.
     }
-    // All slots full: ignore the press.
 }
 
 void fallingSystem(float dtSeconds)

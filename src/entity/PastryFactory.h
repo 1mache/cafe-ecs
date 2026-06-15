@@ -5,5 +5,7 @@
 
 namespace cafe
 {
-bagel::Entity createPastry(WorldPos pos, AssetManager& assets);
+class PhysicsContext;
+
+bagel::Entity createPastry(PhysicsContext& physics, WorldPos pos, AssetManager& assets);
 }

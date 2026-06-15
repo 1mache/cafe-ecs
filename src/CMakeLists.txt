@@ -8,7 +8,6 @@ target_sources(
     component/Drawable.h
     component/ChildOf.h
     component/Ingredient.h
-    component/DrinkType.h
     component/Liquid.h
     component/PhysicsBody.h
     component/Cup.h
@@ -27,7 +26,6 @@ target_sources(
     component/Leaving.h
     component/Order.h
     component/Served.h
-    component/SdlEvents.h
     component/Sensor.h
     component/Sensor.cpp
     component/Components.h
@@ -50,6 +48,8 @@ target_sources(
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/Systems.h
+    system/CoffeeMachineSystem.cpp
+    system/CoffeeMachineSystem.h
 
     # entities
     entity/CupFactory.h
@@ -80,6 +80,8 @@ target_sources(
     Utils.h
     RenderContext.h
     RenderLayers.h
+    DrinkType.h
+    PastryType.h
     OrderMatch.h
     OrderMatch.cpp
     Menu.h
@@ -102,6 +104,8 @@ target_sources(
     Texture.cpp
     CafeGame.h
     CafeGame.cpp
+
+    UserInput.h
 )
 
 target_include_directories(

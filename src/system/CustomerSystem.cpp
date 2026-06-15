@@ -45,7 +45,7 @@ void recycleItem(bagel::Entity e)
 }
 } // namespace
 
-void customerSpawnerSystem(float dtSeconds, AssetManager& assets)
+void customerSpawnerSystem(PhysicsContext& physics, float dtSeconds, AssetManager& assets)
 {
     static const bagel::Mask spawnerMask =
         bagel::MaskBuilder().set<Spawner>().build();
@@ -72,7 +72,7 @@ void customerSpawnerSystem(float dtSeconds, AssetManager& assets)
         sp.cooldown -= dtSeconds;
         if (sp.cooldown <= 0.f)
         {
-            spawnCustomer(assets, sp.seat, randomDrinkOrder(/*hasPastry=*/ true), sp.patience);
+            spawnCustomer(physics, assets, sp.seat, randomOrder(), sp.patience);
             sp.cooldown = sp.interval;
         }
     }
