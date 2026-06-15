@@ -5,8 +5,14 @@
 
 namespace cafe
 {
-/** @brief A liquid drop. `kind` is which ingredient this drop is made of. */
-struct Liquid { Ingredient kind{ Ingredient::Coffee }; };
+/** @brief A liquid drop. `kind` is which ingredient this drop is made of.
+ *  `owner` is the cup it was counted into (-1 until it lands), so a delivered
+ *  cup's drops can be destroyed without touching any other cup's contents. */
+struct Liquid
+{
+    Ingredient      kind{ Ingredient::Coffee };
+    bagel::ent_type owner{ -1 };
+};
 } // namespace cafe
 
 template <> struct bagel::Storage<cafe::Liquid> final : NoInstance { using type = SparseStorage<cafe::Liquid>; };

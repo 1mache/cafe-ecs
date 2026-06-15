@@ -8,7 +8,7 @@ class AssetManager;
 void customerSpawnerSystem(float dtSeconds, AssetManager& assets);
 void behaviorSystem(float dtSeconds);
 void deliverySystem();
-void recycleDeliveredItems();
+void clearDeliveredItems();
 void orderSystem();
 void reportLeavingCustomers();
 void customerCleanupSystem();

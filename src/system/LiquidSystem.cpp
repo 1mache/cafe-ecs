@@ -111,6 +111,7 @@ void liquidSensorEventSystem()
             {
                 auto& c = cup.get<Cup>();
                 ++c.filled[static_cast<size_t>(visitor.get<Liquid>().kind)];
+                visitor.get<Liquid>().owner = cup.entity(); // tag for per-cup cleanup on delivery
                 if (c.totalFilled() == c.capacity)
                     std::cout << "[CupFull] cup is full (" << c.totalFilled()
                               << "/" << c.capacity << ")" << std::endl;

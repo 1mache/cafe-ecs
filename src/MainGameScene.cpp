@@ -25,8 +25,9 @@ void cafe::MainGameScene::onInit()
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
         _pipes[i] = machine.pipes[i];
 
-    createCup(assets, CUP_SLOT, CUP_CAPACITY);
-    createPastry(PASTRY_SLOT, assets);
+    // Supply is summoned on demand: click a button to drop a fresh cup/pastry in.
+    createSpawnButton(assets, supply::CUP_BUTTON, DropType::cup);
+    createSpawnButton(assets, supply::PASTRY_BUTTON, DropType::pastry);
 
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone();
@@ -54,6 +55,9 @@ bool cafe::MainGameScene::onUpdate(float dt)
         if (isTriggeredEvent(_inputEnt.entity(), Controls::Quit))
             return false;
 
+        // Click a supply button to drop a fresh cup/pastry into a free slot.
+        buttonSystem(getAssetManager());
+
         // deliverySystem reads DragIntent.dropSpaceEntity on release before
         // dragAndDropSystem resets the intent to None.
         deliverySystem();
@@ -64,6 +68,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
         liquidSensorEventSystem();        // count drops into cup; cleanup spilled
         dropSpaceDetectionSystem(); // update DragIntent.dropSpaceEntity
 
+        fallingSystem(dt);          // cartoonish drop-in; lands items into their slots
         syncTransformFromBody();    // physics position -> Transform
 
         customerSpawnerSystem(dt, getAssetManager()); // keep one customer at the seat
@@ -71,7 +76,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
         orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
         reportLeavingCustomers();   // log SUCCESSFUL / FAILED
         hierarchySystem();          // children follow parents; orphan children of Leaving
-        recycleDeliveredItems();    // order done/abandoned -> send cup+pastry home, purge drops
+        clearDeliveredItems();      // order done/abandoned -> destroy that customer's tray + drops
         customerCleanupSystem();            // destroy all Leaving entities
 
         SDL_RenderClear(renderer);

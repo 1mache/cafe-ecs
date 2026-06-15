@@ -100,6 +100,10 @@ void deliverySystem()
     static const bagel::Mask dragMask =
         bagel::MaskBuilder().set<DragIntent>().build();
 
+    // (item, customer) pairs to tag once the loop ends (add<> is structural).
+    struct Handoff { bagel::ent_type item; bagel::ent_type customer; };
+    std::vector<Handoff> handoffs;
+
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(dragMask)) continue;
@@ -116,19 +120,21 @@ void deliverySystem()
         if (e.has<Cup>())
         {
             // Customer accepts any coffee; the grade reflects how well it matched.
-            // The cup stays on the customer; it is recycled + emptied only once the
-            // whole order is fulfilled (see recycleDeliveredItems).
+            // The item stays in the customer's tray and is destroyed only when the
+            // order completes / the customer leaves (see clearDeliveredItems).
             if (target.has<Order>())
             {
                 served.drink      = true;
                 served.drinkGrade = gradeDrinkRatio(target.get<Order>(), e.get<Cup>());
+                handoffs.push_back({ e.entity(), target.entity() });
             }
         }
         else // pastry
         {
             if (target.has<Order>() && target.get<Order>().hasPastry)
             {
-                served.pastry = true; // taken; recycled at order completion
+                served.pastry = true; // taken; destroyed at order completion
+                handoffs.push_back({ e.entity(), target.entity() });
             }
             else
             {
@@ -138,62 +144,62 @@ void deliverySystem()
             }
         }
     }
+
+    for (const auto& h : handoffs)
+        bagel::Entity{ h.item }.add(DeliveredTo{ h.customer });
 }
 
-void recycleDeliveredItems()
+void clearDeliveredItems()
 {
-    static const bagel::Mask leavingCustomerMask =
-        bagel::MaskBuilder().set<Leaving>().set<Served>().build();
-    static const bagel::Mask itemMask =
-        bagel::MaskBuilder().set<HomeSlot>().set<DragItemType>().build();
-    static const bagel::Mask liquidMask =
-        bagel::MaskBuilder().set<Liquid>().build();
+    static const bagel::Mask leavingMask   = bagel::MaskBuilder().set<Leaving>().build();
+    static const bagel::Mask deliveredMask = bagel::MaskBuilder().set<DeliveredTo>().build();
+    static const bagel::Mask liquidMask    = bagel::MaskBuilder().set<Liquid>().build();
+    static const bagel::Mask childMask     = bagel::MaskBuilder().set<ChildOf>().build();
 
-    // What did the departing customer actually receive? Driven off Served so the
-    // reset happens only when the order is done (success) or the customer gives up
-    // (fail) — never mid-order. One customer at a time, so OR-ing is unambiguous.
-    bool recycleDrink  = false;
-    bool recyclePastry = false;
+    // 1. Which customers are leaving this frame? Their whole tray gets wiped,
+    //    whether the order succeeded or their patience ran out.
+    std::vector<bagel::ent_type> leaving;
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+        if (e.test(leavingMask)) leaving.push_back(e.entity());
+    if (leaving.empty()) return;
+
+    auto isLeaving = [&](int id) {
+        for (auto c : leaving) if (c.id == id) return true;
+        return false;
+    };
+
+    // 2. Items delivered to a leaving customer (multiple cups possible).
+    std::vector<bagel::ent_type> items; // cups + pastries
+    std::vector<bagel::ent_type> cups;  // subset, for drop/child cleanup
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (!e.test(leavingCustomerMask)) continue;
-        const auto& served = e.get<Served>();
-        recycleDrink  |= served.drink;
-        recyclePastry |= served.pastry;
+        if (!e.test(deliveredMask)) continue;
+        if (!isLeaving(e.get<DeliveredTo>().customer.id)) continue;
+        items.push_back(e.entity());
+        if (e.has<Cup>()) cups.push_back(e.entity());
     }
-    if (!recycleDrink && !recyclePastry) return;
+    if (items.empty()) return;
 
-    // Send the delivered cup/pastry back to their slots (single instance each).
+    auto isDeliveredCup = [&](int id) {
+        for (auto c : cups) if (c.id == id) return true;
+        return false;
+    };
+
+    // 3. Each delivered cup's drops (by owner tag) and child sprite (cupFront).
+    //    Scoped to these cups so other staged cups keep their contents.
+    std::vector<bagel::ent_type> extra;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (!e.test(itemMask)) continue;
-        const DropType type = e.get<DragItemType>().dropType;
-
-        if (recycleDrink && type == DropType::cup)
-        {
-            recycleItem(e);
-            Cup& cup = e.get<Cup>();
-            for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
-                cup.filled[i] = 0;
-        }
-        else if (recyclePastry && type == DropType::pastry)
-        {
-            recycleItem(e);
-        }
+        if (e.test(liquidMask) && isDeliveredCup(e.get<Liquid>().owner.id))
+            extra.push_back(e.entity());
+        else if (e.test(childMask) && isDeliveredCup(e.get<ChildOf>().parent.entity().id))
+            extra.push_back(e.entity());
     }
 
-    // Cup emptied + home: now destroy its accumulated drops. Collect-then-destroy
-    // so we never destroy entities mid-iteration. Guarantees zero live particles.
-    if (recycleDrink)
-    {
-        std::vector<bagel::ent_type> drops;
-        for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-            if (e.test(liquidMask))
-                drops.push_back(e.entity());
-
-        for (auto id : drops)
-            destroyPhysicalEntity(id); // frees the b2Body too (leak-safe)
-    }
+    // 4. Destroy everything (already collected — safe). Guarantees zero leftover
+    //    particles/bodies and no orphaned cup-front sprites.
+    for (auto id : items) destroyPhysicalEntity(id);
+    for (auto id : extra) destroyPhysicalEntity(id);
 }
 
 void orderSystem()

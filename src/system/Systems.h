@@ -6,4 +6,5 @@
 #include "LiquidSystem.h"
 #include "RenderSystem.h"
 #include "SensorSystem.h"
+#include "SupplySystem.h"
 #include "TransformSystem.h"

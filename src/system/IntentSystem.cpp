@@ -118,6 +118,9 @@ void intentSystem(SDL_Renderer* renderer)
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (e.test(dragMask)){
+            // Items mid-drop (Falling) or already handed over (DeliveredTo) can't be grabbed.
+            if (e.has<Falling>() || e.has<DeliveredTo>()) continue;
+
             auto& intent = e.get<DragIntent>();
 
             if ((input.controls & controlBit(Controls::MouseButtonDown))

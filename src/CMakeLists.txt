@@ -19,6 +19,10 @@ target_sources(
     component/DragItemType.h
     component/DropSpace.h
     component/DropType.h
+    component/DeliveredTo.h
+    component/Falling.h
+    component/SpawnButton.h
+    component/HomeSlot.h
     component/InSensorArea.h
     component/Leaving.h
     component/Order.h
@@ -41,6 +45,8 @@ target_sources(
     system/DragAndDropSystem.cpp
     system/IntentSystem.h
     system/IntentSystem.cpp
+    system/SupplySystem.h
+    system/SupplySystem.cpp
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/Systems.h
@@ -64,6 +70,8 @@ target_sources(
     entity/CafeEnvironmentFactory.cpp
     entity/PastryFactory.h
     entity/PastryFactory.cpp
+    entity/ButtonFactory.h
+    entity/ButtonFactory.cpp
     entity/Entities.h
     entity/Entities.cpp
 
