@@ -79,13 +79,14 @@ void drawSystem(SDL_Renderer* renderer)
             SDL_SetTextureColorMod(d.texture, 255, 255, 255);
     }
 }
-void debugDrawCupWalls(SDL_Renderer* renderer)
+void debugHighlightPhysics(SDL_Renderer* renderer)
 {
     static const bagel::Mask mask =
-        bagel::MaskBuilder().set<Cup>().set<PhysicsBody>().build();
+        bagel::MaskBuilder().set<PhysicsBody>().build();
 
     const WorldPos cam = RenderContext::getCameraPos();
-    SDL_SetRenderDrawColor(renderer, 255, 20, 147, 255); // hot pink
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 255, 20, 147, 77); // hot pink, 70% transparent
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -113,5 +114,7 @@ void debugDrawCupWalls(SDL_Renderer* renderer)
             }
         }
     }
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
 } // namespace cafe
