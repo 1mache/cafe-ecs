@@ -14,23 +14,6 @@
 
 namespace cafe
 {
-namespace
-{
-// Per-ingredient color, shared by drop tinting.
-SDL_Color ingredientColor(Ingredient kind)
-{
-    switch (kind)
-    {
-    case Ingredient::Coffee: return { 75,  47,  30,  255 }; // #4B2F1E
-    case Ingredient::Milk:   return { 240, 234, 214, 255 }; // #F0EAD6
-    case Ingredient::Water:  return { 111, 183, 224, 255 }; // #6FB7E0
-    default:                 return { 255, 255, 255, 255 };
-    }
-}
-
-
-} // namespace
-
 void drawSystem(SDL_Renderer* renderer)
 {
     using Entity = bagel::Entity;
@@ -69,7 +52,7 @@ void drawSystem(SDL_Renderer* renderer)
         // tint particles to their ingredient color (shared particle.png)
         if (e.has<Liquid>())
         {
-            const SDL_Color col = ingredientColor(e.get<Liquid>().kind);
+            const SDL_Color col = ingredientColors[static_cast<size_t>(e.get<Liquid>().kind)];
             SDL_SetTextureColorMod(d.texture, col.r, col.g, col.b);
         }
 

@@ -15,9 +15,9 @@ static constexpr auto TEX = "machine.png";
 
 // Pour-pipe positions relative to the machine center (world meters, Y-up).
 constexpr WorldPos PIPE_OFFSET[INGREDIENT_COUNT] = {
-    { -0.4f, -0.5f }, // Coffee
-    {  0.0f, -0.5f }, // Milk
-    {  0.4f, -0.5f }, // Water
+    { -1.05f, 0.23f }, // Coffee
+    {  1.3f, -0.3f }, // Milk
+    {  0.13f, 0.0f }, // Water
 };
 
 bagel::Entity createPipe(WorldPos machinePos, Ingredient kind)

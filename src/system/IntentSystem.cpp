@@ -25,8 +25,8 @@ constexpr SDL_Scancode scancodeForIngredient(Ingredient kind)
     switch (kind)
     {
     case Ingredient::Coffee: return SDL_SCANCODE_1;
-    case Ingredient::Milk:   return SDL_SCANCODE_2;
-    case Ingredient::Water:  return SDL_SCANCODE_3;
+    case Ingredient::Water:  return SDL_SCANCODE_2;
+    case Ingredient::Milk:   return SDL_SCANCODE_3;
     default:                 return SDL_SCANCODE_UNKNOWN;
     }
 }

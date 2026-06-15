@@ -21,7 +21,7 @@ void cafe::MainGameScene::onInit()
     createBg(assets, BG_PATH);
     createBartop(assets);
 
-    auto machine = createCoffeeMachine(assets, {-6.f, -1.f});
+    auto machine = createCoffeeMachine(assets, {-7.f, -1.f});
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
         _pipes[i] = machine.pipes[i];
 
@@ -31,7 +31,7 @@ void cafe::MainGameScene::onInit()
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone();
 
-    std::cout << "[Demo] Hold 1/2/3 to pour Coffee/Milk/Water. Left-drag to move the cup or pastry.\n"
+    std::cout << "[Demo] Hold 1/2/3 to pour Coffee/Water/Milk. Left-drag to move the cup or pastry.\n"
               << "[Demo] Serve a cup matching the order ratio + a pastry to the customer in 60 s.\n";
 
     // --- Customer ---
@@ -60,6 +60,9 @@ void cafe::MainGameScene::onInit()
     constexpr float BUBBLE_W  = BUBBLE_DIMS.x * BUBBLE_SCALE; // on-screen px
     constexpr float BUBBLE_H  = BUBBLE_DIMS.y * BUBBLE_SCALE; // on-screen px
     constexpr float COL_W     = BUBBLE_W / 4.f;
+    // Max icons that stack vertically in one bubble column (up to 3 beverages /
+    // pastries per order). The bubble height is sized so this many rows fit.
+    static constexpr int        BUBBLE_MAX_ICONS_PER_COLUMN = 3;
     constexpr float ROW_H     = BUBBLE_H / BUBBLE_MAX_ICONS_PER_COLUMN;
     // Icon must fit both a quarter-width column and one stacked row, then 0.7x.
     constexpr float ICON_SIZE = (COL_W < ROW_H ? COL_W : ROW_H) * 0.7f;
