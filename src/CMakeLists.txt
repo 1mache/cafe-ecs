@@ -22,7 +22,6 @@ target_sources(
     component/Leaving.h
     component/Order.h
     component/Served.h
-    component/SdlEvents.h
     component/Sensor.h
     component/Sensor.cpp
     component/Components.h
@@ -95,6 +94,8 @@ target_sources(
     Texture.cpp
     CafeGame.h
     CafeGame.cpp
+
+    UserInput.h
 )
 
 target_include_directories(

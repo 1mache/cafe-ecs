@@ -14,16 +14,10 @@ void cafe::MainGameScene::onInit()
 
     auto& assets = getAssetManager();
 
-    // Single input-state entity: intentSystem polls SDL and publishes here.
-    _inputEnt = bagel::Entity::create();
-    _inputEnt.add(SdlEvents{});
-
     createBg(assets, BG_PATH);
     createBartop(assets);
 
     auto machine = createCoffeeMachine(_physics, assets, {-7.f, -1.f});
-    for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
-        _pipes[i] = machine.pipes[i];
 
     createCup(_physics, assets, {-4.f, -1.f}, CUP_CAPACITY);
     createPastry(_physics, {4.f, -3.f},  assets);
@@ -102,34 +96,33 @@ bool cafe::MainGameScene::onUpdate(float dt)
 {
     auto* renderer = getRenderer();
 
-        // Single SDL poll: publishes SdlEvents and sets DragIntent transitions.
-        intentSystem(renderer);
+    bool exitRequested = false;
+    // Single SDL poll: publishes intents from user input
+    intentSystem(renderer, exitRequested);
+    if (exitRequested) return false;
 
-        if (isTriggeredEvent(_inputEnt.entity(), Controls::Quit))
-            return false;
+    // deliverySystem reads DragIntent.dropSpaceEntity on release before
+    // dragAndDropSystem resets the intent to None.
+    deliverySystem();
+    dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
-        // deliverySystem reads DragIntent.dropSpaceEntity on release before
-        // dragAndDropSystem resets the intent to None.
-        deliverySystem();
-        dragAndDropSystem();        // held: follow mouse; released: snap/drop
+    liquidSpawnerSystem(_physics, dt, getAssetManager());    // spawn drops while pouring
+    _physics.step(dt);
+    liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
+    dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 
-        liquidSpawnerSystem(_physics, dt, getAssetManager());    // spawn drops while pouring
-        _physics.step(dt);
-        liquidSensorEventSystem(_physics);        // count drops into cup; cleanup spilled
-        dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
+    syncTransformFromBody();    // physics position -> Transform
 
-        syncTransformFromBody();    // physics position -> Transform
+    behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)
+    orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
+    reportLeavingCustomers();   // log SUCCESSFUL / FAILED
+    hierarchySystem();          // children follow parents; orphan children of Leaving
+    customerCleanupSystem();    // destroy all Leaving entities
 
-        behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)
-        orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
-        reportLeavingCustomers();   // log SUCCESSFUL / FAILED
-        hierarchySystem();          // children follow parents; orphan children of Leaving
-        customerCleanupSystem();            // destroy all Leaving entities
-
-        SDL_RenderClear(renderer);
-        drawSystem(renderer);       // sorted by renderLayer ascending
-        debugHighlightPhysics(renderer);
-        SDL_RenderPresent(renderer);
+    SDL_RenderClear(renderer);
+    drawSystem(renderer);       // sorted by renderLayer ascending
+    debugHighlightPhysics(renderer);
+    SDL_RenderPresent(renderer);
 
     return true;
 }
