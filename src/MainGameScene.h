@@ -1,9 +1,6 @@
 #pragma once
-#include "Ingredient.h"
 #include "PhysicsContext.h"
 #include "Scene.h"
-#include "WorldPos.h"
-#include "bagel.h"
 
 namespace cafe
 {

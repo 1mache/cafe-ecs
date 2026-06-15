@@ -5,7 +5,6 @@
 #include "Transform.h"
 #include <bagel.h>
 #include <box2d/box2d.h>
-#include <cmath>
 #include <cstddef>
 #include <iterator>
 #include <vector>
