@@ -11,7 +11,8 @@ namespace cafe
 {
 namespace
 {
-static constexpr auto TEX = "machine.png";
+constexpr auto TEX        = "machine.png";
+constexpr auto BUTTON_TEX = "buttons.png";
 
 // Pour-pipe positions relative to the machine center (world meters, Y-up).
 constexpr WorldPos PIPE_OFFSET[INGREDIENT_COUNT] = {
@@ -20,20 +21,27 @@ constexpr WorldPos PIPE_OFFSET[INGREDIENT_COUNT] = {
     {  0.13f, 0.0f }, // Water
 };
 
-bagel::Entity createPipe(WorldPos machinePos, Ingredient kind)
+constexpr SDL_FPoint PIXEL_BUTTON_OFFSET[INGREDIENT_COUNT] = {
+    {  0.0f, 0.0f },
+    {  0.0f, 0.0f },
+    {  0.0f, 0.0f },
+};
+
+bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, Ingredient kind)
 {
     const WorldPos off = PIPE_OFFSET[static_cast<size_t>(kind)];
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{ .x = machinePos.x + off.x, .y = machinePos.y + off.y, .w = 0.f, .h = 0.f },
+        Transform{ .x = machinePos.x, .y = machinePos.y, .w = 0.f, .h = 0.f },
         LiquidSpawner{ .kind = kind, .interval = 0.05f, .accumulator = 0.f,
-                       .active = false, .offset = {} }
+                       .active = false, .offset = {} },
+        ChildOf(machineEnt, {off.x, off.y}, true)
     );
     return ent;
 }
 } // namespace
 
-CoffeeMachine createCoffeeMachine(PhysicsContext& physics, AssetManager& assets, WorldPos pos)
+bagel::Entity createCoffeeMachine(PhysicsContext& physics, AssetManager& assets, WorldPos pos)
 {
     const Texture& tex = assets.getTexture(TEX);
     auto [x, y] = tex.getSize();
@@ -56,13 +64,10 @@ CoffeeMachine createCoffeeMachine(PhysicsContext& physics, AssetManager& assets,
         PhysicsBody{ body }
     );
 
-    return CoffeeMachine{
-        ent,
-        {
-            createPipe(pos, Ingredient::Coffee),
-            createPipe(pos, Ingredient::Milk),
-            createPipe(pos, Ingredient::Water),
-        }
-    };
+    createPipe(pos, ent,Ingredient::Coffee);
+    createPipe(pos, ent,Ingredient::Milk);
+    createPipe(pos, ent,Ingredient::Water);
+
+    return ent;
+};
 }
-} // namespace cafe
