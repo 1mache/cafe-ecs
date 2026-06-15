@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL.h>
 #include <cstdint>
+#include <vector>
 
 namespace cafe
 {
@@ -21,13 +22,14 @@ constexpr uint32_t controlBit(Controls control)
     return 1u << static_cast<int>(control);
 }
 
-/** @brief Per-frame SDL input state. Payload fields keep the last event value seen this frame. */
+/** @brief Per-frame SDL input state. keyDowns/keyUps collect ALL key events this frame. */
 struct UserInput
 {
-    uint32_t     controls{};
-    SDL_FPoint   mousePos{};
-    SDL_Scancode keyScancode{};
-    uint8_t      mouseButton{};
+    uint32_t                  controls{};
+    SDL_FPoint                mousePos{};
+    std::vector<SDL_Scancode> keyDowns{};
+    std::vector<SDL_Scancode> keyUps{};
+    uint8_t                   mouseButton{};
 };
 
 } // namespace cafe

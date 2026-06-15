@@ -60,21 +60,21 @@ constexpr SDL_Scancode scancodeForIngredient(Ingredient kind)
 // Sets the pour state of the pipe whose key matches sc (no-op for other keys).
 void updatePipePourIntent(bagel::Entity e, UserInput& input)
 {
+    const SDL_Scancode myKey = scancodeForIngredient(e.get<LiquidSpawner>().kind);
+    bool& spawnerActive = e.get<LiquidSpawner>().active;
 
-    // oif the scancode
-    if (scancodeForIngredient(e.get<LiquidSpawner>().kind) == input.keyScancode)
-    {
-        bool& spawnerActive = e.get<LiquidSpawner>().active;
-        if (input.controls & controlBit(Controls::MouseButtonDown))
-            spawnerActive = true;
-        if (input.controls & controlBit(Controls::MouseButtonUp))
-            spawnerActive = false;
-    }
+    for (SDL_Scancode sc : input.keyDowns)
+        if (sc == myKey) spawnerActive = true;
+    for (SDL_Scancode sc : input.keyUps)
+        if (sc == myKey) spawnerActive = false;
 }
 }
 void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
 {
+    constexpr int RESERVED_POLL_KEY_EVENTS = 10;
     UserInput input{};
+    input.keyUps.reserve(RESERVED_POLL_KEY_EVENTS);
+    input.keyDowns.reserve(RESERVED_POLL_KEY_EVENTS);
 
     // gather events into out input object
     SDL_Event event;
@@ -88,12 +88,12 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
 
         case SDL_EVENT_KEY_DOWN:
             input.controls |= controlBit(Controls::KeyDown);
-            input.keyScancode = event.key.scancode;
+            input.keyDowns.push_back(event.key.scancode);
             break;
 
         case SDL_EVENT_KEY_UP:
             input.controls |= controlBit(Controls::KeyUp);
-            input.keyScancode = event.key.scancode;
+            input.keyUps.push_back(event.key.scancode);
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
