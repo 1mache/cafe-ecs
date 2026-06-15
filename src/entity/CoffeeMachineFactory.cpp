@@ -6,6 +6,7 @@
 #include "SpriteDims.h"
 #include "Texture.h"
 
+#include "PhysicsFilters.h"
 #include <box2d/box2d.h>
 
 namespace cafe
@@ -80,6 +81,18 @@ bagel::Entity createCoffeeMachine(PhysicsContext& physics, AssetManager& assets,
     bd.position = { t.x, t.y };
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
     b2BodyId body = b2CreateBody(physics.world(), &bd);
+
+    // Solid collider: top of texture down to the lowest pipe (Milk, y = -0.3).
+    constexpr float colliderBottom = PIPE_OFFSET[static_cast<size_t>(Ingredient::Milk)].y + 0.5f;
+    const float colliderHalfH   = (halfH - colliderBottom) * 0.5f;
+    const float colliderOffsetY = (halfH + colliderBottom) * 0.5f;
+    const b2Polygon collider =
+        b2MakeOffsetBox(halfW, colliderHalfH, { 0.f, colliderOffsetY }, b2Rot_identity);
+
+    b2ShapeDef machineShape = b2DefaultShapeDef();
+    machineShape.filter.categoryBits = filter::FURNITURE;
+    machineShape.filter.maskBits     = filter::MASK_FURNITURE;
+    b2CreatePolygonShape(body, &machineShape, &collider);
 
     ent.addAll(
         t,
