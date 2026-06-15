@@ -1,8 +1,9 @@
 #include "CoffeeMachineFactory.h"
 #include "AssetManager.h"
 #include "Components.h"
-#include "RenderLayers.h"
 #include "PhysicsContext.h"
+#include "RenderLayers.h"
+#include "SpriteDims.h"
 #include "Texture.h"
 
 #include <box2d/box2d.h>
@@ -21,10 +22,14 @@ constexpr WorldPos PIPE_OFFSET[INGREDIENT_COUNT] = {
     {  0.13f, 0.0f }, // Water
 };
 
-constexpr SDL_FPoint PIXEL_BUTTON_OFFSET[INGREDIENT_COUNT] = {
-    {  0.0f, 0.0f },
-    {  0.0f, 0.0f },
-    {  0.0f, 0.0f },
+constexpr int BUTTON_ON_TEX_ID[INGREDIENT_COUNT] = {
+    0,1,2
+};
+
+constexpr WorldPos BUTTON_OFFSET[INGREDIENT_COUNT] = {
+    {  -1.05f, 1.2f },
+    {  1.08f, 1.2f },
+    {  0.10f, 1.2f },
 };
 
 bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, Ingredient kind)
@@ -35,6 +40,24 @@ bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, Ingredi
         Transform{ .x = machinePos.x, .y = machinePos.y, .w = 0.f, .h = 0.f },
         LiquidSpawner{ .kind = kind, .interval = 0.05f, .accumulator = 0.f,
                        .active = false, .offset = {} },
+        ChildOf(machineEnt, {off.x, off.y}, true)
+    );
+    return ent;
+}
+
+bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Entity& machineEnt, Ingredient kind)
+{
+    auto& tex = assets.getTexture(BUTTON_TEX);
+    const auto buttonTexId = static_cast<float>(BUTTON_ON_TEX_ID[static_cast<size_t>(kind)]);
+    SDL_FRect srcRect{ .x = buttonTexId * BUTTON_DIMS.x, .y = 0, .w = BUTTON_DIMS.x, .h = BUTTON_DIMS.y };
+    const WorldPos off = BUTTON_OFFSET[static_cast<size_t>(kind)];
+    auto ent = bagel::Entity::create();
+    ent.addAll(
+        Drawable{ tex.get(), srcRect, layer::PROP},
+        Transform{ .x = machinePos.x, .y = machinePos.y,
+                   .w = screenToWorldScale(BUTTON_DIMS.x),
+                   .h = screenToWorldScale(BUTTON_DIMS.y) },
+        Button{},
         ChildOf(machineEnt, {off.x, off.y}, true)
     );
     return ent;
@@ -67,6 +90,10 @@ bagel::Entity createCoffeeMachine(PhysicsContext& physics, AssetManager& assets,
     createPipe(pos, ent,Ingredient::Coffee);
     createPipe(pos, ent,Ingredient::Milk);
     createPipe(pos, ent,Ingredient::Water);
+
+    createButton(assets, pos, ent, Ingredient::Coffee);
+    createButton(assets, pos, ent, Ingredient::Milk);
+    createButton(assets, pos, ent, Ingredient::Water);
 
     return ent;
 };

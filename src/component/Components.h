@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Behavior.h"
+#include "Button.h"
 #include "ChildOf.h"
 #include "CleanupZone.h"
 #include "CoffeeSpawner.h"
