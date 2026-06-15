@@ -27,18 +27,6 @@ struct DebugStats
 DebugStats g_stats;
 } // namespace
 
-void pourControlSystem()
-{
-    static const bagel::Mask mask =
-        bagel::MaskBuilder().set<LiquidSpawner>().set<PourIntent>().build();
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(mask)) continue;
-        e.get<LiquidSpawner>().active = e.get<PourIntent>().active;
-    }
-}
-
 void liquidSpawnerSystem(float dtSeconds, AssetManager& assets)
 {
     static const bagel::Mask mask =

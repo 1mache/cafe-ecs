@@ -1,28 +1,12 @@
 #include "MainGameScene.h"
 #include "Components.h"
 #include "Entities.h"
+#include "Menu.h"
 #include "PhysicsContext.h"
 #include "SpriteDims.h"
 #include "Systems.h"
 
 #include <iostream>
-
-namespace
-{
-// TODO: move pour-key handling into the InputSystem/InputManager once it exists;
-// the scene should read a PourIntent-writing input system, not poll SDL directly.
-// Maps a key to a pour pipe index (Ingredient order). -1 if the key isn't a pour key.
-int pipeIndexForScancode(SDL_Scancode sc)
-{
-    switch (sc)
-    {
-    case SDL_SCANCODE_1: return static_cast<int>(cafe::Ingredient::Coffee);
-    case SDL_SCANCODE_2: return static_cast<int>(cafe::Ingredient::Milk);
-    case SDL_SCANCODE_3: return static_cast<int>(cafe::Ingredient::Water);
-    default:             return -1;
-    }
-}
-} // namespace
 
 void cafe::MainGameScene::onInit()
 {
@@ -51,34 +35,64 @@ void cafe::MainGameScene::onInit()
               << "[Demo] Serve a cup matching the order ratio + a pastry to the customer in 60 s.\n";
 
     // --- Customer ---
-    Order customerOrder{ .ratio = {3, 7, 0}, .hasDrink = true, .hasPastry = true };
+    Order customerOrder = randomOrder();
+    std::cout << "[Order] " << customerOrder.drinkCount << " drink(s), "
+              << customerOrder.pastryCount << " pastry(ies):\n";
+    for (int i = 0; i < customerOrder.drinkCount; ++i)
+        std::cout << "  drink "  << (i + 1) << ": "
+                  << temperatureName(customerOrder.drinks[i].temp) << ' '
+                  << recipeFor(customerOrder.drinks[i].type).name << '\n';
+    for (int i = 0; i < customerOrder.pastryCount; ++i)
+        std::cout << "  pastry " << (i + 1) << ": "
+                  << temperatureName(customerOrder.pastries[i].temp) << ' '
+                  << pastryName(customerOrder.pastries[i].type) << '\n';
     auto customerEnt = createCustomer(assets, { 5.f, -1.f }, customerOrder, 60.f);
 
     // --- Speech bubble + order icons (children of customer) ---
-    auto bubbleEnt = createSpeechBubble(assets, customerEnt, {-PERSON_DIMS.x, PERSON_DIMS.y * 0.25f});
+    auto bubbleEnt = createSpeechBubble(
+        assets, customerEnt,
+        {0.f, 28.f});
     // --- Order icons (children of the bubble) ---
-    constexpr float ICON_SIZE = 8.f / 1.5f; // TODO:move somewhere else
-    constexpr float ICON_DX   = 3.f;
-    constexpr float ICON_DY   = 2.f;
-    if (customerOrder.hasDrink)
+    // The bubble is split into 4 equal columns (quarters of its width):
+    //   0: beverage   1: beverage temp   2: pastry   3: pastry temp
+    // Items stack vertically within their column (row 0 top -> row 2 bottom),
+    // up to BUBBLE_MAX_ICONS_PER_COLUMN per column.
+    constexpr float BUBBLE_W  = BUBBLE_DIMS.x * BUBBLE_SCALE; // on-screen px
+    constexpr float BUBBLE_H  = BUBBLE_DIMS.y * BUBBLE_SCALE; // on-screen px
+    constexpr float COL_W     = BUBBLE_W / 4.f;
+    constexpr float ROW_H     = BUBBLE_H / BUBBLE_MAX_ICONS_PER_COLUMN;
+    // Icon must fit both a quarter-width column and one stacked row, then 0.7x.
+    constexpr float ICON_SIZE = (COL_W < ROW_H ? COL_W : ROW_H) * 0.7f;
+    // Pull icon centers toward the bubble center to tighten the gaps between them.
+    constexpr float GAP       = 0.8f;
+    constexpr float COL_DX    = COL_W * GAP;
+    constexpr float ROW_DY    = ROW_H * GAP;
+    // Column centers, left -> right, relative to bubble center (+x = right).
+    constexpr float COL_X[4]  = {-1.5f * COL_DX, -0.5f * COL_DX,
+                                 +0.5f * COL_DX, +1.5f * COL_DX};
+    // Row centers, top -> bottom, relative to bubble center (+y = up).
+    constexpr float ROW_Y[BUBBLE_MAX_ICONS_PER_COLUMN] = {+ROW_DY, 0.f, -ROW_DY};
+
+    for (int i = 0; i < customerOrder.drinkCount; ++i)
     {
-        // Drink icon (right) — front frame of cup (16x16).
-        createOrderIcon(assets,
-                        2,
-                        ICON_SIZE,
-                        ICON_SIZE,
-                        bubbleEnt,
-                        {ICON_DX, ICON_DY});
+        const DrinkItem& d = customerOrder.drinks[i];
+        // Column 0: beverage icon — this drink's coffee frame in props.png.
+        createOrderIcon(assets, recipeFor(d.type).iconFrame, ICON_SIZE, ICON_SIZE,
+                        bubbleEnt, {COL_X[0], ROW_Y[i]});
+        // Column 1: beverage temperature — fire (Hot) or ice (Cold).
+        createOrderIcon(assets, temperatureFrame(d.temp), ICON_SIZE, ICON_SIZE,
+                        bubbleEnt, {COL_X[1], ROW_Y[i]});
     }
-    if (customerOrder.hasPastry)
+
+    for (int i = 0; i < customerOrder.pastryCount; ++i)
     {
-        // Pastry icon (left) — frame 0 of props strip.
-        createOrderIcon(assets,
-                        0,
-                        ICON_SIZE,
-                        ICON_SIZE,
-                        bubbleEnt,
-                        {-ICON_DX, ICON_DY});
+        const PastryItem& p = customerOrder.pastries[i];
+        // Column 2: pastry icon — this pastry's frame in props.png.
+        createOrderIcon(assets, static_cast<int>(p.type), ICON_SIZE, ICON_SIZE,
+                        bubbleEnt, {COL_X[2], ROW_Y[i]});
+        // Column 3: pastry temperature — fire (Hot) or ice (Cold).
+        createOrderIcon(assets, temperatureFrame(p.temp), ICON_SIZE, ICON_SIZE,
+                        bubbleEnt, {COL_X[3], ROW_Y[i]});
     }
 }
 bool cafe::MainGameScene::onUpdate(float dt)
@@ -88,33 +102,14 @@ bool cafe::MainGameScene::onUpdate(float dt)
         // Single SDL poll: publishes SdlEvents and sets DragIntent transitions.
         intentSystem(renderer);
 
-        const auto& input = _inputEnt.get<SdlEvents>();
-
         if (isTriggeredEvent(_inputEnt.entity(), Controls::Quit))
             return false;
-
-        // SPACE toggles coffee pour (key down/up edges).
-        if (isTriggeredEvent(_inputEnt.entity(), Controls::KeyDown)
-            && input.keyScancode == SDL_SCANCODE_SPACE
-            && !_pipes[0].get<PourIntent>().active)
-        {
-            _pipes[0].get<PourIntent>().active = true;
-            std::cout << "[Pour] ON\n";
-        }
-        if (isTriggeredEvent(_inputEnt.entity(), Controls::KeyUp)
-            && input.keyScancode == SDL_SCANCODE_SPACE
-            && _pipes[0].get<PourIntent>().active)
-        {
-            _pipes[0].get<PourIntent>().active = false;
-            std::cout << "[Pour] OFF\n";
-        }
 
         // deliverySystem reads DragIntent.dropSpaceEntity on release before
         // dragAndDropSystem resets the intent to None.
         deliverySystem();
         dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
-        pourControlSystem();                           // PourIntent -> CoffeeSpawner.active
         liquidSpawnerSystem(dt, getAssetManager());    // spawn drops while pouring
         PhysicsContext::step(dt);
         liquidSensorEventSystem();        // count drops into cup; cleanup spilled

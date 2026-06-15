@@ -10,8 +10,8 @@ namespace cafe
 class AssetManager;
 
 /** @brief A coffee machine: a kinematic body plus one pour pipe per ingredient.
- *  Each pipe carries a CoffeeSpawner and a PourIntent — write the pipe's
- *  PourIntent.active to pour that liquid. */
+ *  Each pipe carries a LiquidSpawner; intentSystem sets its active flag from
+ *  the held pour key (1/2/3) to pour that liquid. */
 struct CoffeeMachine
 {
     bagel::Entity body;

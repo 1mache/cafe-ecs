@@ -19,6 +19,29 @@ bool pointInTransform(const WorldPos& p, const Transform& t)
            p.y > t.y - t.h && p.y < t.y + t.h;
 }
 
+// Maps a liquid pipe to the key that pours it (Ingredient order).
+constexpr SDL_Scancode scancodeForIngredient(Ingredient kind)
+{
+    switch (kind)
+    {
+    case Ingredient::Coffee: return SDL_SCANCODE_1;
+    case Ingredient::Milk:   return SDL_SCANCODE_2;
+    case Ingredient::Water:  return SDL_SCANCODE_3;
+    default:                 return SDL_SCANCODE_UNKNOWN;
+    }
+}
+
+// Sets the pour state of the pipe whose key matches sc (no-op for other keys).
+void setPipePour(SDL_Scancode sc, bool active)
+{
+    static const bagel::Mask mask = bagel::MaskBuilder().set<LiquidSpawner>().build();
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (e.test(mask) && scancodeForIngredient(e.get<LiquidSpawner>().kind) == sc)
+            e.get<LiquidSpawner>().active = active;
+    }
+}
+
 void publishSdlEvents(const SdlEvents& input)
 {
     static const bagel::Mask mask = bagel::MaskBuilder().set<SdlEvents>().build();
@@ -48,11 +71,13 @@ void intentSystem(SDL_Renderer* renderer)
         case SDL_EVENT_KEY_DOWN:
             input.controls |= controlBit(Controls::KeyDown);
             input.keyScancode = event.key.scancode;
+            setPipePour(event.key.scancode, true);  // hold 1/2/3 to pour
             break;
 
         case SDL_EVENT_KEY_UP:
             input.controls |= controlBit(Controls::KeyUp);
             input.keyScancode = event.key.scancode;
+            setPipePour(event.key.scancode, false);
             break;
 
         case SDL_EVENT_MOUSE_BUTTON_DOWN:

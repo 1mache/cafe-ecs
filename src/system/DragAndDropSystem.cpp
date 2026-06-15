@@ -12,6 +12,10 @@ namespace cafe
 {
 namespace
 {
+constexpr float FOLLOW_SPEED        = 40.f; // m/s the held body chases the cursor
+constexpr float ARRIVE_THRESHOLD    = 0.f; // m; within this, stop (deadzone)
+constexpr float ARRIVE_THRESHOLD_SQ = ARRIVE_THRESHOLD * ARRIVE_THRESHOLD;
+
 bagel::ent_type entityIdFromBody(b2BodyId body)
 {
     return bagel::ent_type{
@@ -44,22 +48,38 @@ void enableBodySensorEventsIfDisabled(b2BodyId body)
     }
 }
 
-// Moves a held entity (and its body) to follow the mouse in world space.
+// Drives a held entity's body toward the mouse via linear velocity, so Box2D
+// integrates the motion and resolves collisions for the dragged object. The
+// resulting position flows back into Transform via syncTransformFromBody.
 void holdFollow(bagel::Entity e, const DragIntent& intent)
 {
-    const WorldPos worldPos =
+    const WorldPos target =
         screenToWorldPoint(intent.mousePos, RenderContext::getCameraPos());
 
-    auto& t = e.get<Transform>();
-    t.x     = worldPos.x;
-    t.y     = worldPos.y;
+    if (!e.has<PhysicsBody>()) return;
 
-    if (e.has<PhysicsBody>())
+    const b2BodyId body = e.get<PhysicsBody>().id;
+    if (!b2Body_IsValid(body)) return;
+
+    // No gravity while held, so a body resting in the deadzone does not fall.
+    b2Body_SetGravityScale(body, 0.f);
+
+    const b2Vec2 current = b2Body_GetPosition(body);
+    const b2Vec2 delta   = b2Sub({ target.x, target.y }, current);
+
+    if (b2LengthSquared(delta) <= ARRIVE_THRESHOLD_SQ)
     {
-        const b2BodyId body = e.get<PhysicsBody>().id;
-        if (b2Body_IsValid(body))
-            b2Body_SetTransform(body, { worldPos.x, worldPos.y }, b2Body_GetRotation(body));
+        b2Body_SetLinearVelocity(body, { 0.f, 0.f });
+        return;
     }
+
+    // Clamp speed so one frame cannot carry the body past the target. A constant
+    // FOLLOW_SPEED overshoots when closer than one step of travel, which makes a
+    // stationary held body oscillate between the two sides of the cursor.
+    const float  dist  = b2Length(delta);
+    const float  speed = (dist * FPS < FOLLOW_SPEED) ? dist * FPS : FOLLOW_SPEED;
+    const b2Vec2 dir   = b2Normalize(delta);
+    b2Body_SetLinearVelocity(body, b2MulSV(speed, dir));
 }
 
 // Snaps a released entity onto its drop space (or restores gravity), disables
@@ -85,6 +105,7 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
             {
                 const auto& t = e.get<Transform>();
                 b2Body_SetTransform(body, { t.x, t.y }, b2Body_GetRotation(body));
+                b2Body_SetLinearVelocity(body, { 0.f, 0.f });
                 b2Body_SetGravityScale(body, 0.f);
             }
         }
@@ -97,6 +118,7 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
         const b2BodyId body = e.get<PhysicsBody>().id;
         if (b2Body_IsValid(body))
         {
+            b2Body_SetLinearVelocity(body, { 0.f, 0.f });
             b2Body_SetGravityScale(body, 1.f);
             setBodySensorEvents(body, false);
         }
@@ -171,7 +193,8 @@ void dragAndDropSystem()
 
 void dropSpaceDetectionSystem()
 {
-    static const bagel::Mask heldMask      = bagel::MaskBuilder().set<DragIntent>().build();
+    static const bagel::Mask heldMask =
+        bagel::MaskBuilder().set<DragIntent>().set<DragItemType>().build();
     static const bagel::Mask dropSpaceMask = bagel::MaskBuilder().set<DropSpace>().build();
 
     const b2SensorEvents events = b2World_GetSensorEvents(PhysicsContext::world());
@@ -192,7 +215,7 @@ void dropSpaceDetectionSystem()
         if (!sensor.test(dropSpaceMask)) continue;
 
         auto& intent = visitor.get<DragIntent>();
-        if (sensor.get<DropSpace>().dropType == intent.dropType)
+        if (sensor.get<DropSpace>().dropType == visitor.get<DragItemType>().dropType)
             intent.dropSpaceEntity = sensor.entity();
     }
 

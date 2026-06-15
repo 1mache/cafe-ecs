@@ -76,7 +76,8 @@ bagel::Entity createVisitorEntity(cafe::WorldPos pos)
                                 .w = kVisitorHalf,
                                 .h = kVisitorHalf },
                cafe::PhysicsBody{ body },
-               cafe::DragIntent{ .dropType = cafe::DropType::Any });
+               cafe::DragIntent{},
+               cafe::DragItemType{ .dropType = cafe::DropType::Any });
     return ent;
 }
 

@@ -10,12 +10,12 @@ target_sources(
     component/Ingredient.h
     component/Liquid.h
     component/PhysicsBody.h
-    component/PourIntent.h
     component/Cup.h
     component/CoffeeSpawner.h
     component/CleanupZone.h
     component/Behavior.h
     component/DragIntent.h
+    component/DragItemType.h
     component/DropSpace.h
     component/DropType.h
     component/InSensorArea.h
@@ -71,8 +71,12 @@ target_sources(
     Utils.h
     RenderContext.h
     RenderLayers.h
+    DrinkType.h
+    PastryType.h
     OrderMatch.h
     OrderMatch.cpp
+    Menu.h
+    Menu.cpp
 
     PhysicsFilters.h
     PhysicsContext.h

@@ -12,6 +12,7 @@
 build/
 build-*/
 cmake-build-debug/
+dependencies/
 html/
 .vscode/
 .idea/
@@ -158,3 +159,8 @@ ipch/
 # Visual Studio Trace Files
 *.e2e
 tags
+/project docs/29_05.md
+/CLAUDE.md
+/project docs/ecs design.pdf
+/HANDOFF.md
+/yaps/IngredientsYap.md
