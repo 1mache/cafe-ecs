@@ -2,8 +2,9 @@
 
 #include "Components.h"
 #include "DragAndDropSystem.h"
-#include "RenderLayers.h"
 #include "PhysicsContext.h"
+#include "PhysicsFilters.h"
+#include "RenderLayers.h"
 #include "SpriteDims.h"
 #include "box2d/types.h"
 
@@ -22,10 +23,17 @@ bagel::Entity createPastry(PhysicsContext& physics, WorldPos pos, AssetManager& 
     auto ent = bagel::Entity::create();
 
     b2BodyDef bd = b2DefaultBodyDef();
-    bd.type      = b2_kinematicBody;
+    bd.type      = b2_dynamicBody;
     bd.position  = { pos.x, pos.y };
     bd.userData  = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
     b2BodyId body = b2CreateBody(physics.world(), &bd);
+
+    b2ShapeDef solidDef = b2DefaultShapeDef();
+    solidDef.filter.categoryBits = filter::DRAGGABLE;
+    solidDef.filter.maskBits     = filter::MASK_DRAGGABLE;
+    b2Polygon solidBox = b2MakeBox(halfW, halfH);
+    b2CreatePolygonShape(body, &solidDef, &solidBox);
+
     addDraggableVisitorShape(body, halfW, halfH);
 
     // Frame 0 of the 3-frame props strip = cinnamon roll.

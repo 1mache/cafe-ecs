@@ -52,10 +52,11 @@ bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos 
     auto cupFront = bagel::Entity::create();
 
     b2BodyDef bd = b2DefaultBodyDef();
-    bd.type     = b2_kinematicBody; // kinematic so drag-and-drop can move the cup later
+    bd.type     = b2_dynamicBody;
     bd.position = { t.x, t.y };
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(cupBack.entity().id));
     bd.isBullet = true;
+    bd.fixedRotation = true;
     b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     // Solid walls + bottom — stop drops from passing through.

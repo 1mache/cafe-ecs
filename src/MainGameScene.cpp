@@ -15,12 +15,12 @@ void cafe::MainGameScene::onInit()
     auto& assets = getAssetManager();
 
     createBg(assets, BG_PATH);
-    createBartop(assets);
+    createBartop(assets, _physics);
 
     auto machine = createCoffeeMachine(_physics, assets, {-7.f, -1.f});
 
     createCup(_physics, assets, {-4.f, -1.f}, CUP_CAPACITY);
-    createPastry(_physics, {4.f, -3.f},  assets);
+    createPastry(_physics, {4.f, -1.f},  assets);
 
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone(_physics);

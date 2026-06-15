@@ -148,8 +148,8 @@ void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH)
 {
     b2ShapeDef visitor = b2DefaultShapeDef();
     visitor.isSensor            = true;
-    visitor.filter.categoryBits = filter::DRAGGABLE;
-    visitor.filter.maskBits     = filter::MASK_DRAGGABLE;
+    visitor.filter.categoryBits |= filter::DRAGGABLE;
+    visitor.filter.maskBits     |= filter::MASK_DRAGGABLE;
     visitor.enableSensorEvents  = true;
     b2Polygon box = b2MakeOffsetBox(halfW, halfH, { 0.f, 0.f }, b2Rot_identity);
     b2CreatePolygonShape(body, &visitor, &box);
