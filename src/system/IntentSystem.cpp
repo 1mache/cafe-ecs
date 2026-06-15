@@ -102,6 +102,9 @@ void intentSystem(SDL_Renderer* renderer)
                                                       event.motion.x,
                                                       event.motion.y);
             break;
+
+        default:
+            break;
         }
     }
 

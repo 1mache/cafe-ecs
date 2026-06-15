@@ -54,12 +54,18 @@ void drawSystem(SDL_Renderer* renderer)
         {
             const SDL_Color col = ingredientColors[static_cast<size_t>(e.get<Liquid>().kind)];
             SDL_SetTextureColorMod(d.texture, col.r, col.g, col.b);
+            SDL_SetTextureAlphaMod(d.texture, col.a);
+            SDL_SetTextureBlendMode(d.texture, col.a < 255 ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
         }
 
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
 
         if (e.has<Liquid>())
+        {
             SDL_SetTextureColorMod(d.texture, 255, 255, 255);
+            SDL_SetTextureAlphaMod(d.texture, 255);
+            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_BLEND); // restore default
+        }
     }
 }
 void debugHighlightPhysics(SDL_Renderer* renderer)
@@ -69,7 +75,7 @@ void debugHighlightPhysics(SDL_Renderer* renderer)
 
     const WorldPos cam = RenderContext::getCameraPos();
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, 255, 20, 147, 77); // hot pink, 70% transparent
+    SDL_SetRenderDrawColor(renderer, 255, 20, 147, 100); // hot pink, half transparent
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {

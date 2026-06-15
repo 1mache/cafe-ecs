@@ -12,8 +12,8 @@ enum class Ingredient { Coffee = 0, Milk, Water, count };
 static constexpr size_t INGREDIENT_COUNT = static_cast<size_t>(Ingredient::count);
 
 inline constexpr SDL_Color ingredientColors[INGREDIENT_COUNT] = {
-    { 75,  47,  30,  255 }, // Coffee #4B2F1E
-    { 240, 234, 214, 255 }, // Milk   #F0EAD6
-    { 111, 183, 224, 255 }, // Water  #6FB7E0
+    { 102,  57,  49,  255 }, // Coffee
+    { 240, 234, 214, 255 }, // Milk
+    { 138, 235, 241, 127 }, // Water
 };
 } // namespace cafe
