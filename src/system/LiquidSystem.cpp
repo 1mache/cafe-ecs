@@ -92,21 +92,6 @@ void liquidSensorEventSystem()
                 static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(cupBody)))
             } };
 
-            // // Cup full → deflect sideways + upward. CLEANUP destroys the drop later.
-            // if (cup.test(cupMask) && cup.get<Cup>().isFull())
-            // {
-            //     const b2BodyId dropBody = b2Shape_GetBody(be.visitorShapeId);
-            //     const b2Vec2   dropPos  = b2Body_GetPosition(dropBody);
-            //     const b2Vec2   cupPos   = b2Body_GetPosition(cupBody);
-            //     const float    side     = (dropPos.x >= cupPos.x) ? 1.f : -1.f;
-            //     b2Body_SetLinearVelocity(dropBody, { side * 3.f, 5.f });
-            //
-            //     if (g_stats.overflowed == 0)
-            //         std::cout << "[Spill] cup overflowed for the first time" << std::endl;
-            //     ++g_stats.overflowed;
-            //     continue;
-            // }
-
             if (cup.test(cupMask))
             {
                 auto& c = cup.get<Cup>();

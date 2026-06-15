@@ -12,7 +12,7 @@ namespace cafe
 {
 namespace
 {
-constexpr float FOLLOW_SPEED        = 40.f; // m/s the held body chases the cursor
+constexpr float FOLLOW_SPEED        = 20.f; // m/s the held body chases the cursor
 constexpr float ARRIVE_THRESHOLD    = 0.f; // m; within this, stop (deadzone)
 constexpr float ARRIVE_THRESHOLD_SQ = ARRIVE_THRESHOLD * ARRIVE_THRESHOLD;
 

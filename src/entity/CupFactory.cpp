@@ -16,10 +16,10 @@ namespace
 constexpr auto  TEX                    = "cup.png";
 
 constexpr float WALL_W_PIX             = 1.f;
-constexpr float WALL_H_PIX             = 15.f;
+constexpr float WALL_H_PIX             = 17.f;
 constexpr float L_WALL_X_OFFSET_PIX    = 0.f;
 constexpr float R_WALL_X_OFFSET_PIX    = 7.f;
-constexpr float CUP_WALLS_Y_OFFSET_PIX = 11.f;
+constexpr float CUP_WALLS_Y_OFFSET_PIX = 12.f;
 constexpr float CUP_BOTTOM_Y_OFFSET_PIX= 2.f;
 constexpr float BOTTOM_W_PIX           = 14.f;
 constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
@@ -55,6 +55,7 @@ bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity)
     bd.type     = b2_kinematicBody; // kinematic so drag-and-drop can move the cup later
     bd.position = { t.x, t.y };
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(cupBack.entity().id));
+    bd.isBullet = true;
     b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
 
     // Solid walls + bottom — stop drops from passing through.
