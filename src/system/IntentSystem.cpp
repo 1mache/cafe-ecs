@@ -5,6 +5,7 @@
 #include "UserInput.h"
 
 #include <bagel.h>
+#include <iostream>
 
 namespace cafe
 {
@@ -68,6 +69,26 @@ void updatePipePourIntent(bagel::Entity e, UserInput& input)
     for (SDL_Scancode sc : input.keyUps)
         if (sc == myKey) spawnerActive = false;
 }
+
+void updateMachineButtonIntent(bagel::Entity e, UserInput& input)
+{
+    auto& button = e.get<MachineButton>();
+    const WorldPos worldMouse =
+        screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
+
+    if (input.controls & controlBit(Controls::MouseButtonDown) &&
+        isPointInsideTransform(worldMouse, e.get<Transform>()))
+    {
+        button.pressed = true;
+        std::cout << "started pressing" << std::endl;
+    }
+    else if (input.controls & controlBit(Controls::MouseButtonUp))
+    {
+        button.pressed = false;
+        std::cout << "stopped  pressing" << std::endl;
+    }
+}
+
 }
 void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
 {
@@ -130,12 +151,16 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
 
         static const bagel::Mask dragMask       = bagel::MaskBuilder().set<DragIntent>().set<Transform>().build();
         static const bagel::Mask liqSpawnerMask = bagel::MaskBuilder().set<LiquidSpawner>().build();
+        static const bagel::Mask machineButton  = bagel::MaskBuilder().set<MachineButton>().build();
 
         if (e.test(dragMask))
             updateDragIntent(e, input);
 
         if (e.test(liqSpawnerMask))
             updatePipePourIntent(e, input);
+
+        if (e.test(machineButton))
+            updateMachineButtonIntent(e, input);
 
         //test other intent masks, inputs, and transforms
     }

@@ -57,7 +57,7 @@ bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Ent
         Transform{ .x = machinePos.x, .y = machinePos.y,
                    .w = screenToWorldScale(BUTTON_DIMS.x),
                    .h = screenToWorldScale(BUTTON_DIMS.y) },
-        Button{},
+        MachineButton{ kind},
         ChildOf(machineEnt, {off.x, off.y}, true)
     );
     return ent;

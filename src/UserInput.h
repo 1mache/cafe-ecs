@@ -25,7 +25,7 @@ constexpr uint32_t controlBit(Controls control)
 struct UserInput
 {
     uint32_t                  controls{};
-    SDL_FPoint                mousePos{};
+    SDL_FPoint                mousePos{}; // in screed coordinates!
     std::vector<SDL_Scancode> keyDowns{};
     std::vector<SDL_Scancode> keyUps{};
     uint8_t                   mouseButton{};

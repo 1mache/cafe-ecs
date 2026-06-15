@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Behavior.h"
-#include "Button.h"
 #include "ChildOf.h"
 #include "CleanupZone.h"
 #include "CoffeeSpawner.h"
@@ -16,6 +15,7 @@
 #include "Ingredient.h"
 #include "Leaving.h"
 #include "Liquid.h"
+#include "MachineButton.h"
 #include "Order.h"
 #include "PhysicsBody.h"
 #include "Sensor.h"

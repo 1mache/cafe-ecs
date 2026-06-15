@@ -106,6 +106,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     deliverySystem();
     dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
+    buttonSystem();
     liquidSpawnerSystem(_physics, dt, getAssetManager());    // spawn drops while pouring
     _physics.step(dt);
     liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled

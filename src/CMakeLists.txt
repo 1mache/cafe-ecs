@@ -42,6 +42,8 @@ target_sources(
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/Systems.h
+    system/CoffeeMachineSystem.cpp
+    system/CoffeeMachineSystem.h
 
     # entities
     entity/CupFactory.h
