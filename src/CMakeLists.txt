@@ -14,6 +14,7 @@ target_sources(
     component/CoffeeSpawner.h
     component/CleanupZone.h
     component/Behavior.h
+    component/CheckCoffeeIntent.h
     component/DragIntent.h
     component/DragItemType.h
     component/DropSpace.h
@@ -39,6 +40,8 @@ target_sources(
     system/LiquidSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
+    system/CheckBeverageSystem.h
+    system/CheckBeverageSystem.cpp
     system/DragAndDropSystem.h
     system/DragAndDropSystem.cpp
     system/IntentSystem.h

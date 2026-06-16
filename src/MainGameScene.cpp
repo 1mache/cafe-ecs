@@ -53,6 +53,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     // deliverySystem reads DragIntent.dropSpaceEntity on release before
     // dragAndDropSystem resets the intent to None.
     deliverySystem();
+    checkBeverageSystem();      // reads CheckCoffeeIntent while DragIntent is still valid
     dragAndDropSystem();        // held: follow mouse; released: snap/drop
 
     buttonSystem();             // coffee-machine buttons -> pour state
