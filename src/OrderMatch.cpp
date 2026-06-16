@@ -19,8 +19,8 @@ DrinkGrade gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& ove
                   << " grade: " << grade << std::endl;
     }
 
-    const int dropSumDiff = overview.dropSum - intent.dropSum;
-    grade -= std::abs(dropSumDiff) / 100.0f;
+    const float dropSumDiff = static_cast<float>(overview.dropSum - intent.dropSum);
+    grade -= std::fabs(dropSumDiff) / 100.0f;
 
     std::cout << "dropSumDiff: " << dropSumDiff << " grade: " << grade << std::endl;
 
