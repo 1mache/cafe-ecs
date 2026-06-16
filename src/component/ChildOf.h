@@ -8,7 +8,8 @@ namespace cafe
 struct ChildOf
 {
     bagel::Entity parent{bagel::ent_type(-1)};
-    SDL_FPoint localOffset{}; // from center of parenting object
+    SDL_FPoint localOffset{}; // from center of parenting object. px by default
+    bool isWorldOffset{false};
 };
 } // namespace cafe
 

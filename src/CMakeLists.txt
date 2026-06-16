@@ -10,7 +10,6 @@ target_sources(
     component/Ingredient.h
     component/Liquid.h
     component/PhysicsBody.h
-    component/PourIntent.h
     component/Cup.h
     component/CoffeeSpawner.h
     component/CleanupZone.h
@@ -19,11 +18,14 @@ target_sources(
     component/DragItemType.h
     component/DropSpace.h
     component/DropType.h
+    component/DeliveredTo.h
+    component/Falling.h
+    component/SpawnButton.h
+    component/HomeSlot.h
     component/InSensorArea.h
     component/Leaving.h
     component/Order.h
     component/Served.h
-    component/SdlEvents.h
     component/Sensor.h
     component/Sensor.cpp
     component/Components.h
@@ -41,9 +43,13 @@ target_sources(
     system/DragAndDropSystem.cpp
     system/IntentSystem.h
     system/IntentSystem.cpp
+    system/SupplySystem.h
+    system/SupplySystem.cpp
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/Systems.h
+    system/CoffeeMachineSystem.cpp
+    system/CoffeeMachineSystem.h
 
     # entities
     entity/CupFactory.h
@@ -64,6 +70,8 @@ target_sources(
     entity/CafeEnvironmentFactory.cpp
     entity/PastryFactory.h
     entity/PastryFactory.cpp
+    entity/ButtonFactory.h
+    entity/ButtonFactory.cpp
     entity/Entities.h
     entity/Entities.cpp
 
@@ -72,8 +80,12 @@ target_sources(
     Utils.h
     RenderContext.h
     RenderLayers.h
+    DrinkType.h
+    PastryType.h
     OrderMatch.h
     OrderMatch.cpp
+    Menu.h
+    Menu.cpp
 
     PhysicsFilters.h
     PhysicsContext.h
@@ -92,6 +104,8 @@ target_sources(
     Texture.cpp
     CafeGame.h
     CafeGame.cpp
+
+    UserInput.h
 )
 
 target_include_directories(

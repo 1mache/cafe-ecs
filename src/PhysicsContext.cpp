@@ -13,7 +13,7 @@ void PhysicsContext::init()
     _accumulator = 0.f;
 }
 
-void PhysicsContext::shutdown()
+void PhysicsContext::cleanup()
 {
     if (b2World_IsValid(_world))
     {
@@ -27,7 +27,7 @@ void PhysicsContext::step(float dtSeconds)
 {
     // Fixed timestep with a leftover accumulator — keeps physics stable even
     // if a frame stalls. subSteps is Box2D's internal solver iteration count.
-    constexpr float fixedDt  = 1.f / static_cast<float>(FPS);
+    constexpr float fixedDt  = 1.f / FPS;
     constexpr int   subSteps = 4;
     constexpr float maxDt    = 0.25f; // spiral-of-death guard for very long stalls
 

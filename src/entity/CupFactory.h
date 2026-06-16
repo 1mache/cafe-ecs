@@ -7,7 +7,8 @@
 namespace cafe
 {
 class AssetManager;
+class PhysicsContext;
 
 /** @brief Kinematic cup at @p pos. Three solid walls + one interior sensor. */
-bagel::Entity createCup(AssetManager& assets, WorldPos pos, int capacity = 50);
+bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos pos, int capacity = 50);
 } // namespace cafe

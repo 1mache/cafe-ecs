@@ -12,7 +12,7 @@ struct LiquidSpawner
     Ingredient kind{ Ingredient::Coffee }; // which liquid this pipe pours
     float    interval{ 0.05f };  // seconds between drops
     float    accumulator{};
-    bool     active{};           // runtime "currently pouring" flag (set by pourControlSystem)
+    bool     active{};           // runtime "currently pouring" flag (set by intentSystem)
     WorldPos offset{};           // spawn point relative to the spawner's Transform
 };
 } // namespace cafe

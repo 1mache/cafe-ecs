@@ -1,40 +1,71 @@
 #include "CoffeeMachineFactory.h"
 #include "AssetManager.h"
 #include "Components.h"
-#include "RenderLayers.h"
 #include "PhysicsContext.h"
+#include "RenderLayers.h"
+#include "SpriteDims.h"
 #include "Texture.h"
 
+#include "PhysicsFilters.h"
 #include <box2d/box2d.h>
 
 namespace cafe
 {
 namespace
 {
-static constexpr auto TEX = "machine.png";
+constexpr auto TEX        = "machine.png";
+constexpr auto BUTTON_TEX = "buttons.png";
 
 // Pour-pipe positions relative to the machine center (world meters, Y-up).
 constexpr WorldPos PIPE_OFFSET[INGREDIENT_COUNT] = {
-    { -0.4f, -0.5f }, // Coffee
-    {  0.0f, -0.5f }, // Milk
-    {  0.4f, -0.5f }, // Water
+    { -1.05f, 0.23f }, // Coffee
+    {  1.3f, -0.3f }, // Milk
+    {  0.13f, 0.0f }, // Water
 };
 
-bagel::Entity createPipe(WorldPos machinePos, Ingredient kind)
+constexpr int BUTTON_ON_TEX_ID[INGREDIENT_COUNT] = {
+    0,1,2
+};
+
+constexpr WorldPos BUTTON_OFFSET[INGREDIENT_COUNT] = {
+    {  -1.05f, 1.2f },
+    {  1.08f, 1.2f },
+    {  0.10f, 1.2f },
+};
+
+bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, Ingredient kind)
 {
     const WorldPos off = PIPE_OFFSET[static_cast<size_t>(kind)];
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{ .x = machinePos.x + off.x, .y = machinePos.y + off.y, .w = 0.f, .h = 0.f },
+        Transform{ .x = machinePos.x, .y = machinePos.y, .w = 0.f, .h = 0.f },
         LiquidSpawner{ .kind = kind, .interval = 0.05f, .accumulator = 0.f,
                        .active = false, .offset = {} },
-        PourIntent{}
+        ChildOf(machineEnt, {off.x, off.y}, true)
+    );
+    return ent;
+}
+
+bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Entity& machineEnt, Ingredient kind)
+{
+    auto& tex = assets.getTexture(BUTTON_TEX);
+    const auto buttonTexId = static_cast<float>(BUTTON_ON_TEX_ID[static_cast<size_t>(kind)]);
+    SDL_FRect srcRect{ .x = buttonTexId * BUTTON_DIMS.x, .y = 0, .w = BUTTON_DIMS.x, .h = BUTTON_DIMS.y };
+    const WorldPos off = BUTTON_OFFSET[static_cast<size_t>(kind)];
+    auto ent = bagel::Entity::create();
+    ent.addAll(
+        Drawable{ tex.get(), srcRect, layer::PROP},
+        Transform{ .x = machinePos.x, .y = machinePos.y,
+                   .w = screenToWorldScale(BUTTON_DIMS.x),
+                   .h = screenToWorldScale(BUTTON_DIMS.y) },
+        MachineButton{ kind},
+        ChildOf(machineEnt, {off.x, off.y}, true)
     );
     return ent;
 }
 } // namespace
 
-CoffeeMachine createCoffeeMachine(AssetManager& assets, WorldPos pos)
+bagel::Entity createCoffeeMachine(PhysicsContext& physics, AssetManager& assets, WorldPos pos)
 {
     const Texture& tex = assets.getTexture(TEX);
     auto [x, y] = tex.getSize();
@@ -49,7 +80,19 @@ CoffeeMachine createCoffeeMachine(AssetManager& assets, WorldPos pos)
     bd.type     = b2_kinematicBody;
     bd.position = { t.x, t.y };
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
-    b2BodyId body = b2CreateBody(PhysicsContext::world(), &bd);
+    b2BodyId body = b2CreateBody(physics.world(), &bd);
+
+    // Solid collider: top of texture down to the lowest pipe (Milk, y = -0.3).
+    constexpr float colliderBottom = PIPE_OFFSET[static_cast<size_t>(Ingredient::Milk)].y + 0.5f;
+    const float colliderHalfH   = (halfH - colliderBottom) * 0.5f;
+    const float colliderOffsetY = (halfH + colliderBottom) * 0.5f;
+    const b2Polygon collider =
+        b2MakeOffsetBox(halfW, colliderHalfH, { 0.f, colliderOffsetY }, b2Rot_identity);
+
+    b2ShapeDef machineShape = b2DefaultShapeDef();
+    machineShape.filter.categoryBits = filter::FURNITURE;
+    machineShape.filter.maskBits     = filter::MASK_FURNITURE;
+    b2CreatePolygonShape(body, &machineShape, &collider);
 
     ent.addAll(
         t,
@@ -57,13 +100,14 @@ CoffeeMachine createCoffeeMachine(AssetManager& assets, WorldPos pos)
         PhysicsBody{ body }
     );
 
-    return CoffeeMachine{
-        ent,
-        {
-            createPipe(pos, Ingredient::Coffee),
-            createPipe(pos, Ingredient::Milk),
-            createPipe(pos, Ingredient::Water),
-        }
-    };
+    createPipe(pos, ent,Ingredient::Coffee);
+    createPipe(pos, ent,Ingredient::Milk);
+    createPipe(pos, ent,Ingredient::Water);
+
+    createButton(assets, pos, ent, Ingredient::Coffee);
+    createButton(assets, pos, ent, Ingredient::Milk);
+    createButton(assets, pos, ent, Ingredient::Water);
+
+    return ent;
+};
 }
-} // namespace cafe
