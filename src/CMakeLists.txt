@@ -12,6 +12,7 @@ target_sources(
     component/PhysicsBody.h
     component/Cup.h
     component/CoffeeSpawner.h
+    component/CoffeeOverview.h
     component/CleanupZone.h
     component/Behavior.h
     component/CheckCoffeeIntent.h

@@ -113,22 +113,30 @@ void deliverySystem()
         if (!intent.dropSpaceEntity.has_value()) continue;
 
         bagel::Entity target{ *intent.dropSpaceEntity };
-        if (!target.has<Served>()) continue;
 
         auto& served = target.get<Served>();
 
         if (e.has<Cup>())
         {
-            // Customer accepts any coffee; the grade reflects how well it matched.
-            // The item stays in the customer's tray and is destroyed only when the
-            // order completes / the customer leaves (see clearDeliveredItems).
-            if (target.has<Order>())
-            {
-                served.drink      = true;
-                served.drinkGrade = gradeDrinkRatio(target.get<Order>(), e.get<Cup>());
-                handoffs.push_back({ e.entity(), target.entity() });
-            }
+            
+                // Customer accepts any coffee; the grade reflects how well it matched.
+                // The item stays in the customer's tray and is destroyed only when the
+                // order completes / the customer leaves (see clearDeliveredItems).
+                if (target.has<Order>())
+                {
+                    if (!e.has<CheckCoffeeIntent>())
+                    {
+                        e.add(CheckCoffeeIntent{});
+                    }
+                    else if (e.has<CoffeeOverview>())
+                    {
+                        served.drink      = true;
+                        served.drinkGrade = gradeDrinkRatio(target.get<Order>(), e.get<Cup>());
+                        handoffs.push_back({ e.entity(), target.entity() });
+                    }
+                }
         }
+    
         else // pastry
         {
             if (target.has<Order>() && target.get<Order>().hasPastry)

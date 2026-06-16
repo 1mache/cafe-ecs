@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Behavior.h"
+#include "CheckCoffeeIntent.h"
 #include "ChildOf.h"
 #include "CleanupZone.h"
 #include "CoffeeSpawner.h"
+#include "CoffeeOverview.h"
 #include "Cup.h"
 #include "DragIntent.h"
 #include "DragItemType.h"
