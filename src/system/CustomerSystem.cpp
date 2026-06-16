@@ -2,7 +2,6 @@
 #include "CustomerSystem.h"
 #include "Entities.h"
 #include "Menu.h"
-#include "OrderMatch.h"
 #include <bagel.h>
 #include <box2d/box2d.h>
 #include <iostream>
@@ -95,6 +94,8 @@ void behaviorSystem(float dtSeconds)
     }
 }
 
+
+
 void deliverySystem()
 {
     static const bagel::Mask dragMask =
@@ -118,23 +119,20 @@ void deliverySystem()
 
         if (e.has<Cup>())
         {
-            
-                // Customer accepts any coffee; the grade reflects how well it matched.
-                // The item stays in the customer's tray and is destroyed only when the
-                // order completes / the customer leaves (see clearDeliveredItems).
-                if (target.has<Order>())
-                {
-                    if (!e.has<CheckCoffeeIntent>())
-                    {
-                        e.add(CheckCoffeeIntent{});
-                    }
-                    else if (e.has<CoffeeOverview>())
-                    {
-                        served.drink      = true;
-                        served.drinkGrade = gradeDrink(target.get<Order>(), e.get<CoffeeOverview>());
-                        handoffs.push_back({ e.entity(), target.entity() });
-                    }
-                }
+            // Customer accepts any coffee; acceptGradedBeverageSystem grades once the
+            // cup has CoffeeOverview. The item stays in the customer's tray and is
+            // destroyed only when the order completes / the customer leaves (see clearDeliveredItems).
+            if (target.has<Order>() && !e.has<CheckCoffeeIntent>())
+            {
+                const auto& order  = target.get<Order>();
+                const auto& recipe = recipeFor(order.drinks[0].type);
+                CheckCoffeeIntent coffeeIntent{};
+                for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
+                    coffeeIntent.ratio[i] = recipe.ratio[i];
+                coffeeIntent.isHot    = order.drinks[0].temp == Temperature::Hot;
+                coffeeIntent.customer = target.entity();
+                e.add(coffeeIntent);
+            }
         }
     
         else // pastry

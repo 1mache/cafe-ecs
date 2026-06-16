@@ -1,31 +1,31 @@
 #include "OrderMatch.h"
-#include <algorithm>
 #include <cmath>
+#include <iostream>
 
 namespace cafe
 {
-DrinkGrade gradeDrink(const Order& /*order*/, const CoffeeOverview& /*overview*/)
+// for now only first drink
+// TODO: add more drinks
+DrinkGrade gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
 {
-    // TODO: re-implement against the menu — the desired ratio now lives on the drink
-    // recipe (recipeFor(order.drink).ratio), since Order no longer carries `ratio[]`.
-    // Stubbed to Perfect so the project builds and the serve flow stays testable.
-    return DrinkGrade::Perfect;
+    float grade = BASE_GRADE;
 
-    /*
-    if (overview.dropSum == 0)
-        return DrinkGrade::Wrong;
-
-    float maxDiff = 0.f;
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
     {
-        const float want = recipeFor(order.drinks[0].type).ratio[i];
+        const float want = intent.ratio[i];
         const float got  = overview.ratio[i];
-        maxDiff = std::max(maxDiff, std::fabs(want - got));
+        grade -= std::fabs(want - got);
+        std::cout << "ingredient: " << i << " expected: " << want << " got: " << got
+                  << " grade: " << grade << std::endl;
     }
 
-    if (maxDiff <= RATIO_TOL_PERFECT)    return DrinkGrade::Perfect;
-    if (maxDiff <= RATIO_TOL_ACCEPTABLE) return DrinkGrade::Acceptable;
+    const int dropSumDiff = overview.dropSum - intent.dropSum;
+    grade -= std::abs(dropSumDiff) / 100.0f;
+
+    std::cout << "dropSumDiff: " << dropSumDiff << " grade: " << grade << std::endl;
+
+    if (BASE_GRADE - grade >= RATIO_TOL_PERFECT) return DrinkGrade::Perfect;
+    if (BASE_GRADE - grade >= RATIO_TOL_ACCEPTABLE) return DrinkGrade::Acceptable;
     return DrinkGrade::Wrong;
-    */
 }
 } // namespace cafe
