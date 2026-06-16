@@ -75,7 +75,7 @@ void acceptGradedBeverageSystem()
         served.drink      = true;
         served.drinkGrade = gradeDrink(intent, e.get<CoffeeOverview>());
         handoffs.push_back({ e.entity(), intent.customer });
-        e.remove<CheckCoffeeIntent>();
+        e.del<CheckCoffeeIntent>();
     }
 
     for (const auto& h : handoffs)
