@@ -4,7 +4,7 @@
 
 namespace cafe
 {
-DrinkGrade gradeDrinkRatio(const Order& /*order*/, const Cup& /*cup*/)
+DrinkGrade gradeDrink(const Order& /*order*/, const CoffeeOverview& /*overview*/)
 {
     // TODO: re-implement against the menu — the desired ratio now lives on the drink
     // recipe (recipeFor(order.drink).ratio), since Order no longer carries `ratio[]`.
@@ -12,21 +12,14 @@ DrinkGrade gradeDrinkRatio(const Order& /*order*/, const Cup& /*cup*/)
     return DrinkGrade::Perfect;
 
     /*
-    int orderTotal = 0;
-    int cupTotal   = 0;
-    for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
-    {
-        orderTotal += order.ratio[i];
-        cupTotal   += cup.filled[i];
-    }
-    if (orderTotal == 0 || cupTotal == 0)
+    if (overview.dropSum == 0)
         return DrinkGrade::Wrong;
 
     float maxDiff = 0.f;
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
     {
-        const float want = static_cast<float>(order.ratio[i]) / static_cast<float>(orderTotal);
-        const float got  = static_cast<float>(cup.filled[i])  / static_cast<float>(cupTotal);
+        const float want = recipeFor(order.drinks[0].type).ratio[i];
+        const float got  = overview.ratio[i];
         maxDiff = std::max(maxDiff, std::fabs(want - got));
     }
 

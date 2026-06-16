@@ -131,7 +131,7 @@ void deliverySystem()
                     else if (e.has<CoffeeOverview>())
                     {
                         served.drink      = true;
-                        served.drinkGrade = gradeDrinkRatio(target.get<Order>(), e.get<Cup>());
+                        served.drinkGrade = gradeDrink(target.get<Order>(), e.get<CoffeeOverview>());
                         handoffs.push_back({ e.entity(), target.entity() });
                     }
                 }

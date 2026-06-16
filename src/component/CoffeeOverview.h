@@ -1,15 +1,16 @@
 #pragma once
 
+#include "Ingredient.h"
 #include <bagel.h>
 
 namespace cafe
 {
-/** @brief Snapshot of a cup's poured ingredient totals, used for beverage verification. */
+/** @brief Snapshot of a cup's beverage state, used for verification against an order. */
 struct CoffeeOverview
 {
-    int milkSum{};
-    int waterSum{};
-    int coffeeSum{};
+    float ratio[INGREDIENT_COUNT]; // Coffee, Milk, Water — normalized fractions
+    bool  isHot{};                 // actual serving temperature
+    int   dropSum{};               // total drops poured
 };
 } // namespace cafe
 
