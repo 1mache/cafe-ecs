@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ButtonFactory.h"
 #include "CafeEnvironmentFactory.h"
 #include "CleanupZoneFactory.h"
 #include "CoffeeMachineFactory.h"
@@ -9,6 +8,7 @@
 #include "LiquidDropFactory.h"
 #include "OrderIconFactory.h"
 #include "PastryFactory.h"
+#include "SpawnButtonFactory.h"
 #include "SpeechBubbleFactory.h"
 #include <bagel.h>
 

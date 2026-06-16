@@ -1,5 +1,6 @@
 #include "PhysicsContext.h"
 #include "Utils.h"
+#include "GameConfig.h"
 #include <box2d/box2d.h>
 
 namespace cafe

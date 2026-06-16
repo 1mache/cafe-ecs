@@ -19,10 +19,10 @@ target_sources(
     component/DragIntent.h
     component/DragItemType.h
     component/DropSpace.h
-    component/DropType.h
     component/DeliveredTo.h
     component/Falling.h
     component/SpawnButton.h
+    component/SpawnSensor.h
     component/HomeSlot.h
     component/InSensorArea.h
     component/Leaving.h
@@ -74,8 +74,8 @@ target_sources(
     entity/CafeEnvironmentFactory.cpp
     entity/PastryFactory.h
     entity/PastryFactory.cpp
-    entity/ButtonFactory.h
-    entity/ButtonFactory.cpp
+    entity/SpawnButtonFactory.h
+    entity/SpawnButtonFactory.cpp
     entity/Entities.h
     entity/Entities.cpp
 
@@ -86,6 +86,7 @@ target_sources(
     RenderLayers.h
     DrinkType.h
     PastryType.h
+    DropType.h
     OrderMatch.h
     OrderMatch.cpp
     Menu.h

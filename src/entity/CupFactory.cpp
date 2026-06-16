@@ -23,9 +23,10 @@ constexpr float CUP_WALLS_Y_OFFSET_PIX = 12.f;
 constexpr float CUP_BOTTOM_Y_OFFSET_PIX= 2.f;
 constexpr float BOTTOM_W_PIX           = 14.f;
 constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
+constexpr int   CUP_CAPACITY           = 50;
 } // namespace
 
-bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos pos, int capacity)
+bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos pos)
 {
     const Texture& tex = assets.getTexture(TEX);
     constexpr float halfW = screenToWorldScale(CUP_DIMS.x);
@@ -88,9 +89,9 @@ bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos 
         t,
         Drawable{ tex.get(), backSrcRect, layer::CONTAINER_BACK },
         PhysicsBody{ body },
-        Cup{ .capacity = capacity },
+        Cup{ .capacity = CUP_CAPACITY },
         DragIntent{},
-        DragItemType{ .dropType = DropType::cup },
+        DragItemType{ .dropType = DropType::Cup },
         HomeSlot{ pos }
     );
 

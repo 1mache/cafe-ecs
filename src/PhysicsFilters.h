@@ -24,10 +24,10 @@ inline constexpr uint64_t DRAGGABLE        = 1ull << 5; // draggable visitor sha
 inline constexpr uint64_t FURNITURE        = 1ull << 6; // solid furniture
 
 inline constexpr uint64_t MASK_LIQUID           = CUP_SOLID | CUP_INSIDE | CLEANUP;
-inline constexpr uint64_t MASK_CUP_SOLID        = LIQUID | FURNITURE;
+inline constexpr uint64_t MASK_CUP_SOLID        = LIQUID | FURNITURE | CUP_SOLID | DRAGGABLE;
 inline constexpr uint64_t MASK_CUP_INSIDE       = LIQUID;
 inline constexpr uint64_t MASK_CLEANUP          = LIQUID;
 inline constexpr uint64_t MASK_DROPSPACE_SENSOR = DRAGGABLE;
-inline constexpr uint64_t MASK_DRAGGABLE        = DROPSPACE_SENSOR | FURNITURE;
+inline constexpr uint64_t MASK_DRAGGABLE        = DROPSPACE_SENSOR | FURNITURE | DRAGGABLE | CUP_SOLID;
 inline constexpr uint64_t MASK_FURNITURE        = FURNITURE | CUP_SOLID | DRAGGABLE;
 } // namespace cafe::filter

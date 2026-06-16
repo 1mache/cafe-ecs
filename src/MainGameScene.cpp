@@ -18,8 +18,8 @@ void cafe::MainGameScene::onInit()
     createCoffeeMachine(_physics, assets, {-7.f, -1.f});
 
     // Supply is summoned on demand: click a button to drop a fresh cup/pastry in.
-    createSpawnButton(assets, supply::CUP_BUTTON, DropType::cup);
-    createSpawnButton(assets, supply::PASTRY_BUTTON, DropType::pastry);
+    createSpawnButton(assets, _physics, supply::CUP_BUTTON, DropType::Cup);
+    createSpawnButton(assets, _physics, supply::PASTRY_BUTTON, DropType::Pastry);
 
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone(_physics);
@@ -63,7 +63,6 @@ bool cafe::MainGameScene::onUpdate(float dt)
     liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
     dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 
-    fallingSystem(dt);          // cartoonish drop-in; lands items into their slots
     syncTransformFromBody();    // physics position -> Transform
 
     customerSpawnerSystem(_physics, dt, getAssetManager()); // keep one customer at the seat
