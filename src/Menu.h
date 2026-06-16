@@ -5,6 +5,12 @@
 #include "Order.h"
 #include <iterator>
 
+constexpr int name = 0;
+constexpr int ratio = 1;
+constexpr int allowsHot = 2;
+constexpr int allowsCold = 3;
+constexpr int iconFrame = 4;
+
 namespace cafe
 {
 /** @brief A named drink: its ingredient ratio and which temperatures it may be served at. */
