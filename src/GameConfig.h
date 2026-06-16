@@ -16,5 +16,5 @@ static constexpr int LOGICAL_H = 90;
 
 // Pure zoom inside logical space. Display-fit handled by SDL, not here.
 static constexpr float SCALE_FACTOR = 1.f;
-static constexpr float GRAVITY      = 25.f;
+static constexpr float GRAVITY      = 35.f;
 } // namespace cafe
