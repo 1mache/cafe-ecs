@@ -62,6 +62,8 @@ bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos 
 
     // Solid walls + bottom — stop drops from passing through.
     b2ShapeDef wall = b2DefaultShapeDef();
+    wall.material.friction = 0.1f;
+    wall.material.restitution = 0.1f;
     wall.filter.categoryBits = filter::CUP_SOLID;
     wall.filter.maskBits     = filter::MASK_CUP_SOLID;
     b2Polygon leftWall  = b2MakeOffsetBox(wallHalfW, wallHalfH, { leftWallX, wallY }, b2Rot_identity);

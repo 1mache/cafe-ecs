@@ -50,6 +50,7 @@ bagel::Entity createBartop(AssetManager& assets, PhysicsContext& physicsContext)
         b2MakeOffsetBox(bartopHalfWidth, stripHalfHeight, { 0.f, stripOffsetY }, b2Rot_identity);
 
     b2ShapeDef bartopShape = b2DefaultShapeDef();
+    bartopShape.material.friction = 0.3f;
     bartopShape.filter.categoryBits = filter::FURNITURE;
     bartopShape.filter.maskBits     = filter::MASK_FURNITURE;
     b2CreatePolygonShape(bartopBodyId, &bartopShape, &topStrip);

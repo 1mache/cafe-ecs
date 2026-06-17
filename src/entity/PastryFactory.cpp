@@ -29,6 +29,8 @@ bagel::Entity createPastry(PhysicsContext& physics, WorldPos pos, AssetManager& 
     b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     b2ShapeDef solidDef = b2DefaultShapeDef();
+    solidDef.material.friction = 0.1f;
+    solidDef.material.restitution = 0.5f;
     solidDef.filter.categoryBits = filter::DRAGGABLE;
     solidDef.filter.maskBits     = filter::MASK_DRAGGABLE;
     b2Polygon solidBox = b2MakeBox(halfW, halfH);
