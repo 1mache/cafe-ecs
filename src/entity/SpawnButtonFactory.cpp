@@ -14,7 +14,7 @@ namespace
 {
 b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
 {
-    constexpr float CHECK_RADIUS = screenToWorldDistance(CUP_DIMS.x / 2);
+    constexpr float CHECK_RADIUS = screenToWorldDistance(CUP_DIMS.x/2);
 
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
@@ -26,7 +26,7 @@ b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
     shape.enableSensorEvents = true;
     shape.filter.categoryBits |= filter::DROPSPACE_SENSOR;
     shape.filter.maskBits |= filter::CUP_SOLID | filter::DRAGGABLE;
-    const b2Circle circle = {bodyDef.position, CHECK_RADIUS};
+    const b2Circle circle = {{0.f, 0.f}, CHECK_RADIUS};
     return b2CreateCircleShape(bodyId, &shape, &circle);
 }
 } // namespace
@@ -46,13 +46,13 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
 
     const float     spawnX     = (item == DropType::Cup) ? supply::CUP_SPAWN_X : supply::PASTRY_SPAWN_X;
     const WorldPos  spawnPos   = { spawnX, supply::DROP_FROM_Y };
-    const b2ShapeId slotSensor = createSlotSensor(physics, spawnPos);
+    b2ShapeId slotSensor = createSlotSensor(physics, spawnPos);
 
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
         Drawable{ tex.get(), src, layer::UI1 },
-        SpawnButton{ .item = item, .slotSensor = slotSensor, .spawnPos = spawnPos }
+        SpawnButton{ .item = item, .spawnSlotSensor = slotSensor, .spawnPos = spawnPos }
     );
     return ent;
 }

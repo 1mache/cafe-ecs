@@ -4,6 +4,8 @@
 #include "Entities.h"
 #include "SpawnSensor.h"
 #include "Transform.h"
+#include "Utils.h"
+
 #include <bagel.h>
 #include <box2d/box2d.h>
 #include <cstddef>
@@ -17,8 +19,6 @@ void supplyButtonSystem(PhysicsContext& physics, AssetManager& assets)
 {
     static const bagel::Mask buttonMask = bagel::MaskBuilder().set<SpawnButton>().build();
 
-    // Consume click flags during the scan (field mutation is safe); defer the
-    // actual spawns out of the loop since spawning creates entities.
     std::vector<std::pair<WorldPos,DropType>> toSpawn;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -26,11 +26,16 @@ void supplyButtonSystem(PhysicsContext& physics, AssetManager& assets)
 
         auto& b = e.get<SpawnButton>();
         if (!b.justPressed) continue;
-        if (b2Shape_GetSensorCapacity(b.slotSensor) > 0)
+
+        // check if something else is currently at spawn slot
+        // to not spawn objects inside each other
+        b2ShapeId overlaps[1];
+        if (b2Shape_GetSensorOverlaps(b.spawnSlotSensor, overlaps, 1) > 0)
         {
-            std::cout << "CANT SPAWN" << std::endl;
+            b.justPressed = false; // ignore this spawn request
             continue;
         }
+
         b.justPressed = false;
         toSpawn.emplace_back(b.spawnPos, b.item);
     }

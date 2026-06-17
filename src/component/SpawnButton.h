@@ -13,7 +13,7 @@ namespace cafe
 struct SpawnButton
 {
     DropType  item{ DropType::Cup };
-    b2ShapeId slotSensor{};
+    b2ShapeId spawnSlotSensor{};
     WorldPos  spawnPos{};
     bool      justPressed{};
 };
