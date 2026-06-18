@@ -6,8 +6,7 @@
 
 namespace cafe
 {
-
-void syncTransformFromBody()
+void physicsToTransformSystem()
 {
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<Transform>().set<PhysicsBody>().build();
@@ -16,7 +15,7 @@ void syncTransformFromBody()
     {
         if (!e.test(mask)) continue;
         const auto body = e.get<PhysicsBody>().id;
-        if (!b2Body_IsValid(body)) continue;  // belt + suspenders: never sync a destroyed body
+        if (!b2Body_IsValid(body)) continue;
         b2Vec2 p   = b2Body_GetPosition(body);
         b2Rot  rot = b2Body_GetRotation(body);
         auto&  t   = e.get<Transform>();

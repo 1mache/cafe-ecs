@@ -29,7 +29,7 @@ void PhysicsContext::step(float dtSeconds)
     // Fixed timestep with a leftover accumulator — keeps physics stable even
     // if a frame stalls. subSteps is Box2D's internal solver iteration count.
     constexpr float fixedDt  = 1.f / FPS;
-    constexpr int   subSteps = 4;
+    constexpr int   subSteps = 8;
     constexpr float maxDt    = 0.25f; // spiral-of-death guard for very long stalls
 
     if (dtSeconds > maxDt) dtSeconds = maxDt;

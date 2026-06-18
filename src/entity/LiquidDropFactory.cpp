@@ -28,8 +28,9 @@ bagel::Entity createLiquidDrop(AssetManager& assets, PhysicsContext& physics, Wo
 
     // Visitor side of a sensor pair must also opt in to sensor events.
     b2ShapeDef sd = b2DefaultShapeDef();
-    sd.density             = 8.f;
-    sd.material.friction   = 2.f;
+    sd.density             = 12.f;
+    sd.material.friction   = 1.f;
+    sd.material.restitution = 0.f; // liquid isn't bouncy
     sd.enableSensorEvents  = true;
     sd.filter.categoryBits = filter::LIQUID;
     sd.filter.maskBits     = filter::MASK_LIQUID | filter::LIQUID;

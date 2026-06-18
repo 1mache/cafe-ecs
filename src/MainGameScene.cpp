@@ -63,7 +63,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
     dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 
-    syncTransformFromBody();    // physics position -> Transform
+    physicsToTransformSystem();    // physics position -> Transform
 
     customerSpawnerSystem(getAssetManager(), _physics, dt); // keep one customer at the seat
     behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)
