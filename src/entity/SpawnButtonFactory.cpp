@@ -24,7 +24,7 @@ b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
     b2ShapeDef shape = b2DefaultShapeDef();
     shape.isSensor = true;
     shape.enableSensorEvents = true;
-    shape.filter.categoryBits |= filter::DROPSPACE_SENSOR;
+    shape.filter.categoryBits |= filter::DROPSPACE_SENSOR; // just reuse of mask
     shape.filter.maskBits |= filter::CUP_SOLID | filter::DRAGGABLE;
     const b2Circle circle = {{0.f, 0.f}, CHECK_RADIUS};
     return b2CreateCircleShape(bodyId, &shape, &circle);
@@ -35,14 +35,14 @@ b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
 // PhysicsBody and no DragIntent, so it can be clicked but never dragged.
 bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, WorldPos pos, DropType item)
 {
-    const char*      texPath = (item == DropType::Cup) ? "cup.png" : "props.png";
-    const SDL_FPoint dims    = (item == DropType::Cup) ? CUP_DIMS : PROP_DIMS;
+    const char*      texPath = "buttons.png";
 
     const Texture& tex = assets.getTexture(texPath);
-    const SDL_FRect src = { 0.f, 0.f, dims.x, dims.y };
+    const float srcX = item == DropType::Cup ? 0.f : 0.f + BUTTON_DIMS.x;
+    const SDL_FRect src = { srcX, 0.f, BUTTON_DIMS.x, BUTTON_DIMS.y };
 
-    const float halfW = screenToWorldScale(dims.x);
-    const float halfH = screenToWorldScale(dims.y);
+    const float halfW = screenToWorldScale(BUTTON_DIMS.x);
+    const float halfH = screenToWorldScale(BUTTON_DIMS.y);
 
     const float     spawnX     = (item == DropType::Cup) ? supply::CUP_SPAWN_X : supply::PASTRY_SPAWN_X;
     const WorldPos  spawnPos   = { spawnX, supply::DROP_FROM_Y };
