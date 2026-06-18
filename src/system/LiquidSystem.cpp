@@ -64,6 +64,7 @@ void liquidSensorEventSystem(PhysicsContext& physics)
 
     static const bagel::Mask liquidMask = bagel::MaskBuilder().set<Liquid>().build();
     static const bagel::Mask cupMask    = bagel::MaskBuilder().set<Cup>().build();
+    static const bagel::Mask iceMask    = bagel::MaskBuilder().set<Ice>().build();
 
     for (int i = 0; i < events.beginCount; ++i)
     {
@@ -80,7 +81,9 @@ void liquidSensorEventSystem(PhysicsContext& physics)
             static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(visitorBody)))
         };
         bagel::Entity visitor{ visitorId };
-        if (!visitor.test(liquidMask)) continue;
+        const bool visitorIsLiquid = visitor.test(liquidMask);
+        const bool visitorIsIce    = visitor.test(iceMask);
+        if (!visitorIsLiquid && !visitorIsIce) continue;
 
         // Which sensor was hit? Read the category bit on the sensor shape.
         const uint64_t sensorCat = b2Shape_GetFilter(be.sensorShapeId).categoryBits;
@@ -95,11 +98,26 @@ void liquidSensorEventSystem(PhysicsContext& physics)
             if (cup.test(cupMask))
             {
                 auto& c = cup.get<Cup>();
-                ++c.filled[static_cast<size_t>(visitor.get<Liquid>().kind)];
-                visitor.get<Liquid>().holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
-                if (c.totalFilled() == c.capacity)
-                    std::cout << "[CupFull] cup is full (" << c.totalFilled()
-                              << "/" << c.capacity << ")" << std::endl;
+                if (visitorIsIce)
+                {
+                    // Count an ice cube once, the first time it enters any cup.
+                    auto& ice = visitor.get<Ice>();
+                    if (ice.holdingContainer.id < 0)
+                    {
+                        ++c.iceCount;
+                        ice.holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
+                        std::cout << "[Ice] cube landed in cup (iceCount="
+                                  << c.iceCount << ")" << std::endl;
+                    }
+                }
+                else // liquid drop
+                {
+                    ++c.filled[static_cast<size_t>(visitor.get<Liquid>().kind)];
+                    visitor.get<Liquid>().holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
+                    if (c.totalFilled() == c.capacity)
+                        std::cout << "[CupFull] cup is full (" << c.totalFilled()
+                                  << "/" << c.capacity << ")" << std::endl;
+                }
             }
             ++g_stats.caught;
         }
