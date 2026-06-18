@@ -160,6 +160,7 @@ void clearDeliveredItems()
     static const bagel::Mask leavingMask   = bagel::MaskBuilder().set<Leaving>().build();
     static const bagel::Mask deliveredMask = bagel::MaskBuilder().set<DeliveredTo>().build();
     static const bagel::Mask liquidMask    = bagel::MaskBuilder().set<Liquid>().build();
+    static const bagel::Mask iceMask       = bagel::MaskBuilder().set<Ice>().build();
     static const bagel::Mask childMask     = bagel::MaskBuilder().set<ChildOf>().build();
 
     // 1. Which customers are leaving this frame? Their whole tray gets wiped,
@@ -197,6 +198,8 @@ void clearDeliveredItems()
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (e.test(liquidMask) && isDeliveredCup(e.get<Liquid>().holdingContainer.id))
+            extra.push_back(e.entity());
+        else if (e.test(iceMask) && isDeliveredCup(e.get<Ice>().holdingContainer.id))
             extra.push_back(e.entity());
         else if (e.test(childMask) && isDeliveredCup(e.get<ChildOf>().parent.entity().id))
             extra.push_back(e.entity());
