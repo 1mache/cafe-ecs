@@ -16,6 +16,7 @@
 #include "DropSpace.h"
 #include "Falling.h"
 #include "HomeSlot.h"
+#include "Ice.h"
 #include "InSensorArea.h"
 #include "Ingredient.h"
 #include "Leaving.h"

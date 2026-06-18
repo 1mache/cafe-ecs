@@ -24,6 +24,7 @@ target_sources(
     component/SpawnButton.h
     component/SpawnSensor.h
     component/HomeSlot.h
+    component/Ice.h
     component/InSensorArea.h
     component/Leaving.h
     component/Order.h
@@ -66,6 +67,8 @@ target_sources(
     entity/CleanupZoneFactory.cpp
     entity/CustomerFactory.h
     entity/CustomerFactory.cpp
+    entity/IceCubeFactory.h
+    entity/IceCubeFactory.cpp
     entity/SpeechBubbleFactory.h
     entity/SpeechBubbleFactory.cpp
     entity/OrderIconFactory.h
