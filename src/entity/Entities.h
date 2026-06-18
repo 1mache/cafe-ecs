@@ -6,6 +6,7 @@
 #include "CupFactory.h"
 #include "CustomerFactory.h"
 #include "IceCubeFactory.h"
+#include "IceMachineFactory.h"
 #include "LiquidDropFactory.h"
 #include "OrderIconFactory.h"
 #include "PastryFactory.h"

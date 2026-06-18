@@ -18,6 +18,15 @@ inline constexpr float DROP_FROM_Y      = 6.5f;  // start height, just above the
 
 inline constexpr WorldPos CUP_BUTTON     = { -8.5f, -4.7f };
 inline constexpr WorldPos PASTRY_BUTTON  = {  8.5f, -4.7f };
+
+// Ice machine: a gray placeholder square next to the coffee machine, with its
+// spawn button on the machine face. The cube drops from the machine spout
+// (ICE_SPAWN_*) onto the counter — not from above the screen like cup/pastry.
+// All four are tunable; keep ICE_SPAWN_* aligned with ICE_MACHINE_POS.
+inline constexpr WorldPos ICE_MACHINE_POS = { -2.5f, -1.0f };
+inline constexpr WorldPos ICE_BUTTON      = { -2.5f, -1.5f };
+inline constexpr float    ICE_SPAWN_X     = -2.5f;
+inline constexpr float    ICE_SPAWN_Y     = -1.0f;
 } // namespace supply
 
 /** @brief Summons a cup/pastry into the first free supply slot when its button was

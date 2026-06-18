@@ -21,6 +21,10 @@ void cafe::MainGameScene::onInit()
     createSpawnButton(assets, _physics, supply::CUP_BUTTON, DropType::Cup);
     createSpawnButton(assets, _physics, supply::PASTRY_BUTTON, DropType::Pastry);
 
+    // Ice machine (gray placeholder square) with its spawn button on the machine face.
+    createIceMachine(assets, supply::ICE_MACHINE_POS);
+    createSpawnButton(assets, _physics, supply::ICE_BUTTON, DropType::Ice);
+
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone(_physics);
 

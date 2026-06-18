@@ -26,17 +26,19 @@ bagel::Entity createIceCube(AssetManager& assets, PhysicsContext& physics, World
     bd.userData      = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
     b2BodyId body = b2CreateBody(physics.world(), &bd);
 
-    // Solid circle. Reuses the LIQUID category so the cup interior sensor
-    // (MASK_CUP_INSIDE == LIQUID), the cup walls (MASK_CUP_SOLID includes LIQUID),
-    // and the cleanup sensor (MASK_CLEANUP == LIQUID) all already interact with it.
+    // Solid circle on the dedicated ICE category. MASK_ICE makes it rest on the
+    // counter (FURNITURE), be contained by cup walls (CUP_SOLID), be caught by the
+    // cup interior sensor (CUP_INSIDE), and be destroyed by cleanup (CLEANUP) when
+    // it misses. Unlike LIQUID, ICE collides with furniture, so the cube rests on
+    // the desk instead of falling through it.
     // enableSensorEvents: the visitor side of a sensor pair must opt in (Box2D 3.x).
     b2ShapeDef sd = b2DefaultShapeDef();
     sd.density              = 12.f;
     sd.material.friction    = 0.5f;
     sd.material.restitution = 0.05f;
     sd.enableSensorEvents   = true;
-    sd.filter.categoryBits  = filter::LIQUID;
-    sd.filter.maskBits      = filter::MASK_LIQUID;
+    sd.filter.categoryBits  = filter::ICE;
+    sd.filter.maskBits      = filter::MASK_ICE;
 
     b2Circle circle{ {0.f, 0.f}, r };
     b2CreateCircleShape(body, &sd, &circle);

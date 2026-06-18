@@ -49,6 +49,14 @@ void drawSystem(SDL_Renderer* renderer)
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
+        // Placeholder ice machine: a solid gray square (no art asset yet).
+        if (e.has<IceMachine>())
+        {
+            SDL_SetRenderDrawColor(renderer, 150, 150, 160, 255);
+            SDL_RenderFillRect(renderer, &dstRect);
+            continue;
+        }
+
         // tint particles to their ingredient color (shared particle.png)
         if (e.has<Liquid>())
         {
@@ -57,10 +65,17 @@ void drawSystem(SDL_Renderer* renderer)
             SDL_SetTextureAlphaMod(d.texture, col.a);
             SDL_SetTextureBlendMode(d.texture, col.a < 255 ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
         }
+        else if (e.has<Ice>())
+        {
+            // Ice reuses particle.png; tint it icy blue so it reads on the counter.
+            SDL_SetTextureColorMod(d.texture, 120, 200, 255);
+            SDL_SetTextureAlphaMod(d.texture, 255);
+            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_NONE);
+        }
 
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
 
-        if (e.has<Liquid>())
+        if (e.has<Liquid>() || e.has<Ice>())
         {
             SDL_SetTextureColorMod(d.texture, 255, 255, 255);
             SDL_SetTextureAlphaMod(d.texture, 255);
