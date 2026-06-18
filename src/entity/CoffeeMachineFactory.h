@@ -10,5 +10,5 @@ namespace cafe
 class AssetManager;
 class PhysicsContext;
 
-bagel::Entity createCoffeeMachine(PhysicsContext& physics, AssetManager& assets, WorldPos pos);
+bagel::Entity createCoffeeMachine(AssetManager& assets, PhysicsContext& physics, WorldPos pos);
 } // namespace cafe

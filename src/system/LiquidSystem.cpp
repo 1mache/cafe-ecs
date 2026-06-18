@@ -27,7 +27,7 @@ struct DebugStats
 DebugStats g_stats;
 } // namespace
 
-void liquidSpawnerSystem(PhysicsContext& physics, float dtSeconds, AssetManager& assets)
+void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
 {
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
@@ -46,7 +46,7 @@ void liquidSpawnerSystem(PhysicsContext& physics, float dtSeconds, AssetManager&
         while (s.accumulator >= s.interval)
         {
             s.accumulator -= s.interval;
-            (void)createLiquidDrop(physics, assets, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
+            (void)createLiquidDrop(assets, physics, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
             ++g_stats.spawned;
         }
     }
@@ -96,7 +96,7 @@ void liquidSensorEventSystem(PhysicsContext& physics)
             {
                 auto& c = cup.get<Cup>();
                 ++c.filled[static_cast<size_t>(visitor.get<Liquid>().kind)];
-                visitor.get<Liquid>().owner = cup.entity(); // tag for per-cup cleanup on delivery
+                visitor.get<Liquid>().holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
                 if (c.totalFilled() == c.capacity)
                     std::cout << "[CupFull] cup is full (" << c.totalFilled()
                               << "/" << c.capacity << ")" << std::endl;

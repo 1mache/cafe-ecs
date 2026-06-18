@@ -26,7 +26,7 @@ constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
 constexpr int   CUP_CAPACITY           = 50;
 } // namespace
 
-bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos pos)
+bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     const Texture& tex = assets.getTexture(TEX);
     constexpr float halfW = screenToWorldScale(CUP_DIMS.x);

@@ -11,7 +11,7 @@
 namespace cafe
 {
 // Creates a kinematic pastry entity sitting on the counter, draggable.
-bagel::Entity createPastry(PhysicsContext& physics, WorldPos pos, AssetManager& assets)
+bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     constexpr auto TEX_PROPS_PATH = "props.png";
 

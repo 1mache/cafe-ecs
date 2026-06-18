@@ -11,7 +11,7 @@ namespace cafe
 struct Liquid
 {
     Ingredient      kind{ Ingredient::Coffee };
-    bagel::ent_type owner{ -1 };
+    bagel::ent_type holdingContainer{ -1 };
 };
 } // namespace cafe
 

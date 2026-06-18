@@ -44,7 +44,7 @@ void recycleItem(bagel::Entity e)
 }
 } // namespace
 
-void customerSpawnerSystem(PhysicsContext& physics, float dtSeconds, AssetManager& assets)
+void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
 {
     static const bagel::Mask spawnerMask =
         bagel::MaskBuilder().set<Spawner>().build();
@@ -71,7 +71,7 @@ void customerSpawnerSystem(PhysicsContext& physics, float dtSeconds, AssetManage
         sp.cooldown -= dtSeconds;
         if (sp.cooldown <= 0.f)
         {
-            spawnCustomer(physics, assets, sp.seat, randomOrder(), sp.patience);
+            spawnCustomer(assets, physics, sp.seat, randomOrder(), sp.patience);
             sp.cooldown = sp.interval;
         }
     }
@@ -196,7 +196,7 @@ void clearDeliveredItems()
     std::vector<bagel::ent_type> extra;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (e.test(liquidMask) && isDeliveredCup(e.get<Liquid>().owner.id))
+        if (e.test(liquidMask) && isDeliveredCup(e.get<Liquid>().holdingContainer.id))
             extra.push_back(e.entity());
         else if (e.test(childMask) && isDeliveredCup(e.get<ChildOf>().parent.entity().id))
             extra.push_back(e.entity());

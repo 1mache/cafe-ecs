@@ -9,7 +9,7 @@
 
 namespace cafe
 {
-bagel::Entity createLiquidDrop(PhysicsContext& physics, AssetManager& assets, WorldPos pos, Ingredient kind)
+bagel::Entity createLiquidDrop(AssetManager& assets, PhysicsContext& physics, WorldPos pos, Ingredient kind)
 {
     static constexpr auto TEX = "particle.png";
     const Texture& tex = assets.getTexture(TEX);

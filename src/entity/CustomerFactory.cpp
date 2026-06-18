@@ -43,7 +43,7 @@ void makeCustomerDeliverable(PhysicsContext& physics, bagel::Entity client)
     );
 }
 
-bagel::Entity createCustomer(PhysicsContext& physics, AssetManager& assets,
+bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
                            WorldPos pos, Order order, float patience)
 {
     assert((order.hasDrink || order.hasPastry) && "createClient: order must have at least one item");
@@ -63,10 +63,10 @@ bagel::Entity createCustomer(PhysicsContext& physics, AssetManager& assets,
     return ent;
 }
 
-bagel::Entity spawnCustomer(PhysicsContext& physics, AssetManager& assets,
+bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
                             WorldPos pos, Order order, float patience)
 {
-    auto customer = createCustomer(physics, assets, pos, order, patience);
+    auto customer = createCustomer(assets, physics, pos, order, patience);
 
     // Speech bubble is a child of the customer; order icons are children of the bubble.
     auto bubble = createSpeechBubble(assets, customer, { 0.f, 28.f });

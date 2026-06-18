@@ -2,55 +2,6 @@
 
 ## Overview
 
-### B. Button-summoned cup/pastry supply — omerzv
-
-| Hash | Date | Subject |
-|------|------|---------|
-| `e7e2f4f` | 2026-06-15 | feat: button-summoned cup/pastry supply with drop-in + destroy on leave |
-| `f4658cc` | 2026-06-15 | merge: integrate origin/dima into supply feature |
-| `56c114b` | 2026-06-15 | chore: remove unused includes after the dima merge |
-| `6ba91e0` | 2026-06-16 | Merge commit into EitanK |
-
-**`e7e2f4f` — Supply on demand (~369 insertions)**
-
-Full supply system: clicking counter buttons spawns cups/pastries into the first free slot. Items fall in with an easeOutBack tween (`Falling` component) and become draggable on landing. Delivered items are tracked with `DeliveredTo` and destroyed when the customer leaves (`clearDeliveredItems`) — each cup's liquid drops cleaned up via `Liquid.owner` scoping. Removed the old fixed-item recycling approach.
-
-Files changed:
-- `src/CMakeLists.txt`
-- `src/MainGameScene.cpp` / `.h`
-- `src/component/Components.h`
-- `src/component/DeliveredTo.h` *(new)*
-- `src/component/Falling.h` *(new)*
-- `src/component/Liquid.h` — added `owner` field
-- `src/component/SpawnButton.h` *(new)*
-- `src/entity/ButtonFactory.cpp` *(new)*
-- `src/entity/SpawnButtonFactory.h` *(new)*
-- `src/entity/Entities.h`
-- `src/system/CustomerSystem.cpp` / `.h`
-- `src/system/IntentSystem.cpp`
-- `src/system/LiquidSystem.cpp`
-- `src/system/SupplySystem.cpp` *(new)*
-- `src/system/SupplySystem.h` *(new)*
-- `src/system/Systems.h`
-
-**`f4658cc` — Merge: dima physics/input/order rework**
-
-Reconciled supply feature with `dima` branch changes:
-- `PhysicsContext` made instance-based; threaded through `supplyButtonSystem`/`spawnFalling` and the customer cycle (`customerSpawnerSystem`→`spawnCustomer`→`createCustomer`).
-- Input model: supply buttons now flow through `intentSystem` (`updateSpawnButtonIntent`); drag guard moved into `updateDragIntent`. No more `SdlEvents` entity.
-- Renamed `buttonSystem`→`supplyButtonSystem` (dima has its own `buttonSystem` for the coffee machine).
-- Adopted array-based `Order` and rich order-icon display from dima/Jonathan; moved icon grid from `MainGameScene::onInit` into `spawnCustomer`. `randomDrinkOrder`→`randomOrder`.
-- `debugDrawCupWalls`→`debugHighlightPhysics`.
-
-**`56c114b` — Include cleanup post-merge**
-
-Dropped includes that became dead after the merge:
-- `src/MainGameScene.cpp` — removed `Menu.h`, `SpriteDims.h`
-- `src/MainGameScene.h` — removed `Ingredient.h`, `WorldPos.h`, `bagel.h`
-- `src/system/SupplySystem.cpp` — removed `<cmath>`
-
----
-
 ### C. Beverage check & grading pipeline — EitanVeryKatz
 
 | Hash | Date | Subject |

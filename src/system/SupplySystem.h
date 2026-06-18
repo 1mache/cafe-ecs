@@ -22,5 +22,5 @@ inline constexpr WorldPos PASTRY_BUTTON  = {  8.5f, -4.7f };
 
 /** @brief Summons a cup/pastry into the first free supply slot when its button was
  *  clicked this frame (SpawnButton.justPressed, set by intentSystem). */
-void supplyButtonSystem(PhysicsContext& physics, AssetManager& assets);
+void supplyButtonSystem(AssetManager& assets, PhysicsContext& physics);
 } // namespace cafe

@@ -19,7 +19,7 @@ CoffeeOverview buildOverview(bagel::ent_type cupId)
         if (!e.test(liquidMask)) continue;
 
         const auto& liquid = e.get<Liquid>();
-        if (liquid.owner.id != cupId.id) continue;
+        if (liquid.holdingContainer.id != cupId.id) continue;
 
         ++filled[static_cast<size_t>(liquid.kind)];
         ++dropSum;

@@ -15,7 +15,7 @@
 
 namespace cafe
 {
-void supplyButtonSystem(PhysicsContext& physics, AssetManager& assets)
+void supplyButtonSystem(AssetManager& assets, PhysicsContext& physics)
 {
     static const bagel::Mask buttonMask = bagel::MaskBuilder().set<SpawnButton>().build();
 
@@ -43,9 +43,9 @@ void supplyButtonSystem(PhysicsContext& physics, AssetManager& assets)
     for (auto& sp : toSpawn)
     {
         if (sp.second == DropType::Cup)
-            createCup(physics, assets, sp.first);
+            createCup(assets, physics, sp.first);
         else if (sp.second == DropType::Pastry)
-            createPastry(physics, sp.first, assets);
+            createPastry(assets, physics, sp.first);
     }
 }
 } // namespace cafe

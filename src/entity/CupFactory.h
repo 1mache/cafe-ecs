@@ -10,5 +10,5 @@ class AssetManager;
 class PhysicsContext;
 
 /** @brief Kinematic cup at @p pos. Three solid walls + one interior sensor. */
-bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos pos);
+bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos pos);
 } // namespace cafe
