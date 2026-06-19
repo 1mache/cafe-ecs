@@ -60,6 +60,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     machineButtonSystem();             // coffee-machine buttons -> pour state
     liquidSpawnerSystem(getAssetManager(), _physics, dt);    // spawn drops while pouring
     _physics.step(dt);
+    liquidVelocityClampSystem();
     liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
     dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 

@@ -51,6 +51,23 @@ void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dt
         }
     }
 }
+void liquidVelocityClampSystem()
+{
+    constexpr float MAX_LIQUID_SPEED = 10.f;
+    static bagel::Mask mask = bagel::MaskBuilder().set<Liquid>().build();
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+
+        PhysicsBody& p = e.get<PhysicsBody>();
+        auto vel = b2Body_GetLinearVelocity(p.id);
+        if (b2Length(vel) > MAX_LIQUID_SPEED)
+        {
+            b2Body_SetLinearVelocity(p.id,b2Normalize(vel) * MAX_LIQUID_SPEED);
+        }
+    }
+}
 
 void liquidSensorEventSystem(PhysicsContext& physics)
 {
