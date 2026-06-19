@@ -44,8 +44,12 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
     const float halfW = screenToWorldScale(BUTTON_DIMS.x);
     const float halfH = screenToWorldScale(BUTTON_DIMS.y);
 
-    const float     spawnX     = (item == DropType::Cup) ? supply::CUP_SPAWN_X : supply::PASTRY_SPAWN_X;
-    const WorldPos  spawnPos   = { spawnX, supply::DROP_FROM_Y };
+    // Cup/pastry drop in from above the screen; ice drops from the ice machine spout.
+    const WorldPos spawnPos =
+        (item == DropType::Ice)
+            ? WorldPos{ supply::ICE_SPAWN_X, supply::ICE_SPAWN_Y }
+            : WorldPos{ (item == DropType::Cup) ? supply::CUP_SPAWN_X : supply::PASTRY_SPAWN_X,
+                        supply::DROP_FROM_Y };
     b2ShapeId slotSensor = createSlotSensor(physics, spawnPos);
 
     auto ent = bagel::Entity::create();

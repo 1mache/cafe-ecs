@@ -25,9 +25,12 @@ CoffeeOverview buildOverview(bagel::ent_type cupId)
         ++dropSum;
     }
 
+    bagel::Entity cup{ cupId };
+    const int iceCount = cup.has<Cup>() ? cup.get<Cup>().iceCount : 0;
+
     CoffeeOverview overview{};
     overview.dropSum = dropSum;
-    overview.isHot   = true;
+    overview.isHot   = (iceCount == 0); // any ice => Cold
     if (dropSum > 0)
     {
         const float total = static_cast<float>(dropSum);

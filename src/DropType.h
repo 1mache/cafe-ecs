@@ -6,6 +6,7 @@ enum class DropType
 {
     Any = 0,
     Cup,
-    Pastry
+    Pastry,
+    Ice
 };
 } // namespace cafe

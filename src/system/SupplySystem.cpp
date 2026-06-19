@@ -46,6 +46,8 @@ void supplyButtonSystem(AssetManager& assets, PhysicsContext& physics)
             createCup(assets, physics, sp.first);
         else if (sp.second == DropType::Pastry)
             createPastry(assets, physics, sp.first);
+        else if (sp.second == DropType::Ice)
+            createIceCube(assets, physics, sp.first);
     }
 }
 } // namespace cafe

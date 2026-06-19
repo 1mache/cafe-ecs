@@ -22,12 +22,17 @@ inline constexpr uint64_t CLEANUP          = 1ull << 3; // out-of-bounds sensor
 inline constexpr uint64_t DROPSPACE_SENSOR = 1ull << 4; // drop-zone sensor
 inline constexpr uint64_t DRAGGABLE        = 1ull << 5; // draggable visitor shape
 inline constexpr uint64_t FURNITURE        = 1ull << 6; // solid furniture
+inline constexpr uint64_t ICE              = 1ull << 7; // ice cube: rests on furniture, caught by cup
 
 inline constexpr uint64_t MASK_LIQUID           = CUP_SOLID | CUP_INSIDE | CLEANUP;
-inline constexpr uint64_t MASK_CUP_SOLID        = LIQUID | FURNITURE | CUP_SOLID | DRAGGABLE;
-inline constexpr uint64_t MASK_CUP_INSIDE       = LIQUID;
-inline constexpr uint64_t MASK_CLEANUP          = LIQUID;
+inline constexpr uint64_t MASK_CUP_SOLID        = LIQUID | FURNITURE | CUP_SOLID | DRAGGABLE | ICE;
+inline constexpr uint64_t MASK_CUP_INSIDE       = LIQUID | ICE;
+inline constexpr uint64_t MASK_CLEANUP          = LIQUID | ICE;
 inline constexpr uint64_t MASK_DROPSPACE_SENSOR = DRAGGABLE;
 inline constexpr uint64_t MASK_DRAGGABLE        = DROPSPACE_SENSOR | FURNITURE | DRAGGABLE | CUP_SOLID;
-inline constexpr uint64_t MASK_FURNITURE        = FURNITURE | CUP_SOLID | DRAGGABLE;
+inline constexpr uint64_t MASK_FURNITURE        = FURNITURE | CUP_SOLID | DRAGGABLE | ICE;
+// Ice rests on furniture (the counter), is contained by cup walls, is caught by
+// the cup interior sensor, and is destroyed by cleanup if it misses. It does NOT
+// include LIQUID, so it stays out of liquid-vs-liquid behavior.
+inline constexpr uint64_t MASK_ICE              = CUP_SOLID | CUP_INSIDE | CLEANUP | FURNITURE;
 } // namespace cafe::filter

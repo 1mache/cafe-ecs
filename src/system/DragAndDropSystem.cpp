@@ -122,7 +122,12 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
         {
             b2Body_SetLinearVelocity(body, { 0.f, 0.f });
             b2Body_SetGravityScale(body, 1.f);
-            setBodySensorEvents(body, false);
+            // Sensor-event toggling exists to gate drop-space detection, which only
+            // DragItemType carriers (cups/pastries) do. A plain physics draggable
+            // like an ice cube must keep its sensor events on, or the cup's interior
+            // sensor can't catch it once it's released.
+            if (e.has<DragItemType>())
+                setBodySensorEvents(body, false);
         }
     }
 

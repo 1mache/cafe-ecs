@@ -10,6 +10,7 @@ struct Cup
 {
     int capacity{};
     int filled[INGREDIENT_COUNT]{}; // per-ingredient drop counts
+    int iceCount{};                 // ice cubes resting in this cup; >0 => Cold
 
     int totalFilled() const
     {
