@@ -15,9 +15,9 @@ namespace
 {
 constexpr auto  TEX                    = "cup.png";
 
-constexpr float WALL_W_PIX             = 1.f;
+constexpr float WALL_W_PIX             = 2.f;
 constexpr float WALL_H_PIX             = 17.f;
-constexpr float L_WALL_X_OFFSET_PIX    = 0.f;
+constexpr float L_WALL_X_OFFSET_PIX    = -1.f;
 constexpr float R_WALL_X_OFFSET_PIX    = 7.f;
 constexpr float CUP_WALLS_Y_OFFSET_PIX = 12.f;
 constexpr float CUP_BOTTOM_Y_OFFSET_PIX= 2.f;
@@ -32,7 +32,6 @@ bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos 
     constexpr float halfW = screenToWorldScale(CUP_DIMS.x);
     constexpr float halfH = screenToWorldScale(CUP_DIMS.y);
 
-    // wall thickness in world units (1 pixel)
     const float wallW     = screenToWorldDistance(WALL_W_PIX);
     const float wallHalfH = screenToWorldScale(WALL_H_PIX);
     const float wallHalfW = screenToWorldScale(WALL_W_PIX);
