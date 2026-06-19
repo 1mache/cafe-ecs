@@ -18,6 +18,11 @@ constexpr float MAX_FOLLOW_SPEED    = 25.f; // m/s the held body chases the curs
 constexpr float ARRIVE_THRESHOLD    = 0.f; // m; within this, stop (deadzone)
 constexpr float ARRIVE_THRESHOLD_SQ = ARRIVE_THRESHOLD * ARRIVE_THRESHOLD;
 
+float speedByDist(float dist)
+{
+    return std::min(dist*dist, MAX_FOLLOW_SPEED);
+}
+
 bagel::ent_type entityIdFromBody(b2BodyId body)
 {
     return bagel::ent_type{
@@ -79,7 +84,7 @@ void holdFollow(bagel::Entity e, const DragIntent& intent)
     // MAX_FOLLOW_SPEED overshoots when closer than one step of travel, which makes a
     // stationary held body oscillate between the two sides of the cursor.
     const float  dist  = b2Length(delta);
-    const float  speed = (dist * FPS < MAX_FOLLOW_SPEED) ? dist * FPS : MAX_FOLLOW_SPEED;
+    const float  speed = speedByDist(dist);
     const b2Vec2 dir   = b2Normalize(delta);
     b2Body_SetLinearVelocity(body, b2MulSV(speed, dir));
 }

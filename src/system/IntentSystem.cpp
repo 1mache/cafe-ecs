@@ -83,12 +83,10 @@ void updateMachineButtonIntent(bagel::Entity e, UserInput& input)
         isPointInsideTransform(worldMouse, e.get<Transform>()))
     {
         button.pressed = true;
-        std::cout << "started pressing" << std::endl;
     }
     else if (input.controls & controlBit(Controls::MouseButtonUp))
     {
         button.pressed = false;
-        std::cout << "stopped  pressing" << std::endl;
     }
 }
 
