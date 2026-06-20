@@ -71,14 +71,13 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     // Speech bubble is a child of the customer; order icons are children of the bubble.
     auto bubble = createSpeechBubble(assets, customer, { 0.f, 28.f });
 
-    // Order icons sit in a single left-aligned row of up to MAX_ICONS slots.
+    // Order icons sit in a single left-aligned row of up to MAX_ORDER_ICONS slots.
     // Drinks default to Hot and pastries to Cold; a temperature icon is shown
     // only for the non-default case — ice next to a cold drink, fire next to a
-    // hot pastry. Surplus icons past MAX_ICONS are dropped (right side left blank).
-    constexpr int MAX_ICONS = 5;
-    int frames[MAX_ICONS];
+    // hot pastry. Orders are trimmed to fit, so the push cap is just a backstop.
+    int frames[MAX_ORDER_ICONS];
     int n = 0;
-    auto push = [&](int f) { if (n < MAX_ICONS) frames[n++] = f; };
+    auto push = [&](int f) { if (n < MAX_ORDER_ICONS) frames[n++] = f; };
 
     for (int i = 0; i < order.drinkCount; ++i)
     {
@@ -96,7 +95,7 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     }
 
     constexpr float BUBBLE_W  = BUBBLE_DIMS.x;     // full 64 px, unscaled
-    constexpr float SLOT_W    = BUBBLE_W / MAX_ICONS;
+    constexpr float SLOT_W    = BUBBLE_W / MAX_ORDER_ICONS;
     constexpr float ICON_SIZE = SLOT_W * 0.85f;    // fits one slot
     for (int i = 0; i < n; ++i)
     {

@@ -9,6 +9,8 @@ namespace cafe
 
 inline constexpr int MAX_DRINKS   = 3;
 inline constexpr int MAX_PASTRIES = 3;
+// Max order icons drawn in the speech bubble; orders are trimmed to fit this.
+inline constexpr int MAX_ORDER_ICONS = 5;
 
 /** @brief One ordered beverage: which drink and at what temperature. */
 struct DrinkItem
