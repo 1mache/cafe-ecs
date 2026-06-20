@@ -65,7 +65,7 @@ bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Ent
 }
 } // namespace
 
-bagel::Entity createCoffeeMachine(PhysicsContext& physics, AssetManager& assets, WorldPos pos)
+bagel::Entity createCoffeeMachine(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     const Texture& tex = assets.getTexture(TEX);
     auto [x, y] = tex.getSize();

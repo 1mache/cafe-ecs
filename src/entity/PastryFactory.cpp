@@ -11,7 +11,7 @@
 namespace cafe
 {
 // Creates a kinematic pastry entity sitting on the counter, draggable.
-bagel::Entity createPastry(PhysicsContext& physics, WorldPos pos, AssetManager& assets)
+bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     constexpr auto TEX_PROPS_PATH = "props.png";
 
@@ -29,6 +29,8 @@ bagel::Entity createPastry(PhysicsContext& physics, WorldPos pos, AssetManager& 
     b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     b2ShapeDef solidDef = b2DefaultShapeDef();
+    solidDef.material.friction = 0.1f;
+    solidDef.material.restitution = 0.5f;
     solidDef.filter.categoryBits = filter::DRAGGABLE;
     solidDef.filter.maskBits     = filter::MASK_DRAGGABLE;
     b2Polygon solidBox = b2MakeBox(halfW, halfH);
@@ -44,7 +46,7 @@ bagel::Entity createPastry(PhysicsContext& physics, WorldPos pos, AssetManager& 
         Drawable{ propsTex.get(), src, layer::PROP },
         PhysicsBody{ body },
         DragIntent{},
-        DragItemType{ .dropType = DropType::pastry },
+        DragItemType{ .dropType = DropType::Pastry },
         HomeSlot{ pos }
     );
     return ent;

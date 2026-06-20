@@ -15,11 +15,15 @@ void cafe::MainGameScene::onInit()
     createBg(assets, BG_PATH);
     createBartop(assets, _physics);
 
-    createCoffeeMachine(_physics, assets, {-7.f, -1.f});
+    createCoffeeMachine(assets, _physics, {-7.f, -1.f});
 
     // Supply is summoned on demand: click a button to drop a fresh cup/pastry in.
-    createSpawnButton(assets, supply::CUP_BUTTON, DropType::cup);
-    createSpawnButton(assets, supply::PASTRY_BUTTON, DropType::pastry);
+    createSpawnButton(assets, _physics, supply::CUP_BUTTON, DropType::Cup);
+    createSpawnButton(assets, _physics, supply::PASTRY_BUTTON, DropType::Pastry);
+
+    // Ice machine (gray placeholder square) with its spawn button on the machine face.
+    createIceMachine(assets, supply::ICE_MACHINE_POS);
+    createSpawnButton(assets, _physics, supply::ICE_BUTTON, DropType::Ice);
 
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone(_physics);
@@ -48,7 +52,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     if (exitRequested) return false;
 
     // Click a supply button to drop a fresh cup/pastry into a free slot.
-    supplyButtonSystem(_physics, getAssetManager());
+    supplyButtonSystem(getAssetManager(), _physics);
 
     // deliverySystem reads DragIntent.dropSpaceEntity on release before
     // dragAndDropSystem resets the intent to None.
@@ -57,16 +61,15 @@ bool cafe::MainGameScene::onUpdate(float dt)
     acceptGradedBeverageSystem(); // grades cups with CheckCoffeeIntent + CoffeeOverview
     dragAndDropSystem();          // held: follow mouse; released: snap/drop
 
-    buttonSystem();             // coffee-machine buttons -> pour state
-    liquidSpawnerSystem(_physics, dt, getAssetManager());    // spawn drops while pouring
+    machineButtonSystem();             // coffee-machine buttons -> pour state
+    liquidSpawnerSystem(getAssetManager(), _physics, dt);    // spawn drops while pouring
     _physics.step(dt);
     liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
     dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 
-    fallingSystem(dt);          // cartoonish drop-in; lands items into their slots
-    syncTransformFromBody();    // physics position -> Transform
+    physicsToTransformSystem();    // physics position -> Transform
 
-    customerSpawnerSystem(_physics, dt, getAssetManager()); // keep one customer at the seat
+    customerSpawnerSystem(getAssetManager(), _physics, dt); // keep one customer at the seat
     behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)
     orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
     reportLeavingCustomers();   // log SUCCESSFUL / FAILED

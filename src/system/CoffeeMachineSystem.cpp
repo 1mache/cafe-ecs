@@ -3,7 +3,9 @@
 #include "Components.h"
 #include "bagel.h"
 
-void cafe::buttonSystem()
+namespace cafe
+{
+void machineButtonSystem()
 {
     static const bagel::Mask buttonMask  = bagel::MaskBuilder().set<MachineButton>().build();
     static const bagel::Mask spawnerMask = bagel::MaskBuilder().set<LiquidSpawner>().build();
@@ -24,4 +26,5 @@ void cafe::buttonSystem()
         auto& spawner = sp.get<LiquidSpawner>();
         spawner.active = currentlyPressed[static_cast<size_t>(spawner.kind)];
     }
+}
 }

@@ -14,7 +14,7 @@ namespace cafe
 {
 namespace
 {
-constexpr float FOLLOW_SPEED        = 20.f; // m/s the held body chases the cursor
+constexpr float MAX_FOLLOW_SPEED    = 20.f; // m/s the held body chases the cursor
 constexpr float ARRIVE_THRESHOLD    = 0.f; // m; within this, stop (deadzone)
 constexpr float ARRIVE_THRESHOLD_SQ = ARRIVE_THRESHOLD * ARRIVE_THRESHOLD;
 
@@ -76,10 +76,10 @@ void holdFollow(bagel::Entity e, const DragIntent& intent)
     }
 
     // Clamp speed so one frame cannot carry the body past the target. A constant
-    // FOLLOW_SPEED overshoots when closer than one step of travel, which makes a
+    // MAX_FOLLOW_SPEED overshoots when closer than one step of travel, which makes a
     // stationary held body oscillate between the two sides of the cursor.
     const float  dist  = b2Length(delta);
-    const float  speed = (dist * FPS < FOLLOW_SPEED) ? dist * FPS : FOLLOW_SPEED;
+    const float  speed = (dist * FPS < MAX_FOLLOW_SPEED) ? dist * FPS : MAX_FOLLOW_SPEED;
     const b2Vec2 dir   = b2Normalize(delta);
     b2Body_SetLinearVelocity(body, b2MulSV(speed, dir));
 }
@@ -122,7 +122,12 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
         {
             b2Body_SetLinearVelocity(body, { 0.f, 0.f });
             b2Body_SetGravityScale(body, 1.f);
-            setBodySensorEvents(body, false);
+            // Sensor-event toggling exists to gate drop-space detection, which only
+            // DragItemType carriers (cups/pastries) do. A plain physics draggable
+            // like an ice cube must keep its sensor events on, or the cup's interior
+            // sensor can't catch it once it's released.
+            if (e.has<DragItemType>())
+                setBodySensorEvents(body, false);
         }
     }
 

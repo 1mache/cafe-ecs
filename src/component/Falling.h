@@ -5,6 +5,8 @@
 
 namespace cafe
 {
+
+// TODO: covert into an animation component for the customer Queue
 /** @brief Cartoonish drop-in tween: eases the item from `fromY` down to `slot`,
  *  then is removed so the item becomes draggable. Present only while animating. */
 struct Falling

@@ -1,5 +1,5 @@
 #pragma once
-#include "GameConfig.h"
+#include "PhysicsFilters.h"
 #include <box2d/id.h>
 
 namespace cafe

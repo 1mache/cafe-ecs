@@ -35,6 +35,19 @@ Avoid reaching for global variables inside systems. Currently `PhysicsContext` a
 
 ---
 
+## Parameter Order — `AssetManager` and `PhysicsContext`
+
+When a factory function or system accepts both `AssetManager&` and `PhysicsContext&`, always put them in this order:
+
+```cpp
+void mySystem(AssetManager& assets, PhysicsContext& physics, ...);
+bagel::Entity createFoo(AssetManager& assets, PhysicsContext& physics, WorldPos pos);
+```
+
+`AssetManager` first, `PhysicsContext` second, then everything else. Functions that take only one of the two are unaffected — the rule only governs their relative order when both are present.
+
+---
+
 ## Systems Communicate Through Components
 
 Systems must not call into each other. If system A needs to affect system B's behavior, A writes a component — B reads it next frame.

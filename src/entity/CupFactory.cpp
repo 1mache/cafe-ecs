@@ -23,9 +23,10 @@ constexpr float CUP_WALLS_Y_OFFSET_PIX = 12.f;
 constexpr float CUP_BOTTOM_Y_OFFSET_PIX= 2.f;
 constexpr float BOTTOM_W_PIX           = 14.f;
 constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
+constexpr int   CUP_CAPACITY           = 50;
 } // namespace
 
-bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos pos, int capacity)
+bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     const Texture& tex = assets.getTexture(TEX);
     constexpr float halfW = screenToWorldScale(CUP_DIMS.x);
@@ -61,6 +62,8 @@ bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos 
 
     // Solid walls + bottom — stop drops from passing through.
     b2ShapeDef wall = b2DefaultShapeDef();
+    wall.material.friction = 0.1f;
+    wall.material.restitution = 0.1f;
     wall.filter.categoryBits = filter::CUP_SOLID;
     wall.filter.maskBits     = filter::MASK_CUP_SOLID;
     b2Polygon leftWall  = b2MakeOffsetBox(wallHalfW, wallHalfH, { leftWallX, wallY }, b2Rot_identity);
@@ -88,9 +91,9 @@ bagel::Entity createCup(PhysicsContext& physics, AssetManager& assets, WorldPos 
         t,
         Drawable{ tex.get(), backSrcRect, layer::CONTAINER_BACK },
         PhysicsBody{ body },
-        Cup{ .capacity = capacity },
+        Cup{ .capacity = CUP_CAPACITY },
         DragIntent{},
-        DragItemType{ .dropType = DropType::cup },
+        DragItemType{ .dropType = DropType::Cup },
         HomeSlot{ pos }
     );
 

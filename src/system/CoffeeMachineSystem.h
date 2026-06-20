@@ -2,5 +2,5 @@
 
 namespace cafe
 {
-void buttonSystem();
+void machineButtonSystem();
 }
