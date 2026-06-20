@@ -124,6 +124,7 @@ void deliverySystem()
             CheckCoffeeIntent coffeeIntent{};
             for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
                 coffeeIntent.ratio[i] = recipe.ratio[i];
+            coffeeIntent.targetFill = recipe.targetFill;
             coffeeIntent.isHot    = order.drinks[slot].temp == Temperature::Hot;
             coffeeIntent.customer = target.entity();
             coffeeIntent.drinkSlot = slot;

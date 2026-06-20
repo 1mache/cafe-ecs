@@ -5,7 +5,7 @@
 | Component | Owner | Purpose |
 |-----------|-------|---------|
 | `CheckCoffeeIntent` | Cup entity | Expected recipe + target customer + drink slot index; triggers grading pipeline |
-| `CoffeeOverview` | Cup entity | Snapshot of actual cup contents (ratios, dropSum) |
+| `CoffeeOverview` | Cup entity | Snapshot of actual cup contents (ratios, dropSum, fillPercent) |
 | `OrderGrade` | Customer entity | Per-item numeric scores (0-100) + `servedMask` bitmask; computed immediately on delivery |
 | `Leaving` | Customer entity | Signals customer is done (all items received, or patience ran out) |
 
@@ -17,12 +17,19 @@
 `gradeDrink` in `OrderMatch.cpp` computes:
 
 ```
-grade = 1.0
+ratioGrade = 1.0
 for each ingredient:
-    grade -= fabs(expected_ratio - actual_ratio)
-grade -= fabs(dropSum difference) / 100.0
+    ratioGrade -= fabs(expected_ratio - actual_ratio)
+ratioGrade = clamp(ratioGrade, 0, 1)
+
+volumeGrade = clamp(1.0 - fabs(overview.fillPercent - recipe.targetFill), 0, 1)
+
+grade = 0.8 * ratioGrade + 0.2 * volumeGrade
 score = round(clamp(grade, 0, 1) * 100)
 ```
+
+`targetFill` is set per drink in `MENU[]` (e.g. Espresso 0.35, Americano 0.85, Cappuccino 0.80).
+`fillPercent` is `dropSum / cup.capacity`, computed in `buildOverview`.
 
 ### Pastries — flat or half
 Full score (100) on delivery. Half score (50) if wrong temperature.
@@ -41,6 +48,7 @@ Player releases cup via drag. `deliverySystem` finds the first unserved drink sl
 ```cpp
 CheckCoffeeIntent {
     ratio[INGREDIENT_COUNT]  // expected fractions from recipeFor(order.drinks[slot].type)
+    targetFill               // ideal fill fraction (0..1) from recipe.targetFill
     isHot                    // from order temperature
     drinkSlot                // which drinks[] slot this cup fulfills
     customer                 // target customer entity id
@@ -67,6 +75,7 @@ Runs every frame. Finds entities with `Cup + CheckCoffeeIntent`. For each, `buil
 - Keeps only drops whose `holdingContainer.id == cupId`.
 - Accumulates per-ingredient drop counts + total `dropSum`.
 - Normalizes: `ratio[i] = filled[i] / dropSum`.
+- Computes `fillPercent = dropSum / cup.capacity`.
 - Writes result into `CoffeeOverview` on the cup (adds or overwrites each frame).
 
 ---

@@ -27,11 +27,15 @@ CoffeeOverview buildOverview(bagel::ent_type cupId)
     }
 
     bagel::Entity cup{ cupId };
-    const int iceCount = cup.has<Cup>() ? cup.get<Cup>().iceCount : 0;
+    const Cup& cupData  = cup.get<Cup>();
+    const int iceCount  = cupData.iceCount;
 
     CoffeeOverview overview{};
-    overview.dropSum = dropSum;
-    overview.isHot   = (iceCount == 0); // any ice => Cold
+    overview.dropSum    = dropSum;
+    overview.fillPercent = cupData.capacity
+        ? static_cast<float>(dropSum) / static_cast<float>(cupData.capacity)
+        : 0.f;
+    overview.isHot      = (iceCount == 0); // any ice => Cold
     if (dropSum > 0)
     {
         const float total = static_cast<float>(dropSum);

@@ -11,6 +11,7 @@ struct CoffeeOverview
     float ratio[INGREDIENT_COUNT]; // Coffee, Milk, Water — normalized fractions
     bool  isHot{};                 // actual serving temperature
     int   dropSum{};               // total drops poured
+    float fillPercent{};           // dropSum / cup capacity (0..1)
 };
 } // namespace cafe
 
