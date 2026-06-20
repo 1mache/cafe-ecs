@@ -1,5 +1,6 @@
 #include "CheckBeverageSystem.h"
 #include "Components.h"
+#include "Entities.h"
 #include "OrderMatch.h"
 #include <vector>
 
@@ -60,8 +61,7 @@ void checkBeverageSystem()
 
 void acceptGradedBeverageSystem()
 {
-    struct Handoff { bagel::ent_type item; bagel::ent_type customer; };
-    std::vector<Handoff> handoffs;
+    std::vector<bagel::ent_type> toDestroy;
 
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<CoffeeOverview>().set<CheckCoffeeIntent>().build();
@@ -72,16 +72,26 @@ void acceptGradedBeverageSystem()
 
         const auto& intent = e.get<CheckCoffeeIntent>();
         bagel::Entity customer{ intent.customer };
-        if (!customer.has<Order>() || !customer.has<Served>()) continue;
 
-        auto& served = customer.get<Served>();
-        served.drink      = true;
-        served.drinkGrade = gradeDrink(intent, e.get<CoffeeOverview>());
-        handoffs.push_back({ e.entity(), intent.customer });
+        // Guard: customer may have left already — free the cup's intent and destroy it.
+        if (!customer.has<Order>() || !customer.has<OrderGrade>())
+        {
+            e.del<CheckCoffeeIntent>();
+            toDestroy.push_back(e.entity());
+            continue;
+        }
+
+        const int slot  = intent.drinkSlot;
+        auto& grade     = customer.get<OrderGrade>();
+        grade.drinkGrades[slot] = gradeDrink(intent, e.get<CoffeeOverview>());
+        markDrinkServed(grade, slot);
+
         e.del<CheckCoffeeIntent>();
+        toDestroy.push_back(e.entity());
     }
 
-    for (const auto& h : handoffs)
-        bagel::Entity{ h.item }.add(DeliveredTo{ h.customer });
+    // Destroy cups (and their contents) after the iteration is complete.
+    for (auto id : toDestroy)
+        destroyDeliveredItem(id);
 }
 } // namespace cafe

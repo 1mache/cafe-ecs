@@ -1,14 +1,15 @@
 #include "OrderMatch.h"
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 
 namespace cafe
 {
-// for now only first drink
-// TODO: add more drinks
-DrinkGrade gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
+int gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
 {
-    float grade = BASE_GRADE;
+    if (overview.dropSum == 0) return 0;
+
+    float grade = 1.0f;
 
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
     {
@@ -24,8 +25,7 @@ DrinkGrade gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& ove
 
     std::cout << "dropSumDiff: " << dropSumDiff << " grade: " << grade << std::endl;
 
-    if (BASE_GRADE - grade >= RATIO_TOL_PERFECT) return DrinkGrade::Perfect;
-    if (BASE_GRADE - grade >= RATIO_TOL_ACCEPTABLE) return DrinkGrade::Acceptable;
-    return DrinkGrade::Wrong;
+    const float clamped = std::clamp(grade, 0.0f, 1.0f);
+    return static_cast<int>(std::round(clamped * 100.0f));
 }
 } // namespace cafe

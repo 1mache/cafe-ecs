@@ -19,7 +19,6 @@ target_sources(
     component/DragIntent.h
     component/DragItemType.h
     component/DropSpace.h
-    component/DeliveredTo.h
     component/Falling.h
     component/SpawnButton.h
     component/SpawnSensor.h
@@ -29,7 +28,8 @@ target_sources(
     component/InSensorArea.h
     component/Leaving.h
     component/Order.h
-    component/Served.h
+    component/OrderGrade.h
+    component/OrderGrade.cpp
     component/Sensor.h
     component/Sensor.cpp
     component/Components.h

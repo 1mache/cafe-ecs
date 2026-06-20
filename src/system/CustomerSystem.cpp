@@ -4,6 +4,7 @@
 #include "Menu.h"
 #include <bagel.h>
 #include <box2d/box2d.h>
+#include <cmath>
 #include <iostream>
 #include <vector>
 
@@ -11,16 +12,6 @@ namespace cafe
 {
 namespace
 {
-int gradeToRating(DrinkGrade g)
-{
-    switch (g)
-    {
-    case DrinkGrade::Perfect:    return 2;
-    case DrinkGrade::Acceptable: return 1;
-    default:                     return 0;
-    }
-}
-
 // Sends a draggable item back to its supply slot: moves the physics body (so
 // syncTransformFromBody doesn't overwrite it next frame) and stops it dead.
 void recycleItem(bagel::Entity e)
@@ -94,16 +85,13 @@ void behaviorSystem(float dtSeconds)
     }
 }
 
-
-
 void deliverySystem()
 {
     static const bagel::Mask dragMask =
         bagel::MaskBuilder().set<DragIntent>().build();
 
-    // (item, customer) pairs to tag once the loop ends (add<> is structural).
-    struct Handoff { bagel::ent_type item; bagel::ent_type customer; };
-    std::vector<Handoff> handoffs;
+    // Pastries to destroy immediately after the loop (structural changes deferred).
+    std::vector<bagel::ent_type> pastriesToDestroy;
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -115,125 +103,95 @@ void deliverySystem()
 
         bagel::Entity target{ *intent.dropSpaceEntity };
 
-        auto& served = target.get<Served>();
+        if (!target.has<Order>() || !target.has<OrderGrade>()) continue;
+
+        const auto& order = target.get<Order>();
+        auto& grade       = target.get<OrderGrade>();
 
         if (e.has<Cup>())
         {
-            // Customer accepts any coffee; acceptGradedBeverageSystem grades once the
-            // cup has CoffeeOverview. The item stays in the customer's tray and is
-            // destroyed only when the order completes / the customer leaves (see clearDeliveredItems).
-            if (target.has<Order>() && !e.has<CheckCoffeeIntent>())
+            // Find the first unserved drink slot; grade via acceptGradedBeverageSystem.
+            const int slot = firstUnservedDrink(order, grade);
+            if (slot < 0 || e.has<CheckCoffeeIntent>())
             {
-                const auto& order  = target.get<Order>();
-                const auto& recipe = recipeFor(order.drinks[0].type);
-                CheckCoffeeIntent coffeeIntent{};
-                for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
-                    coffeeIntent.ratio[i] = recipe.ratio[i];
-                coffeeIntent.isHot    = order.drinks[0].temp == Temperature::Hot;
-                coffeeIntent.customer = target.entity();
-                e.add(coffeeIntent);
-            }
-        }
-    
-        else // pastry
-        {
-            if (target.has<Order>() && target.get<Order>().hasPastry)
-            {
-                served.pastry = true; // taken; destroyed at order completion
-                handoffs.push_back({ e.entity(), target.entity() });
-            }
-            else
-            {
-                // Not wanted: bounce straight back to its slot.
+                // No drink slots left or already being graded — bounce the cup back.
                 recycleItem(e);
                 intent.dropSpaceEntity = std::nullopt;
+                continue;
             }
+
+            const auto& recipe = recipeFor(order.drinks[slot].type);
+            CheckCoffeeIntent coffeeIntent{};
+            for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
+                coffeeIntent.ratio[i] = recipe.ratio[i];
+            coffeeIntent.isHot    = order.drinks[slot].temp == Temperature::Hot;
+            coffeeIntent.customer = target.entity();
+            coffeeIntent.drinkSlot = slot;
+            e.add(coffeeIntent);
+        }
+        else // pastry
+        {
+            const int slot = firstUnservedPastry(order, grade);
+            if (slot < 0)
+            {
+                // All pastry slots filled — bounce back.
+                recycleItem(e);
+                intent.dropSpaceEntity = std::nullopt;
+                continue;
+            }
+
+            // Stub: pastry temperature grading not yet implemented; award full points.
+            grade.pastryGrades[slot] = MAX_ITEM_GRADE;
+            markPastryServed(grade, slot);
+            pastriesToDestroy.push_back(e.entity());
         }
     }
 
-    for (const auto& h : handoffs)
-        bagel::Entity{ h.item }.add(DeliveredTo{ h.customer });
-}
-
-void clearDeliveredItems()
-{
-    static const bagel::Mask leavingMask   = bagel::MaskBuilder().set<Leaving>().build();
-    static const bagel::Mask deliveredMask = bagel::MaskBuilder().set<DeliveredTo>().build();
-    static const bagel::Mask liquidMask    = bagel::MaskBuilder().set<Liquid>().build();
-    static const bagel::Mask iceMask       = bagel::MaskBuilder().set<Ice>().build();
-    static const bagel::Mask childMask     = bagel::MaskBuilder().set<ChildOf>().build();
-
-    // 1. Which customers are leaving this frame? Their whole tray gets wiped,
-    //    whether the order succeeded or their patience ran out.
-    std::vector<bagel::ent_type> leaving;
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-        if (e.test(leavingMask)) leaving.push_back(e.entity());
-    if (leaving.empty()) return;
-
-    auto isLeaving = [&](int id) {
-        for (auto c : leaving) if (c.id == id) return true;
-        return false;
-    };
-
-    // 2. Items delivered to a leaving customer (multiple cups possible).
-    std::vector<bagel::ent_type> items; // cups + pastries
-    std::vector<bagel::ent_type> cups;  // subset, for drop/child cleanup
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(deliveredMask)) continue;
-        if (!isLeaving(e.get<DeliveredTo>().customer.id)) continue;
-        items.push_back(e.entity());
-        if (e.has<Cup>()) cups.push_back(e.entity());
-    }
-    if (items.empty()) return;
-
-    auto isDeliveredCup = [&](int id) {
-        for (auto c : cups) if (c.id == id) return true;
-        return false;
-    };
-
-    // 3. Each delivered cup's drops (by owner tag) and child sprite (cupFront).
-    //    Scoped to these cups so other staged cups keep their contents.
-    std::vector<bagel::ent_type> extra;
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (e.test(liquidMask) && isDeliveredCup(e.get<Liquid>().holdingContainer.id))
-            extra.push_back(e.entity());
-        else if (e.test(iceMask) && isDeliveredCup(e.get<Ice>().holdingContainer.id))
-            extra.push_back(e.entity());
-        else if (e.test(childMask) && isDeliveredCup(e.get<ChildOf>().parent.entity().id))
-            extra.push_back(e.entity());
-    }
-
-    // 4. Destroy everything (already collected — safe). Guarantees zero leftover
-    //    particles/bodies and no orphaned cup-front sprites.
-    for (auto id : items) destroyPhysicalEntity(id);
-    for (auto id : extra) destroyPhysicalEntity(id);
+    // Destroy accepted pastries immediately (after iteration to avoid invalidating it).
+    for (auto id : pastriesToDestroy)
+        destroyDeliveredItem(id);
 }
 
 void orderSystem()
 {
     static const bagel::Mask orderMask =
-        bagel::MaskBuilder().set<Order>().set<Behavior>().set<Served>().build();
+        bagel::MaskBuilder().set<Order>().set<Behavior>().set<OrderGrade>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(orderMask)) continue;
         if (e.has<Leaving>()) continue;
 
-        const auto& order  = e.get<Order>();
-        const auto& served = e.get<Served>();
-
-        const bool drinkOk  = !order.hasDrink  || served.drink;
-        const bool pastryOk = !order.hasPastry || served.pastry;
-
-        if (drinkOk && pastryOk)
-        {
-            // Drink quality drives the rating; pastry-only orders just succeed.
-            e.get<Behavior>().rating =
-                order.hasDrink ? gradeToRating(served.drinkGrade) : 1;
+        if (allItemsServed(e.get<Order>(), e.get<OrderGrade>()))
             e.add(Leaving{});
-        }
+    }
+}
+
+void finalizeOrderGradeSystem()
+{
+    static const bagel::Mask mask =
+        bagel::MaskBuilder().set<Leaving>().set<Behavior>().set<Order>().set<OrderGrade>().build();
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+
+        auto& behavior       = e.get<Behavior>();
+        const auto& order    = e.get<Order>();
+        const auto& grade    = e.get<OrderGrade>();
+
+        behavior.succeeded = allItemsServed(order, grade);
+
+        const int raw = sumItemGrades(order, grade);
+
+        // Patience penalty: two steps, capped at 25% reduction.
+        float factor = 1.0f;
+        if (behavior.patience <= 0.f)
+            factor = 0.75f;
+        else if (behavior.maxPatience > 0.f && behavior.patience <= 0.5f * behavior.maxPatience)
+            factor = 0.875f;
+
+        behavior.rating = static_cast<int>(std::round(static_cast<float>(raw) * factor));
     }
 }
 
@@ -246,10 +204,11 @@ void reportLeavingCustomers()
     {
         if (!e.test(leavingMask)) continue;
 
-        if (e.get<Behavior>().rating > 0)
-            std::cout << "[Order] Client left SUCCESSFUL\n";
+        const auto& behavior = e.get<Behavior>();
+        if (behavior.succeeded)
+            std::cout << "[Order] Customer left SUCCESSFUL — rating: " << behavior.rating << "\n";
         else
-            std::cout << "[Order] Client left FAILED (patience ran out)\n";
+            std::cout << "[Order] Customer left FAILED (patience ran out) — rating: " << behavior.rating << "\n";
     }
 }
 
