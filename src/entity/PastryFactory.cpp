@@ -38,7 +38,7 @@ bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldP
 
     addDraggableVisitorShape(body, halfW, halfH);
 
-    // Frame 0 of the 3-frame props strip = cinnamon roll.
+    // Frame 0 of props.png pastry tag (frames 0-4) = croissant.
     SDL_FRect src = { 0.f, 0.f, PROP_DIMS.x, PROP_DIMS.y };
     auto&     propsTex = assets.getTexture(TEX_PROPS_PATH);
     ent.addAll(

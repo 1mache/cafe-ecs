@@ -27,11 +27,11 @@ struct DrinkRecipe
 // Indexed by DrinkType (order MUST match the enum). Each ratio sums to 1.0.
 inline constexpr DrinkRecipe MENU[] = {
     // name           ratio                    hot    cold   iconFrame  targetFill
-    { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false, 4,         0.35f },
-    { "Americano",   { 0.33f, 0.00f, 0.67f }, true,  true,  5,         0.85f },
-    { "Cappuccino",  { 0.50f, 0.50f, 0.00f }, true,  true,  7,         0.80f },
-    { "Black coffee",{ 1.00f, 0.00f, 0.00f }, true,  true,  3,         0.85f },
-    { "Macchiato",   { 0.75f, 0.25f, 0.00f }, true,  false, 6,         0.45f },
+    { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false, 6,         0.35f },
+    { "Americano",   { 0.33f, 0.00f, 0.67f }, true,  true,  7,         0.85f },
+    { "Cappuccino",  { 0.50f, 0.50f, 0.00f }, true,  true,  9,         0.80f },
+    { "Black coffee",{ 1.00f, 0.00f, 0.00f }, true,  true,  5,         0.85f },
+    { "Macchiato",   { 0.75f, 0.25f, 0.00f }, true,  false, 8,         0.45f },
 };
 static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
               "MENU must have one entry per DrinkType");
@@ -45,7 +45,7 @@ Order randomOrder();
 const char* temperatureName(Temperature t);
 
 /** @brief props.png frame index for a temperature icon (Hot = fire, Cold = ice). */
-constexpr int temperatureFrame(Temperature t) { return t == Temperature::Hot ? 8 : 9; }
+constexpr int temperatureFrame(Temperature t) { return t == Temperature::Hot ? 10 : 11; }
 
 /** @brief Display name for a pastry type. */
 const char* pastryName(PastryType p);

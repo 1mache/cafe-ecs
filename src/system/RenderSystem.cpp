@@ -118,6 +118,36 @@ void debugHighlightPhysics(SDL_Renderer* renderer)
             }
         }
     }
+
+    // Sensors — neon green
+    SDL_SetRenderDrawColor(renderer, 57, 255, 20, 160);
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+
+        const b2BodyId body = e.get<PhysicsBody>().id;
+        const b2Transform xf = b2Body_GetTransform(body);
+
+        b2ShapeId shapes[16];
+        const int count = b2Body_GetShapes(body, shapes, 16);
+        for (int i = 0; i < count; ++i)
+        {
+            if (b2Shape_GetType(shapes[i]) != b2_polygonShape) continue;
+            if (!b2Shape_IsSensor(shapes[i])) continue;
+
+            const b2Polygon poly = b2Shape_GetPolygon(shapes[i]);
+            for (int v = 0; v < poly.count; ++v)
+            {
+                const b2Vec2 wA = b2TransformPoint(xf, poly.vertices[v]);
+                const b2Vec2 wB = b2TransformPoint(xf, poly.vertices[(v + 1) % poly.count]);
+
+                const SDL_FPoint sA = worldToScreenPoint({ wA.x, wA.y }, cam);
+                const SDL_FPoint sB = worldToScreenPoint({ wB.x, wB.y }, cam);
+                SDL_RenderLine(renderer, sA.x, sA.y, sB.x, sB.y);
+            }
+        }
+    }
+
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }
