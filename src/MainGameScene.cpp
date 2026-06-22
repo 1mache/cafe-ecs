@@ -77,6 +77,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
     hierarchySystem();            // children follow parents; orphan children of Leaving
     customerCleanupSystem();      // destroy all Leaving entities
+    cupAlphaSystem();             // fade cup front when contents > 0
 
     SDL_RenderClear(renderer);
     drawSystem(renderer);       // sorted by renderLayer ascending

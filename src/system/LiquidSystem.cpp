@@ -83,6 +83,7 @@ void liquidSensorEventSystem(PhysicsContext& physics)
     static const bagel::Mask cupMask    = bagel::MaskBuilder().set<Cup>().build();
     static const bagel::Mask iceMask    = bagel::MaskBuilder().set<Ice>().build();
 
+    std::cout << "[SensorDbg] beginCount=" << events.beginCount << "\n";
     for (int i = 0; i < events.beginCount; ++i)
     {
         const auto& be = events.beginEvents[i];
@@ -91,6 +92,11 @@ void liquidSensorEventSystem(PhysicsContext& physics)
         // Box2D 3 versions shapes by generation; using a stale id trips an assert.
         if (!b2Shape_IsValid(be.visitorShapeId)) continue;
         if (!b2Shape_IsValid(be.sensorShapeId))  continue;
+
+        const uint64_t dbgCat = b2Shape_GetFilter(be.sensorShapeId).categoryBits;
+        std::cout << "[SensorDbg] event sensorCat=" << dbgCat
+                  << " CUP_INSIDE=" << filter::CUP_INSIDE
+                  << " match=" << (bool)(dbgCat & filter::CUP_INSIDE) << "\n";
 
         // Recover the visitor (= the drop) entity from the body's userData.
         const b2BodyId visitorBody = b2Shape_GetBody(be.visitorShapeId);
@@ -107,10 +113,14 @@ void liquidSensorEventSystem(PhysicsContext& physics)
 
         if (sensorCat & filter::CUP_INSIDE)
         {
+            std::cout << "[SensorDbg] CUP_INSIDE hit. visitorIsLiquid=" << visitorIsLiquid
+                      << " visitorIsIce=" << visitorIsIce << "\n";
             const b2BodyId cupBody = b2Shape_GetBody(be.sensorShapeId);
             bagel::Entity cup{ bagel::ent_type{
                 static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(cupBody)))
             } };
+            std::cout << "[SensorDbg] cup entity id=" << cup.entity().id
+                      << " hasCup=" << cup.test(cupMask) << "\n";
 
             if (cup.test(cupMask))
             {

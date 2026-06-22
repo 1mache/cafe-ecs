@@ -56,6 +56,8 @@ target_sources(
     system/Systems.h
     system/CoffeeMachineSystem.cpp
     system/CoffeeMachineSystem.h
+    system/CupSystem.h
+    system/CupSystem.cpp
 
     # entities
     entity/CupFactory.h
