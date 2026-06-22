@@ -42,28 +42,41 @@ Temperature randomDrinkTemp(const DrinkRecipe& r)
 Order randomOrder()
 {
     Order o;
-    o.drinkCount  = randInt(MAX_DRINKS + 1);    // 0..MAX_DRINKS
-    o.pastryCount = randInt(MAX_PASTRIES + 1);  // 0..MAX_PASTRIES
+    // Each item is added only while it fits the bubble's icon budget, so the
+    // order is built within the limit instead of generated then trimmed. A cold
+    // drink or hot pastry costs 2 icons (item + temp), otherwise 1.
+    int budget = MAX_ORDER_ICONS;
 
+    int wantDrinks   = randInt(MAX_DRINKS + 1);    // 0..MAX_DRINKS
+    int wantPastries = randInt(MAX_PASTRIES + 1);  // 0..MAX_PASTRIES
     // Invariant: an order must have at least one item.
-    if (o.drinkCount == 0 && o.pastryCount == 0)
+    if (wantDrinks == 0 && wantPastries == 0)
     {
         if (randInt(2))
-            o.drinkCount = 1;
+            wantDrinks = 1;
         else
-            o.pastryCount = 1;
+            wantPastries = 1;
     }
 
-    for (int i = 0; i < o.drinkCount; ++i)
+    for (int i = 0; i < wantDrinks; ++i)
     {
         const auto d = static_cast<DrinkType>(randInt(static_cast<int>(DrinkType::count)));
-        o.drinks[i] = { .type = d, .temp = randomDrinkTemp(recipeFor(d)) };
+        const Temperature t = randomDrinkTemp(recipeFor(d));
+        const int cost = t == Temperature::Cold ? 2 : 1;
+        if (cost > budget)
+            break;
+        o.drinks[o.drinkCount++] = { .type = d, .temp = t };
+        budget -= cost;
     }
-    for (int i = 0; i < o.pastryCount; ++i)
+    for (int i = 0; i < wantPastries; ++i)
     {
         const auto p = static_cast<PastryType>(randInt(static_cast<int>(PastryType::count)));
-        o.pastries[i] = { .type = p,
-                          .temp = randInt(2) ? Temperature::Cold : Temperature::Hot };
+        const Temperature t = randInt(2) ? Temperature::Cold : Temperature::Hot;
+        const int cost = t == Temperature::Hot ? 2 : 1;
+        if (cost > budget)
+            break;
+        o.pastries[o.pastryCount++] = { .type = p, .temp = t };
+        budget -= cost;
     }
 
     o.hasDrink  = o.drinkCount  > 0;

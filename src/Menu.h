@@ -39,7 +39,8 @@ static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
 constexpr const DrinkRecipe& recipeFor(DrinkType d) { return MENU[static_cast<size_t>(d)]; }
 
 /** @brief Builds a random order: 0-MAX_DRINKS beverages and 0-MAX_PASTRIES
- *  pastries (at least one item total), each with a random type and temperature. */
+ *  pastries (at least one item total), each with a random type and temperature.
+ *  Built within MAX_ORDER_ICONS so it always fits the speech bubble. */
 Order randomOrder();
 
 const char* temperatureName(Temperature t);
