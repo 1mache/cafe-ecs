@@ -21,6 +21,7 @@
 #include "Leaving.h"
 #include "Liquid.h"
 #include "MachineButton.h"
+#include "Pastry.h"
 #include "Order.h"
 #include "OrderGrade.h"
 #include "PhysicsBody.h"

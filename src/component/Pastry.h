@@ -13,4 +13,10 @@ enum class PastryType
     CarrotCake,
     count
 };
-} // namespace cafe
+
+struct Pastry
+{
+    PastryType type{PastryType::count};
+    float temperature{}; // TODO: erase/change type
+};
+}

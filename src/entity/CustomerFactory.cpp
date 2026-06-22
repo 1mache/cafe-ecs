@@ -105,14 +105,14 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
 
     for (int i = 0; i < order.drinkCount; ++i)
     {
-        const DrinkItem& d = order.drinks[i];
+        const Order::DrinkItem& d = order.drinks[i];
         push(coffeeFrom + static_cast<int>(d.type));
         if (d.temp == Temperature::Cold)
             push(temperatureFrame(Temperature::Cold)); // ice
     }
     for (int i = 0; i < order.pastryCount; ++i)
     {
-        const PastryItem& p = order.pastries[i];
+        const Order::PastryItem& p = order.pastries[i];
         push(pastryFrom + static_cast<int>(p.type));
         if (p.temp == Temperature::Hot)
             push(temperatureFrame(Temperature::Hot)); // fire / oven

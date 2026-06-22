@@ -2,6 +2,7 @@
 
 #include "Components.h"
 #include "DragAndDropSystem.h"
+#include "Pastry.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
 #include "RenderLayers.h"
@@ -17,11 +18,15 @@ namespace
 constexpr auto TEX_PROPS_PATH = "props.png";
 constexpr auto SPRITE_DATA    = "props.json";
 
-SDL_FRect getRandomPastryRect(const SpriteSheet& sheet)
+PastryType getRandomPastryType()
 {
-    auto [from, to] = sheet.getTagBounds("pastry");
-    std::uniform_int_distribution dist(from, to);
-    return sheet.getFrame(dist(getRng()));
+    std::uniform_int_distribution dist(0, static_cast<int>(PastryType::count) - 1);
+    return static_cast<PastryType>(dist(getRng()));
+}
+
+SDL_FRect getSpriteFromType(const SpriteSheet& sheet, PastryType type)
+{
+    return sheet.getFrame(static_cast<int>(type));
 }
 } // namespace
 
@@ -52,15 +57,17 @@ bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldP
 
     addDraggableVisitorShape(body, halfW, halfH);
 
-    const SpriteSheet& props = assets.getSpriteSheet(TEX_PROPS_PATH, SPRITE_DATA);
-    SDL_FRect src = getRandomPastryRect(props);
+    const SpriteSheet& propsSheet = assets.getSpriteSheet(TEX_PROPS_PATH, SPRITE_DATA);
+    PastryType type = getRandomPastryType();
+    SDL_FRect srcRect = getSpriteFromType(propsSheet,type);
     auto&     propsTex = assets.getTexture(TEX_PROPS_PATH);
     ent.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ propsTex.get(), src, layer::PROP },
+        Drawable{ propsTex.get(), srcRect, layer::PROP },
         PhysicsBody{ body },
         DragIntent{},
-        DragItemType{ .dropType = DropType::Pastry }
+        DragItemType{ .dropType = DropType::Pastry },
+        Pastry(type)
     );
     return ent;
 }

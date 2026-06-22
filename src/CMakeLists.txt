@@ -26,6 +26,7 @@ target_sources(
     component/IceMachine.h
     component/InSensorArea.h
     component/Leaving.h
+    component/Pastry.h
     component/Order.h
     component/OrderGrade.h
     component/OrderGrade.cpp
@@ -92,7 +93,7 @@ target_sources(
     RenderContext.h
     RenderLayers.h
     DrinkType.h
-    PastryType.h
+
     DropType.h
     OrderMatch.h
     OrderMatch.cpp

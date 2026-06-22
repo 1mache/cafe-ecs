@@ -3,7 +3,7 @@
 #include "Ingredient.h"
 #include "DrinkType.h"
 #include "Order.h"
-#include "PastryType.h"
+#include "Pastry.h"
 #include "SpriteSheet.h"
 #include <iterator>
 
