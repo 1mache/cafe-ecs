@@ -31,7 +31,8 @@ SDL_FRect getSpriteFromType(const SpriteSheet& sheet, PastryType type)
 } // namespace
 
 // Creates a kinematic pastry entity sitting on the counter, draggable.
-bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
+bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos,
+                           PastryType type)
 {
 
     using namespace cafe;
@@ -58,7 +59,8 @@ bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldP
     addDraggableVisitorShape(body, halfW, halfH);
 
     const SpriteSheet& propsSheet = assets.getSpriteSheet(TEX_PROPS_PATH, SPRITE_DATA);
-    PastryType type = getRandomPastryType();
+    if (type == PastryType::count)
+        type = getRandomPastryType();
     SDL_FRect srcRect = getSpriteFromType(propsSheet,type);
     auto&     propsTex = assets.getTexture(TEX_PROPS_PATH);
     ent.addAll(
