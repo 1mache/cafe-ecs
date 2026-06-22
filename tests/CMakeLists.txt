@@ -1,6 +1,7 @@
 add_executable(unit_tests
     test_day_state.cpp
     test_day_report.cpp
+    test_glyph.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/DayReport.cpp
 )
 

@@ -107,6 +107,9 @@ target_sources(
     DayState.h
     DayReport.h
     DayReport.cpp
+    Glyph.h
+    Text.h
+    Text.cpp
 
     PhysicsFilters.h
     PhysicsContext.h
