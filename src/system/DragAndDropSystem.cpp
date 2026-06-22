@@ -6,9 +6,8 @@
 #include "Transform.h"
 #include <bagel.h>
 #include <box2d/box2d.h>
-#include <iostream>
-#include <ostream>
-#include <vector>
+#include <algorithm>
+#include <optional>
 
 namespace cafe
 {
@@ -28,31 +27,6 @@ bagel::ent_type entityIdFromBody(b2BodyId body)
     return bagel::ent_type{
         static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(body)))
     };
-}
-
-void setBodySensorEvents(b2BodyId body, bool enabled)
-{
-    if (!b2Body_IsValid(body)) return;
-    const int count = b2Body_GetShapeCount(body);
-    if (count <= 0) return;
-    std::vector<b2ShapeId> shapes(static_cast<size_t>(count));
-    b2Body_GetShapes(body, shapes.data(), count);
-    for (b2ShapeId shapeId : shapes)
-        b2Shape_EnableSensorEvents(shapeId, enabled);
-}
-
-void enableBodySensorEventsIfDisabled(b2BodyId body)
-{
-    if (!b2Body_IsValid(body)) return;
-    const int count = b2Body_GetShapeCount(body);
-    if (count <= 0) return;
-    std::vector<b2ShapeId> shapes(static_cast<size_t>(count));
-    b2Body_GetShapes(body, shapes.data(), count);
-    for (b2ShapeId shapeId : shapes)
-    {
-        if (!b2Shape_AreSensorEventsEnabled(shapeId))
-            b2Shape_EnableSensorEvents(shapeId, true);
-    }
 }
 
 // Drives a held entity's body toward the mouse via linear velocity, so Box2D
@@ -89,8 +63,10 @@ void holdFollow(bagel::Entity e, const DragIntent& intent)
     b2Body_SetLinearVelocity(body, b2MulSV(speed, dir));
 }
 
-// Snaps a released entity onto its drop space (or restores gravity), disables
-// sensor events, and resets the intent back to None.
+// Snaps a released entity onto its drop space (or restores gravity) and resets
+// the intent back to None. Sensors stay permanently enabled; drop-space gating
+// is done purely in software by reading DragIntent state, so there is no sensor
+// toggling here.
 void releaseEntity(bagel::Entity e, DragIntent& intent)
 {
     if (intent.dropSpaceEntity.has_value())
@@ -116,9 +92,6 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
                 b2Body_SetGravityScale(body, 0.f);
             }
         }
-
-        if (dropSpace.has<PhysicsBody>())
-            setBodySensorEvents(dropSpace.get<PhysicsBody>().id, false);
     }
     else if (e.has<PhysicsBody>())
     {
@@ -127,12 +100,6 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
         {
             b2Body_SetLinearVelocity(body, { 0.f, 0.f });
             b2Body_SetGravityScale(body, 1.f);
-            // Sensor-event toggling exists to gate drop-space detection, which only
-            // DragItemType carriers (cups/pastries) do. A plain physics draggable
-            // like an ice cube must keep its sensor events on, or the cup's interior
-            // sensor can't catch it once it's released.
-            if (e.has<DragItemType>())
-                setBodySensorEvents(body, false);
         }
     }
 
@@ -140,18 +107,6 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
     intent.dropSpaceEntity = std::nullopt;
 }
 
-// Re-arms all DropSpace sensors so begin/end contacts fire while dragging.
-void enableDropSpaceSensors()
-{
-    static const bagel::Mask dropSpaceMask =
-        bagel::MaskBuilder().set<DropSpace>().set<PhysicsBody>().build();
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (e.test(dropSpaceMask))
-            enableBodySensorEventsIfDisabled(e.get<PhysicsBody>().id);
-    }
-}
 } // namespace
 
 void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH)
@@ -173,8 +128,6 @@ void dragAndDropSystem()
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<DragIntent>().set<Transform>().build();
 
-    bool anyHeld = false;
-
     // Single pass: branch per entity on its drag state. Field mutation only
     // (no add/del), so iterating while mutating is safe.
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
@@ -185,9 +138,6 @@ void dragAndDropSystem()
         switch (intent.intentType)
         {
         case DragIntentType::held:
-            anyHeld = true;
-            if (e.has<PhysicsBody>())
-                setBodySensorEvents(e.get<PhysicsBody>().id, true);
             holdFollow(e, intent);
             break;
 
@@ -199,11 +149,6 @@ void dragAndDropSystem()
             break;
         }
     }
-
-    // Re-arm DropSpace sensors only while dragging, so they stay disabled
-    // after a drop until the next drag begins.
-    if (anyHeld)
-        enableDropSpaceSensors();
 }
 
 void dropSpaceDetectionSystem(PhysicsContext& physics)
