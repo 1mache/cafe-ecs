@@ -1,32 +1,20 @@
+#include "LiquidSystem.h"
 #include "AssetManager.h"
 #include "Components.h"
 #include "Entities.h"
-#include "LiquidSystem.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
+#include "Utils.h"
+
 #include <algorithm>
 #include <bagel.h>
 #include <box2d/box2d.h>
 #include <cstdint>
-#include <iostream>
-#include <vector>
 #include <random>
+#include <vector>
 
 namespace cafe
 {
-namespace
-{
-struct DebugStats
-{
-    int   spawned{};
-    int   caught{};
-    int   spilled{};
-    int   overflowed{};
-    float accumulator{};
-};
-DebugStats g_stats;
-} // namespace
-
 void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
 {
     static const bagel::Mask mask =
@@ -47,7 +35,6 @@ void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dt
         {
             s.accumulator -= s.interval;
             (void)createLiquidDrop(assets, physics, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
-            ++g_stats.spawned;
         }
     }
 }
@@ -71,32 +58,26 @@ void liquidVelocityClampSystem()
 
 void liquidSensorEventSystem(PhysicsContext& physics)
 {
-    const b2SensorEvents events = b2World_GetSensorEvents(physics.world());
+    // Read the accumulated begin events: Box2D clears its own buffer each sub-step,
+    // so PhysicsContext gathers every sub-step's events across the frame.
+    const auto beginEvents = physics.sensorBeginEvents();
 
     // A drop can show up in more than one begin-event per step (e.g. it enters
     // CUP_INSIDE while also brushing CLEANUP, or overlaps two cups). Collect
     // the drops to destroy, dedupe, then destroy once per id.
     std::vector<bagel::ent_type> toDestroy;
-    toDestroy.reserve(static_cast<size_t>(events.beginCount));
+    toDestroy.reserve(beginEvents.size());
 
     static const bagel::Mask liquidMask = bagel::MaskBuilder().set<Liquid>().build();
     static const bagel::Mask cupMask    = bagel::MaskBuilder().set<Cup>().build();
     static const bagel::Mask iceMask    = bagel::MaskBuilder().set<Ice>().build();
 
-    std::cout << "[SensorDbg] beginCount=" << events.beginCount << "\n";
-    for (int i = 0; i < events.beginCount; ++i)
+    for (const auto& be : beginEvents)
     {
-        const auto& be = events.beginEvents[i];
 
         // Skip events whose shapes were destroyed since the buffer was filled.
-        // Box2D 3 versions shapes by generation; using a stale id trips an assert.
         if (!b2Shape_IsValid(be.visitorShapeId)) continue;
         if (!b2Shape_IsValid(be.sensorShapeId))  continue;
-
-        const uint64_t dbgCat = b2Shape_GetFilter(be.sensorShapeId).categoryBits;
-        std::cout << "[SensorDbg] event sensorCat=" << dbgCat
-                  << " CUP_INSIDE=" << filter::CUP_INSIDE
-                  << " match=" << (bool)(dbgCat & filter::CUP_INSIDE) << "\n";
 
         // Recover the visitor (= the drop) entity from the body's userData.
         const b2BodyId visitorBody = b2Shape_GetBody(be.visitorShapeId);
@@ -113,48 +94,38 @@ void liquidSensorEventSystem(PhysicsContext& physics)
 
         if (sensorCat & filter::CUP_INSIDE)
         {
-            std::cout << "[SensorDbg] CUP_INSIDE hit. visitorIsLiquid=" << visitorIsLiquid
-                      << " visitorIsIce=" << visitorIsIce << "\n";
             const b2BodyId cupBody = b2Shape_GetBody(be.sensorShapeId);
             bagel::Entity cup{ bagel::ent_type{
                 static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(cupBody)))
             } };
-            std::cout << "[SensorDbg] cup entity id=" << cup.entity().id
-                      << " hasCup=" << cup.test(cupMask) << "\n";
 
-            if (cup.test(cupMask))
+            if (!cup.test(cupMask))
+                fatalError("Object with filter CUP_INSIDE detected that is not cup");
+
+            auto& c = cup.get<Cup>();
+            if (visitorIsIce)
             {
-                auto& c = cup.get<Cup>();
-                if (visitorIsIce)
+                // Count an ice cube once, the first time it enters any cup.
+                auto& ice = visitor.get<Ice>();
+                if (ice.holdingContainer.id < 0)
                 {
-                    // Count an ice cube once, the first time it enters any cup.
-                    auto& ice = visitor.get<Ice>();
-                    if (ice.holdingContainer.id < 0)
-                    {
-                        ++c.iceCount;
-                        ice.holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
-                        std::cout << "[Ice] cube landed in cup (iceCount="
-                                  << c.iceCount << ")" << std::endl;
-                    }
-                }
-                else // liquid drop
-                {
-                    ++c.filled[static_cast<size_t>(visitor.get<Liquid>().kind)];
-                    visitor.get<Liquid>().holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
-                    if (c.totalFilled() == c.capacity)
-                        std::cout << "[CupFull] cup is full (" << c.totalFilled()
-                                  << "/" << c.capacity << ")" << std::endl;
+                    ++c.iceCount;
+                    ice.holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
                 }
             }
-            ++g_stats.caught;
+            else // liquid drop
+            {
+                ++c.filled[static_cast<size_t>(visitor.get<Liquid>().kind)];
+                visitor.get<Liquid>().holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
+            }
         }
         else if (sensorCat & filter::CLEANUP)
         {
-            ++g_stats.spilled;
             toDestroy.push_back(visitorId);
         }
     }
 
+    // sort + unique + erase = standard dedupe practice
     std::sort(toDestroy.begin(), toDestroy.end(),
               [](bagel::ent_type a, bagel::ent_type b) { return a.id < b.id; });
     toDestroy.erase(
@@ -164,37 +135,5 @@ void liquidSensorEventSystem(PhysicsContext& physics)
 
     for (auto id : toDestroy)
         destroyPhysicalEntity(id);
-}
-
-void dumpDebugStatsEvery(float dtSeconds)
-{
-    constexpr float interval = 0.5f;
-    g_stats.accumulator += dtSeconds;
-    if (g_stats.accumulator < interval) return;
-    g_stats.accumulator = 0.f;
-
-    static const bagel::Mask cupMask    = bagel::MaskBuilder().set<Cup>().build();
-    static const bagel::Mask liquidMask = bagel::MaskBuilder().set<Liquid>().build();
-
-    int totalFilled = 0, totalCapacity = 0, liveDrops = 0;
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (e.test(cupMask))
-        {
-            const auto& c = e.get<Cup>();
-            totalFilled   += c.totalFilled();
-            totalCapacity += c.capacity;
-        }
-        if (e.test(liquidMask)) ++liveDrops;
-    }
-
-    const int pct = totalCapacity ? (totalFilled * 100) / totalCapacity : 0;
-    std::cout << "[Stats] spawned=" << g_stats.spawned
-              << " caught="     << g_stats.caught
-              << " overflowed=" << g_stats.overflowed
-              << " spilled="    << g_stats.spilled
-              << " live="       << liveDrops
-              << " cup="        << totalFilled << "/" << totalCapacity
-              << " (" << pct << "%)" << std::endl;
 }
 } // namespace cafe

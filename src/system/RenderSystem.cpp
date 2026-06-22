@@ -60,20 +60,25 @@ void drawSystem(SDL_Renderer* renderer)
 
         const SDL_Color& tint = d.tint;
         const bool hasTint = tint.r != 255 || tint.g != 255 || tint.b != 255 || tint.a != 255;
+
+        // Sprites carry an alpha channel, so always blend. Using NONE leaves
+        // transparent pixels opaque-black, and the mode is sticky per-texture —
+        // shared textures (cup.png, particle.png) would then render black on the
+        // next untinted draw.
+        SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_BLEND);
         if (hasTint)
         {
             SDL_SetTextureColorMod(d.texture, tint.r, tint.g, tint.b);
             SDL_SetTextureAlphaMod(d.texture, tint.a);
-            SDL_SetTextureBlendMode(d.texture, tint.a < 255 ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
         }
 
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
 
+        // Reset the (sticky, per-texture) mods so a shared texture isn't left tinted.
         if (hasTint)
         {
             SDL_SetTextureColorMod(d.texture, 255, 255, 255);
             SDL_SetTextureAlphaMod(d.texture, 255);
-            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_NONE);
         }
     } 
 }

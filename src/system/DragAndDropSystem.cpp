@@ -158,8 +158,11 @@ void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH)
 {
     b2ShapeDef visitor = b2DefaultShapeDef();
     visitor.isSensor            = true;
-    visitor.filter.categoryBits |= filter::DRAGGABLE;
-    visitor.filter.maskBits     |= filter::MASK_DRAGGABLE;
+    // Assign, don't OR: the b2DefaultShapeDef filter is { categoryBits = 1,
+    // maskBits = UINT64_MAX }, and category bit 1 == filter::LIQUID. ORing would
+    // leave the shape tagged LIQUID and colliding with every category.
+    visitor.filter.categoryBits = filter::DRAGGABLE;
+    visitor.filter.maskBits     = filter::MASK_DRAGGABLE;
     visitor.enableSensorEvents  = true;
     b2Polygon box = b2MakeOffsetBox(halfW, halfH, { 0.f, 0.f }, b2Rot_identity);
     b2CreatePolygonShape(body, &visitor, &box);
@@ -209,11 +212,10 @@ void dropSpaceDetectionSystem(PhysicsContext& physics)
         bagel::MaskBuilder().set<DragIntent>().set<DragItemType>().build();
     static const bagel::Mask dropSpaceMask = bagel::MaskBuilder().set<DropSpace>().build();
 
-    const b2SensorEvents events = b2World_GetSensorEvents(physics.world());
-
-    for (int i = 0; i < events.beginCount; ++i)
+    // Accumulated across every physics sub-step this frame (Box2D clears its own
+    // event buffer each b2World_Step).
+    for (const auto& be : physics.sensorBeginEvents())
     {
-        const auto& be = events.beginEvents[i];
         if (!b2Shape_IsValid(be.visitorShapeId)) continue;
         if (!b2Shape_IsValid(be.sensorShapeId))  continue;
 
@@ -234,9 +236,8 @@ void dropSpaceDetectionSystem(PhysicsContext& physics)
             intent.dropSpaceEntity = sensor.entity();
     }
 
-    for (int i = 0; i < events.endCount; ++i)
+    for (const auto& ee : physics.sensorEndEvents())
     {
-        const auto& ee = events.endEvents[i];
         if (!b2Shape_IsValid(ee.visitorShapeId)) continue;
         if (!b2Shape_IsValid(ee.sensorShapeId))  continue;
 

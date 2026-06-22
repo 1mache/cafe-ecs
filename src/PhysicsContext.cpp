@@ -32,11 +32,23 @@ void PhysicsContext::step(float dtSeconds)
     constexpr int   subSteps = 8;
     constexpr float maxDt    = 0.25f; // spiral-of-death guard for very long stalls
 
+    // Box2D clears its sensor-event buffer at the start of every b2World_Step, so
+    // accumulate each sub-step's events here for systems to read once per frame.
+    _beginEvents.clear();
+    _endEvents.clear();
+
     if (dtSeconds > maxDt) dtSeconds = maxDt;
     _accumulator += dtSeconds;
     while (_accumulator >= fixedDt)
     {
         b2World_Step(_world, fixedDt, subSteps);
+
+        const b2SensorEvents ev = b2World_GetSensorEvents(_world);
+        _beginEvents.insert(_beginEvents.end(),
+                            ev.beginEvents, ev.beginEvents + ev.beginCount);
+        _endEvents.insert(_endEvents.end(),
+                          ev.endEvents, ev.endEvents + ev.endCount);
+
         _accumulator -= fixedDt;
     }
 }
