@@ -23,7 +23,9 @@ constexpr float CUP_WALLS_Y_OFFSET_PIX = 12.f;
 constexpr float CUP_BOTTOM_Y_OFFSET_PIX= 2.f;
 constexpr float BOTTOM_W_PIX           = 14.f;
 constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
-constexpr int   CUP_CAPACITY           = 50;
+
+// tested how many particles fit at max without too much over the top
+constexpr int   CUP_CAPACITY           = 264;
 } // namespace
 
 bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
@@ -79,8 +81,11 @@ bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos 
     sensor.enableSensorEvents  = true;
     sensor.filter.categoryBits = filter::CUP_INSIDE;
     sensor.filter.maskBits     = filter::MASK_CUP_INSIDE;
-    b2Polygon interior = b2MakeOffsetBox(halfW - wallW, halfH - wallW,
-                                         { 0.f, wallW * 0.5f }, b2Rot_identity);
+    b2Vec2 centerOfInsideCup = {-(rightWallX - leftWallX)/2 + (1.5f * wallW), wallW};
+    b2Polygon interior = b2MakeOffsetBox((rightWallX - leftWallX - wallW)/2.f,
+                                        wallHalfH,
+                                         centerOfInsideCup,
+                                         b2Rot_identity);
     b2CreatePolygonShape(body, &sensor, &interior);
 
     SDL_FRect frontSrcRect = {0, 0, CUP_DIMS.x, CUP_DIMS.y};

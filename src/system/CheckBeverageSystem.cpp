@@ -2,6 +2,7 @@
 #include "Components.h"
 #include "Entities.h"
 #include "OrderMatch.h"
+#include <iostream>
 #include <vector>
 
 namespace cafe
@@ -86,8 +87,11 @@ void acceptGradedBeverageSystem()
         }
 
         const int slot  = intent.drinkSlot;
+        const CoffeeOverview& ov = e.get<CoffeeOverview>();
+        std::cout << "[Delivery] cup delivered: " << ov.dropSum
+                  << " particles (" << static_cast<int>(ov.fillPercent * 100.f) << "% fill)\n";
         auto& grade     = customer.get<OrderGrade>();
-        grade.drinkGrades[slot] = gradeDrink(intent, e.get<CoffeeOverview>());
+        grade.drinkGrades[slot] = gradeDrink(intent, ov);
         markDrinkServed(grade, slot);
 
         e.del<CheckCoffeeIntent>();
