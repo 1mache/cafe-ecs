@@ -64,6 +64,8 @@ target_sources(
     entity/CupFactory.cpp
     entity/LiquidDropFactory.h
     entity/LiquidDropFactory.cpp
+    entity/MicrowaveFactory.h
+    entity/MicrowaveFactory.cpp
     entity/CoffeeMachineFactory.h
     entity/CoffeeMachineFactory.cpp
     entity/CleanupZoneFactory.h
