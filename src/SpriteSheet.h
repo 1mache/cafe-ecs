@@ -1,6 +1,7 @@
 #pragma once
 #include "SDL3/SDL_rect.h"
 
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -25,8 +26,11 @@ public:
 
     [[nodiscard]]
     const std::string& textureFilename() const { return _textureFilename; }
-
+    [[nodiscard]]
     SDL_FRect getFrame(int frameIndex) const;
+    [[nodiscard]]
+    auto tags() const { return std::views::keys(_tagMap); }
+    [[nodiscard]]
     std::pair<int, int> getTagBounds(const std::string& tag) const;
 
 private:

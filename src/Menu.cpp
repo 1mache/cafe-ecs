@@ -1,6 +1,6 @@
 #include "Menu.h"
-#include <cstdlib>
-#include <ctime>
+#include "Utils.h"
+#include <random>
 
 namespace cafe
 {
@@ -21,12 +21,10 @@ float sum = 0.f;
 }
 static_assert(ratiosSumToOne(), "each MENU ratio must sum to ~1.0");
 
-// Seed rand() once on first use so drinks vary between runs.
 int randInt(int below)
 {
-    static const bool seeded = (std::srand(static_cast<unsigned>(std::time(nullptr))), true);
-    (void)seeded;
-    return std::rand() % below;
+    std::uniform_int_distribution<int> dist(0, below - 1);
+    return dist(getRng());
 }
 } // namespace
 

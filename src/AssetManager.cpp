@@ -25,4 +25,16 @@ const Texture& AssetManager::getTexture(std::string_view filename)
 
     return it->second;
 }
+const SpriteSheet& AssetManager::getSpriteSheet(std::string_view textureFilename,
+                                                std::string_view spriteSheetFilename)
+{
+    auto& texture = getTexture(textureFilename);
+    auto [it, success] = _spriteSheets.try_emplace(spriteSheetFilename.data(), std::string(textureFilename));
+    if (success)
+    {
+        it->second.load(RES_DIR_PATH + std::string(spriteSheetFilename));
+    }
+
+    return it->second;
+}
 } // namespace cafe

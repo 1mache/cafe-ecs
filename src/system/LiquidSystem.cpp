@@ -10,7 +10,6 @@
 #include <bagel.h>
 #include <box2d/box2d.h>
 #include <cstdint>
-#include <random>
 #include <vector>
 
 namespace cafe
@@ -20,7 +19,6 @@ void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dt
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
 
-    static std::mt19937 rng{ std::random_device{}() };
     static std::uniform_real_distribution jitter(-0.025f, 0.025f);
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
@@ -34,7 +32,7 @@ void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dt
         while (s.accumulator >= s.interval)
         {
             s.accumulator -= s.interval;
-            (void)createLiquidDrop(assets, physics, { t.x + s.offset.x + jitter(rng), t.y + s.offset.y }, s.kind);
+            (void)createLiquidDrop(assets, physics, { t.x + s.offset.x + jitter(getRng()), t.y + s.offset.y }, s.kind);
         }
     }
 }

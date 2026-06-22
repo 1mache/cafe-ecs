@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL3/SDL.h>
+#include <random>
 #include <string_view>
 #include <cstdlib>
 
@@ -23,5 +24,10 @@ inline void assertFatal(bool condition, std::string_view message = "Assertion fa
 {
     if (!condition)
         fatalError(message.data());
+}
+inline std::mt19937& getRng()
+{
+    static std::mt19937 rng{ std::random_device{}() };
+    return rng;
 }
 } // namespace cafe

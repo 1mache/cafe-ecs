@@ -9,11 +9,26 @@
 #include "SpeechBubbleFactory.h"
 #include "SpriteDims.h"
 #include "Texture.h"
+#include "SpriteSheet.h"
 #include <bagel.h>
 #include <cassert>
+#include "Utils.h"
+
 
 namespace cafe
 {
+namespace
+{
+// from the spritesheet takes a random customer sprite
+SDL_FRect getRandomCustomerRect(const SpriteSheet& spriteSheet)
+{
+    int nTags = static_cast<int>(std::ranges::size(spriteSheet.tags()));
+    auto dist = std::uniform_int_distribution(0,  nTags - 1);
+
+    return spriteSheet.getFrame(dist(getRng()));
+}
+}
+
 // Attaches a static DropSpace sensor + OrderGrade to an existing client entity so
 // dragged items can be "dropped on" the customer.
 void makeCustomerDeliverable(PhysicsContext& physics, bagel::Entity client)
@@ -47,14 +62,16 @@ bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
                            WorldPos pos, Order order, float patience)
 {
     assert((order.hasDrink || order.hasPastry) && "createClient: order must have at least one item");
-    constexpr auto TEX = "def_customer.png";
+    constexpr auto TEX         = "customers.png";
+    constexpr auto SPRITE_DATA = "customers.json";
 
-    const Texture& tex = assets.getTexture(TEX);
-    auto [w, h] = tex.getSize();
+    const Texture& tex       = assets.getTexture(TEX);
+    const SpriteSheet& spriteSheet = assets.getSpriteSheet(TEX, SPRITE_DATA);
+    auto [w, h] = PERSON_DIMS;
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{.x = pos.x, .y = pos.y, .w = screenToWorldScale(w), .h = screenToWorldScale(h)},
-        Drawable{tex.get(), tex.getFullSrcRect(), layer::CUSTOMER},
+        Drawable{tex.get(), getRandomCustomerRect(spriteSheet), layer::CUSTOMER},
         order,
         Behavior{.patience = patience, .maxPatience = patience});
 
