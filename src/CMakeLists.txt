@@ -22,7 +22,6 @@ target_sources(
     component/Falling.h
     component/SpawnButton.h
     component/SpawnSensor.h
-    component/HomeSlot.h
     component/Ice.h
     component/IceMachine.h
     component/InSensorArea.h

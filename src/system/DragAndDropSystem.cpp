@@ -97,10 +97,7 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
     {
         const b2BodyId body = e.get<PhysicsBody>().id;
         if (b2Body_IsValid(body))
-        {
-            b2Body_SetLinearVelocity(body, { 0.f, 0.f });
             b2Body_SetGravityScale(body, 1.f);
-        }
     }
 
     intent.intentType      = DragIntentType::None;

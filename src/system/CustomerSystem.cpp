@@ -1,5 +1,5 @@
-#include "Components.h"
 #include "CustomerSystem.h"
+#include "Components.h"
 #include "Entities.h"
 #include "Menu.h"
 #include <bagel.h>
@@ -12,26 +12,23 @@ namespace cafe
 {
 namespace
 {
-// Sends a draggable item back to its supply slot: moves the physics body (so
-// syncTransformFromBody doesn't overwrite it next frame) and stops it dead.
-void recycleItem(bagel::Entity e)
+constexpr float REJECT_IMPULSE = 300.f; // N·s applied to a rejected item
+constexpr float PI = 3.14159f;
+
+void rejectItem(bagel::Entity e)
 {
-    if (!e.has<HomeSlot>()) return;
-    const WorldPos home = e.get<HomeSlot>().pos;
+    if (!e.has<PhysicsBody>()) return;
+    const b2BodyId body = e.get<PhysicsBody>().id;
+    if (!b2Body_IsValid(body)) return;
 
-    auto& t = e.get<Transform>();
-    t.x = home.x;
-    t.y = home.y;
-
-    if (e.has<PhysicsBody>())
-    {
-        const b2BodyId body = e.get<PhysicsBody>().id;
-        if (b2Body_IsValid(body))
-        {
-            b2Body_SetTransform(body, { home.x, home.y }, b2Body_GetRotation(body));
-            b2Body_SetLinearVelocity(body, { 0.f, 0.f });
-        }
-    }
+    b2Body_SetGravityScale(body, 1.f);
+    b2Vec2 incomingVelocity = b2Body_GetLinearVelocity(body);
+    // zero out so by the end only our impulse has effect
+    b2Body_SetLinearVelocity(body, {});
+    // reject vector is the opposite to the incoming velocity vector
+    float rejectAngle = std::atan2(-incomingVelocity.y, -incomingVelocity.x);
+    b2Body_ApplyLinearImpulseToCenter(
+        body, { REJECT_IMPULSE * std::cos(rejectAngle), REJECT_IMPULSE * std::sin(rejectAngle) }, true);
 }
 } // namespace
 
@@ -114,8 +111,7 @@ void deliverySystem()
             const int slot = firstUnservedDrink(order, grade);
             if (slot < 0 || e.has<CheckCoffeeIntent>())
             {
-                // No drink slots left or already being graded — bounce the cup back.
-                recycleItem(e);
+                rejectItem(e);
                 intent.dropSpaceEntity = std::nullopt;
                 continue;
             }
@@ -135,8 +131,7 @@ void deliverySystem()
             const int slot = firstUnservedPastry(order, grade);
             if (slot < 0)
             {
-                // All pastry slots filled — bounce back.
-                recycleItem(e);
+                rejectItem(e);
                 intent.dropSpaceEntity = std::nullopt;
                 continue;
             }

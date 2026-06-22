@@ -117,8 +117,7 @@ bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos 
         PhysicsBody{ body },
         Cup{ .capacity = CUP_CAPACITY },
         DragIntent{},
-        DragItemType{ .dropType = DropType::Cup },
-        HomeSlot{ pos }
+        DragItemType{ .dropType = DropType::Cup }
     );
 
     addDraggableVisitorShape(body, halfW, halfH);
