@@ -14,7 +14,7 @@ namespace cafe
 class Texture final
 {
 public:
-    Texture(){}
+    Texture()= default;
     ~Texture()
     {
         if (_texture)
@@ -27,8 +27,11 @@ public:
     Texture& operator=(Texture&& other) noexcept;
 
     bool         loadFromFile(const std::string_view& path, SDL_Renderer* renderer);
+    [[nodiscard]]
     SDL_Texture* get() const { return _texture; }
+    [[nodiscard]]
     SDL_FPoint   getSize() const { return _size; }
+    [[nodiscard]]
     SDL_FRect    getFullSrcRect() const { return {0.f, 0.f, _size.x, _size.y}; }
 private:
     SDL_Texture* _texture{};

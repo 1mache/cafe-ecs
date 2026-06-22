@@ -5,6 +5,7 @@
 
 namespace cafe
 {
+class SpriteSheet;
 class AssetManager final
 {
 public:

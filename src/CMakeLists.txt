@@ -113,6 +113,8 @@ target_sources(
     AssetManager.cpp
     Texture.h
     Texture.cpp
+    SpriteSheet.h
+    SpriteSheet.cpp
     CafeGame.h
     CafeGame.cpp
 
