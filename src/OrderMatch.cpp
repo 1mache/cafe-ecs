@@ -1,31 +1,34 @@
 #include "OrderMatch.h"
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 
 namespace cafe
 {
-// for now only first drink
-// TODO: add more drinks
-DrinkGrade gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
+int gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
 {
-    float grade = BASE_GRADE;
+    if (overview.dropSum == 0) return 0;
 
+    float ratioGrade = 1.0f;
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
     {
         const float want = intent.ratio[i];
         const float got  = overview.ratio[i];
-        grade -= std::fabs(want - got);
+        ratioGrade -= std::fabs(want - got);
         std::cout << "ingredient: " << i << " expected: " << want << " got: " << got
-                  << " grade: " << grade << std::endl;
+                  << " ratioGrade: " << ratioGrade << std::endl;
     }
+    ratioGrade = std::clamp(ratioGrade, 0.0f, 1.0f);
 
-    const float dropSumDiff = static_cast<float>(overview.dropSum - intent.dropSum);
-    grade -= std::fabs(dropSumDiff) / 100.0f;
+    const float volumeGrade = std::clamp(
+        1.0f - std::fabs(overview.fillPercent - intent.targetFill),
+        0.0f, 1.0f);
 
-    std::cout << "dropSumDiff: " << dropSumDiff << " grade: " << grade << std::endl;
+    std::cout << "fillPercent: " << overview.fillPercent
+              << " targetFill: " << intent.targetFill
+              << " volumeGrade: " << volumeGrade << std::endl;
 
-    if (BASE_GRADE - grade >= RATIO_TOL_PERFECT) return DrinkGrade::Perfect;
-    if (BASE_GRADE - grade >= RATIO_TOL_ACCEPTABLE) return DrinkGrade::Acceptable;
-    return DrinkGrade::Wrong;
+    const float grade = 0.8f * ratioGrade + 0.2f * volumeGrade;
+    return static_cast<int>(std::round(std::clamp(grade, 0.0f, 1.0f) * 100.0f));
 }
 } // namespace cafe

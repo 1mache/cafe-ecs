@@ -22,8 +22,7 @@ void updateDragIntent(bagel::Entity e, UserInput input)
     const WorldPos worldMouse =
         screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
 
-    // Items mid-drop (Falling) or already handed over (DeliveredTo) can't be grabbed.
-    if (e.has<Falling>() || e.has<DeliveredTo>()) return;
+    if (e.has<Falling>()) return;
 
     auto& intent = e.get<DragIntent>();
 

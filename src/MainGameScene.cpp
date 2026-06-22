@@ -71,12 +71,12 @@ bool cafe::MainGameScene::onUpdate(float dt)
     physicsToTransformSystem();    // physics position -> Transform
 
     customerSpawnerSystem(getAssetManager(), _physics, dt); // keep one customer at the seat
-    behaviorSystem(dt);         // tick patience; adds Leaving on timeout (fail)
-    orderSystem();              // full cup + pastry -> rating=1 + Leaving (success)
-    reportLeavingCustomers();   // log SUCCESSFUL / FAILED
-    hierarchySystem();          // children follow parents; orphan children of Leaving
-    clearDeliveredItems();      // order done/abandoned -> destroy that customer's tray + drops
-    customerCleanupSystem();    // destroy all Leaving entities
+    behaviorSystem(dt);           // tick patience; adds Leaving on timeout
+    orderSystem();                // all items served -> add Leaving (success)
+    finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
+    reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
+    hierarchySystem();            // children follow parents; orphan children of Leaving
+    customerCleanupSystem();      // destroy all Leaving entities
 
     SDL_RenderClear(renderer);
     drawSystem(renderer);       // sorted by renderLayer ascending

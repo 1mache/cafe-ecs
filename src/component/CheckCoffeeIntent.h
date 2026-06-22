@@ -10,7 +10,9 @@ struct CheckCoffeeIntent
 {
     float ratio[INGREDIENT_COUNT]{}; // Coffee, Milk, Water — normalized fractions
     bool  isHot{};                   // expected serving temperature
-    int   dropSum{};                 // expected total drops poured
+    int   dropSum{};                 // expected total drops poured (unused by grading)
+    float targetFill{};              // ideal fill fraction (0..1) of cup capacity
+    int   drinkSlot{};               // which drinks[] slot on the customer this cup fulfills
     bagel::ent_type customer{ -1 };
 };
 } // namespace cafe

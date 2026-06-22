@@ -9,8 +9,8 @@ class PhysicsContext;
 void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds);
 void behaviorSystem(float dtSeconds);
 void deliverySystem();
-void clearDeliveredItems();
 void orderSystem();
+void finalizeOrderGradeSystem();
 void reportLeavingCustomers();
 void customerCleanupSystem();
 } // namespace cafe

@@ -14,7 +14,7 @@
 
 namespace cafe
 {
-// Attaches a static DropSpace sensor + Served to an existing client entity so
+// Attaches a static DropSpace sensor + OrderGrade to an existing client entity so
 // dragged items can be "dropped on" the customer.
 void makeCustomerDeliverable(PhysicsContext& physics, bagel::Entity client)
 {
@@ -39,7 +39,7 @@ void makeCustomerDeliverable(PhysicsContext& physics, bagel::Entity client)
     client.addAll(
         PhysicsBody{ body },
         DropSpace{ DropType::Any },
-        Served{}
+        OrderGrade{}
     );
 }
 
@@ -56,7 +56,7 @@ bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
         Transform{.x = pos.x, .y = pos.y, .w = screenToWorldScale(w), .h = screenToWorldScale(h)},
         Drawable{tex.get(), tex.getFullSrcRect(), layer::CUSTOMER},
         order,
-        Behavior{.patience = patience});
+        Behavior{.patience = patience, .maxPatience = patience});
 
     makeCustomerDeliverable(physics, ent);
 
