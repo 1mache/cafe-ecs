@@ -66,6 +66,9 @@ bool cafe::MainGameScene::onUpdate(float dt)
     // deliverySystem reads DragIntent.dropSpaceEntity on release before
     // dragAndDropSystem resets the intent to None.
     deliverySystem();
+    // Intake/cook a pastry. Must be after deliverySystem (which reads the same
+    // released DragIntent) and before dragAndDropSystem (which would snap the pat).
+    microwaveSystem(getAssetManager(), _physics, dt);
     checkBeverageSystem();        // snapshot cup contents -> CoffeeOverview
     acceptGradedBeverageSystem(); // grades cups with CheckCoffeeIntent + CoffeeOverview
     dragAndDropSystem();          // held: follow mouse; released: snap/drop

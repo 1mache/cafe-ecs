@@ -41,6 +41,8 @@ target_sources(
     system/TransformSystem.cpp
     system/LiquidSystem.h
     system/LiquidSystem.cpp
+    system/MicrowaveSystem.h
+    system/MicrowaveSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
     system/CheckBeverageSystem.h

@@ -7,6 +7,7 @@
 #include "DragAndDropSystem.h"
 #include "IntentSystem.h"
 #include "LiquidSystem.h"
+#include "MicrowaveSystem.h"
 #include "RenderSystem.h"
 #include "SensorSystem.h"
 #include "SupplySystem.h"
