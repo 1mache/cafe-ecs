@@ -104,6 +104,9 @@ target_sources(
     OrderMatch.cpp
     Menu.h
     Menu.cpp
+    DayState.h
+    DayReport.h
+    DayReport.cpp
 
     PhysicsFilters.h
     PhysicsContext.h
