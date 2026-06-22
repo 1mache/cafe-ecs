@@ -11,5 +11,5 @@ class AssetManager;
 class PhysicsContext;
 
 /** @brief Dynamic liquid drop of @p kind. Falls under gravity, collides with cup walls. */
-bagel::Entity createLiquidDrop(AssetManager& assets, PhysicsContext& physics, WorldPos pos, Ingredient kind);
+bagel::Entity createLiquidDrop(AssetManager& assets, PhysicsContext& physics, WorldPos pos, LiquidIngredient kind);
 } // namespace cafe

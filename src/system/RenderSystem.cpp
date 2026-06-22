@@ -49,6 +49,7 @@ void drawSystem(SDL_Renderer* renderer)
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
+        // TODO: remove after sprite is added
         // Placeholder ice machine: a solid gray square (no art asset yet).
         if (e.has<IceMachine>())
         {
@@ -57,31 +58,24 @@ void drawSystem(SDL_Renderer* renderer)
             continue;
         }
 
-        // tint particles to their ingredient color (shared particle.png)
-        if (e.has<Liquid>())
+        const SDL_Color& tint = d.tint;
+        const bool hasTint = tint.r != 255 || tint.g != 255 || tint.b != 255 || tint.a != 255;
+        if (hasTint)
         {
-            const SDL_Color col = ingredientColors[static_cast<size_t>(e.get<Liquid>().kind)];
-            SDL_SetTextureColorMod(d.texture, col.r, col.g, col.b);
-            SDL_SetTextureAlphaMod(d.texture, col.a);
-            SDL_SetTextureBlendMode(d.texture, col.a < 255 ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
-        }
-        else if (e.has<Ice>())
-        {
-            // Ice reuses particle.png; tint it icy blue so it reads on the counter.
-            SDL_SetTextureColorMod(d.texture, 120, 200, 255);
-            SDL_SetTextureAlphaMod(d.texture, 255);
-            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_NONE);
+            SDL_SetTextureColorMod(d.texture, tint.r, tint.g, tint.b);
+            SDL_SetTextureAlphaMod(d.texture, tint.a);
+            SDL_SetTextureBlendMode(d.texture, tint.a < 255 ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
         }
 
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
 
-        if (e.has<Liquid>() || e.has<Ice>())
+        if (hasTint)
         {
             SDL_SetTextureColorMod(d.texture, 255, 255, 255);
             SDL_SetTextureAlphaMod(d.texture, 255);
-            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_BLEND); // restore default
+            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_NONE);
         }
-    }
+    } 
 }
 void debugHighlightPhysics(SDL_Renderer* renderer)
 {

@@ -50,7 +50,7 @@ bagel::Entity createIceCube(AssetManager& assets, PhysicsContext& physics, World
     ent.addAll(
         Ice{},
         Transform{ .x = pos.x, .y = pos.y, .w = r, .h = r },
-        Drawable{ tex.get(), tex.getFullSrcRect(), layer::LIQUID },
+        Drawable{ tex.get(), tex.getFullSrcRect(), layer::LIQUID, ICE_COLOR },
         PhysicsBody{ body },
         DragIntent{}
     );

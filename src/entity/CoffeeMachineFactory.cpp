@@ -33,7 +33,7 @@ constexpr WorldPos BUTTON_OFFSET[INGREDIENT_COUNT] = {
     {  0.10f, 1.2f },
 };
 
-bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, Ingredient kind)
+bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, LiquidIngredient kind)
 {
     const WorldPos off = PIPE_OFFSET[static_cast<size_t>(kind)];
     auto ent = bagel::Entity::create();
@@ -46,7 +46,7 @@ bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, Ingredi
     return ent;
 }
 
-bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Entity& machineEnt, Ingredient kind)
+bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Entity& machineEnt, LiquidIngredient kind)
 {
     auto& tex = assets.getTexture(BUTTON_TEX);
     const auto buttonTexId = static_cast<float>(BUTTON_ON_TEX_ID[static_cast<size_t>(kind)]);
@@ -83,7 +83,7 @@ bagel::Entity createCoffeeMachine(AssetManager& assets, PhysicsContext& physics,
     b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     // Solid collider: top of texture down to the lowest pipe (Milk, y = -0.3).
-    constexpr float colliderBottom = PIPE_OFFSET[static_cast<size_t>(Ingredient::Milk)].y + 0.5f;
+    constexpr float colliderBottom = PIPE_OFFSET[static_cast<size_t>(LiquidIngredient::Milk)].y + 0.5f;
     const float colliderHalfH   = (halfH - colliderBottom) * 0.5f;
     const float colliderOffsetY = (halfH + colliderBottom) * 0.5f;
     const b2Polygon collider =
@@ -100,13 +100,13 @@ bagel::Entity createCoffeeMachine(AssetManager& assets, PhysicsContext& physics,
         PhysicsBody{ body }
     );
 
-    createPipe(pos, ent,Ingredient::Coffee);
-    createPipe(pos, ent,Ingredient::Milk);
-    createPipe(pos, ent,Ingredient::Water);
+    createPipe(pos, ent,LiquidIngredient::Coffee);
+    createPipe(pos, ent,LiquidIngredient::Milk);
+    createPipe(pos, ent,LiquidIngredient::Water);
 
-    createButton(assets, pos, ent, Ingredient::Coffee);
-    createButton(assets, pos, ent, Ingredient::Milk);
-    createButton(assets, pos, ent, Ingredient::Water);
+    createButton(assets, pos, ent, LiquidIngredient::Coffee);
+    createButton(assets, pos, ent, LiquidIngredient::Milk);
+    createButton(assets, pos, ent, LiquidIngredient::Water);
 
     return ent;
 };

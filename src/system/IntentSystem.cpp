@@ -48,14 +48,14 @@ void updateDragIntent(bagel::Entity e, UserInput input)
 }
 
 
-// Maps a liquid pipe to the key that pours it (Ingredient order).
-constexpr SDL_Scancode scancodeForIngredient(Ingredient kind)
+// Maps a liquid pipe to the key that pours it (LiquidIngredient order).
+constexpr SDL_Scancode scancodeForIngredient(LiquidIngredient kind)
 {
     switch (kind)
     {
-    case Ingredient::Coffee: return SDL_SCANCODE_1;
-    case Ingredient::Water:  return SDL_SCANCODE_2;
-    case Ingredient::Milk:   return SDL_SCANCODE_3;
+    case LiquidIngredient::Coffee: return SDL_SCANCODE_1;
+    case LiquidIngredient::Water:  return SDL_SCANCODE_2;
+    case LiquidIngredient::Milk:   return SDL_SCANCODE_3;
     default:                 return SDL_SCANCODE_UNKNOWN;
     }
 }
