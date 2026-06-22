@@ -90,6 +90,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     hierarchySystem();            // children follow parents; orphan children of Leaving
     customerCleanupSystem();      // destroy all Leaving entities
     cupAlphaSystem();             // fade cup front when contents > 0
+    microwaveBarSystem();         // size the heating bar from the microwave's timer
 
     SDL_RenderClear(renderer);
     drawSystem(renderer);       // sorted by renderLayer ascending

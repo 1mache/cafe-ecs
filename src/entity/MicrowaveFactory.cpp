@@ -45,6 +45,15 @@ bagel::Entity createMicrowave(AssetManager& assets, PhysicsContext& physics, Wor
         DropSpace{ DropType::Pastry },
         Microwave{}
     );
+
+    // Heating-progress bar as its own child entity (placeholder: tinted particle.png).
+    // Starts at width 0 (hidden); microwaveBarSystem grows it from the machine's timer.
+    auto bar = bagel::Entity::create();
+    bar.addAll(
+        Transform{ .x = pos.x, .y = pos.y, .w = 0.f, .h = BAR_HEIGHT },
+        Drawable{ tex.get(), tex.getFullSrcRect(), layer::UI1, SDL_Color{ 240, 180, 40, 255 } },
+        TimerBar{ .source = ent }
+    );
     return ent;
 }
 } // namespace cafe

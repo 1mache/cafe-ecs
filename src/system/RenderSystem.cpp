@@ -58,26 +58,14 @@ void drawSystem(SDL_Renderer* renderer)
             continue;
         }
 
-        // TODO: remove after sprite is added (Option B: child-entity bar).
-        // Placeholder microwave: a solid square, plus a timer bar above while heating.
+        // TODO: remove after sprite is added.
+        // Placeholder microwave: a solid square. The heating bar is its own child
+        // entity (TimerBar + Drawable), sized by microwaveBarSystem and drawn below
+        // via the generic Drawable path.
         if (e.has<Microwave>())
         {
             SDL_SetRenderDrawColor(renderer, 90, 90, 110, 255);
             SDL_RenderFillRect(renderer, &dstRect);
-
-            const auto& mw = e.get<Microwave>();
-            if (mw.busy)
-            {
-                const float frac = std::clamp(mw.timer / HEAT_TIME, 0.f, 1.f);
-                // Bar sits just above the square; progress is data (timer / HEAT_TIME).
-                SDL_FRect bg = { dstRect.x, dstRect.y - 14.f, dstRect.w, 8.f };
-                SDL_SetRenderDrawColor(renderer, 40, 40, 40, 255);
-                SDL_RenderFillRect(renderer, &bg);
-
-                SDL_FRect fill = { bg.x, bg.y, bg.w * frac, bg.h };
-                SDL_SetRenderDrawColor(renderer, 240, 180, 40, 255);
-                SDL_RenderFillRect(renderer, &fill);
-            }
             continue;
         }
 

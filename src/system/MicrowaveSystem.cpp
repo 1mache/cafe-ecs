@@ -5,6 +5,7 @@
 #include "PhysicsContext.h"
 #include "SupplySystem.h"  // supply::MICROWAVE_SPAWN
 #include <bagel.h>
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -106,6 +107,33 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
             m.timer   = 0.f;
             m.cooking = PastryType::count;
         }
+    }
+}
+
+void microwaveBarSystem()
+{
+    static const bagel::Mask barMask =
+        bagel::MaskBuilder().set<TimerBar>().set<Transform>().build();
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(barMask)) continue;
+
+        bagel::Entity src = e.get<TimerBar>().source;
+        if (!src.has<Microwave>() || !src.has<Transform>()) continue;
+
+        const auto& mw = src.get<Microwave>();
+        const auto& st = src.get<Transform>(); // source machine
+        auto&       bt = e.get<Transform>();   // this bar
+
+        const float frac = mw.busy ? std::clamp(mw.timer / HEAT_TIME, 0.f, 1.f) : 0.f;
+
+        // Transform half-width acts as the full bar span; left edge is (x - w).
+        // Anchor that left edge to the machine's left edge so the bar fills L->R.
+        bt.w = st.w * frac;
+        bt.h = BAR_HEIGHT;
+        bt.x = (st.x - st.w) + bt.w;
+        bt.y = st.y + st.h + BAR_GAP;
     }
 }
 } // namespace cafe

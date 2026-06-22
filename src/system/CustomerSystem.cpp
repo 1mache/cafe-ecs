@@ -137,6 +137,12 @@ void deliverySystem()
             }
 
             // Stub: pastry temperature grading not yet implemented; award full points.
+            // Integration point for the microwave (see Microwave.h / microwaveSystem):
+            // a heated pat carries Pastry.temperature == HEATED_TEMPERATURE. Grade it the
+            // same way drinks compare isHot above, e.g.:
+            //   const bool wantHot = order.pastries[slot].temp == Temperature::Hot;
+            //   const bool isHot   = e.get<Pastry>().temperature == HEATED_TEMPERATURE;
+            //   grade.pastryGrades[slot] = (wantHot == isHot) ? MAX_ITEM_GRADE : 0;
             grade.pastryGrades[slot] = MAX_ITEM_GRADE;
             markPastryServed(grade, slot);
             pastriesToDestroy.push_back(e.entity());

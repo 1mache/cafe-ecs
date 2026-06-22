@@ -32,6 +32,7 @@ target_sources(
     component/OrderGrade.cpp
     component/Sensor.h
     component/Sensor.cpp
+    component/TimerBar.h
     component/Components.h
 
     # systems

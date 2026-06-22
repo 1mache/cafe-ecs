@@ -29,4 +29,5 @@
 #include "Sensor.h"
 #include "SpawnButton.h"
 #include "Spawner.h"
+#include "TimerBar.h"
 #include "Transform.h"
