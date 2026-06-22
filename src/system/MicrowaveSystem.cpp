@@ -2,7 +2,6 @@
 
 #include "Components.h"
 #include "Entities.h"      // createPastry, destroyDeliveredItem
-#include "PhysicsContext.h"
 #include "SupplySystem.h"  // supply::MICROWAVE_SPAWN
 #include <bagel.h>
 #include <algorithm>
@@ -130,8 +129,8 @@ void microwaveBarSystem()
 
         // Transform half-width acts as the full bar span; left edge is (x - w).
         // Anchor that left edge to the machine's left edge so the bar fills L->R.
+        // Height is set once by the factory; only width/position change here.
         bt.w = st.w * frac;
-        bt.h = BAR_HEIGHT;
         bt.x = (st.x - st.w) + bt.w;
         bt.y = st.y + st.h + BAR_GAP;
     }
