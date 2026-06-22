@@ -3,6 +3,7 @@
 #include "Components.h"
 #include "RenderLayers.h"
 #include "SpriteDims.h"
+#include "SpriteSheet.h"
 #include "Texture.h"
 #include <bagel.h>
 
@@ -11,16 +12,17 @@ namespace cafe
 
 namespace
 {
-static constexpr auto TEX = "props.png";
+static constexpr auto TEX         = "props.png";
+static constexpr auto SPRITE_DATA = "props.json";
 }
 
 bagel::Entity createOrderIcon(AssetManager& assets, int propId,
                               float displayW, float displayH,
                               bagel::Entity parentBubble, SDL_FPoint offsetPx)
 {
-    const Texture& tex = assets.getTexture(TEX);
-    float propIdF = static_cast<float>(propId);
-    SDL_FRect srcRect{PROP_DIMS.x * propIdF, 0, PROP_DIMS.x, PROP_DIMS.y};
+    const Texture&     tex   = assets.getTexture(TEX);
+    const SpriteSheet& props = assets.getSpriteSheet(TEX, SPRITE_DATA);
+    SDL_FRect srcRect = props.getFrame(propId);
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{.w = screenToWorldScale(displayW), .h = screenToWorldScale(displayH)},

@@ -3,6 +3,8 @@
 #include "Ingredient.h"
 #include "DrinkType.h"
 #include "Order.h"
+#include "PastryType.h"
+#include "SpriteSheet.h"
 #include <iterator>
 
 constexpr int name = 0;
@@ -42,6 +44,11 @@ constexpr const DrinkRecipe& recipeFor(DrinkType d) { return MENU[static_cast<si
  *  pastries (at least one item total), each with a random type and temperature.
  *  Built within MAX_ORDER_ICONS so it always fits the speech bubble. */
 Order randomOrder();
+
+/** @brief Validates that every PastryType and DrinkType has a sprite in props.json.
+ *  json bigger than enum → SDL_Log warning (art exists, type not yet implemented).
+ *  enum bigger than json → assertFatal (we'd try to draw a non-existent frame). */
+void validateOrderSprites(const SpriteSheet& props);
 
 const char* temperatureName(Temperature t);
 

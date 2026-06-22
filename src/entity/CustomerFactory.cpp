@@ -93,6 +93,12 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     // Drinks default to Hot and pastries to Cold; a temperature icon is shown
     // only for the non-default case — ice next to a cold drink, fire next to a
     // hot pastry. Orders are trimmed to fit, so the push cap is just a backstop.
+    constexpr auto PROPS_TEX         = "props.png";
+    constexpr auto PROPS_SPRITE_DATA = "props.json";
+    const SpriteSheet& props = assets.getSpriteSheet(PROPS_TEX, PROPS_SPRITE_DATA);
+    const int coffeeFrom = props.getTagBounds("coffee").first;
+    const int pastryFrom = props.getTagBounds("pastry").first;
+
     int frames[MAX_ORDER_ICONS];
     int n = 0;
     auto push = [&](int f) { if (n < MAX_ORDER_ICONS) frames[n++] = f; };
@@ -100,14 +106,14 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     for (int i = 0; i < order.drinkCount; ++i)
     {
         const DrinkItem& d = order.drinks[i];
-        push(recipeFor(d.type).iconFrame);
+        push(coffeeFrom + static_cast<int>(d.type));
         if (d.temp == Temperature::Cold)
             push(temperatureFrame(Temperature::Cold)); // ice
     }
     for (int i = 0; i < order.pastryCount; ++i)
     {
         const PastryItem& p = order.pastries[i];
-        push(static_cast<int>(p.type));
+        push(pastryFrom + static_cast<int>(p.type));
         if (p.temp == Temperature::Hot)
             push(temperatureFrame(Temperature::Hot)); // fire / oven
     }

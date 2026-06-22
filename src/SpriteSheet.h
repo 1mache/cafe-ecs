@@ -32,6 +32,12 @@ public:
     auto tags() const { return std::views::keys(_tagMap); }
     [[nodiscard]]
     std::pair<int, int> getTagBounds(const std::string& tag) const;
+    [[nodiscard]]
+    int tagFrameCount(const std::string& tag) const
+    {
+        auto [from, to] = getTagBounds(tag); // fatalErrors if tag missing
+        return to - from + 1;                // bounds are inclusive
+    }
 
 private:
     std::unordered_map<std::string, std::pair<int,int>> _tagMap{};

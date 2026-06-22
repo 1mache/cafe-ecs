@@ -6,14 +6,28 @@
 #include "PhysicsFilters.h"
 #include "RenderLayers.h"
 #include "SpriteDims.h"
+#include "SpriteSheet.h"
+#include "Utils.h"
 #include "box2d/types.h"
 
 namespace cafe
 {
+namespace
+{
+constexpr auto TEX_PROPS_PATH = "props.png";
+constexpr auto SPRITE_DATA    = "props.json";
+
+SDL_FRect getRandomPastryRect(const SpriteSheet& sheet)
+{
+    auto [from, to] = sheet.getTagBounds("pastry");
+    std::uniform_int_distribution dist(from, to);
+    return sheet.getFrame(dist(getRng()));
+}
+} // namespace
+
 // Creates a kinematic pastry entity sitting on the counter, draggable.
 bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
-    constexpr auto TEX_PROPS_PATH = "props.png";
 
     using namespace cafe;
 
@@ -38,8 +52,8 @@ bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldP
 
     addDraggableVisitorShape(body, halfW, halfH);
 
-    // Frame 0 of props.png pastry tag (frames 0-4) = croissant.
-    SDL_FRect src = { 0.f, 0.f, PROP_DIMS.x, PROP_DIMS.y };
+    const SpriteSheet& props = assets.getSpriteSheet(TEX_PROPS_PATH, SPRITE_DATA);
+    SDL_FRect src = getRandomPastryRect(props);
     auto&     propsTex = assets.getTexture(TEX_PROPS_PATH);
     ent.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },

@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include "Utils.h"
+#include <SDL3/SDL.h>
 #include <random>
 
 namespace cafe
@@ -90,9 +91,31 @@ const char* pastryName(PastryType p)
     {
     case PastryType::Croissant:    return "Croissant";
     case PastryType::CinnamonRoll: return "Cinnamon roll";
-    case PastryType::Toast:        return "Toast";
+    case PastryType::Bourekas:     return "Bourekas";
+    case PastryType::Cheesecake:   return "Cheesecake";
+    case PastryType::CarrotCake:   return "Carrot cake";
     default:                       return "Unknown";
     }
+}
+
+void validateOrderSprites(const SpriteSheet& props)
+{
+    const int pastrySprites = props.tagFrameCount("pastry");
+    const int coffeeSprites = props.tagFrameCount("coffee");
+
+    // enum bigger than sprites -> types we can't draw -> fatal
+    assertFatal(static_cast<int>(PastryType::count) <= pastrySprites,
+        "PastryType has more entries than props.json 'pastry' sprites");
+    assertFatal(static_cast<int>(DrinkType::count) <= coffeeSprites,
+        "DrinkType has more entries than props.json 'coffee' sprites");
+
+    // sprites bigger than enum -> unimplemented art -> warning only
+    if (pastrySprites > static_cast<int>(PastryType::count))
+        SDL_Log("Warning: props.json 'pastry' has %d sprites, only %d PastryType impl'd",
+                pastrySprites, static_cast<int>(PastryType::count));
+    if (coffeeSprites > static_cast<int>(DrinkType::count))
+        SDL_Log("Warning: props.json 'coffee' has %d sprites, only %d DrinkType impl'd",
+                coffeeSprites, static_cast<int>(DrinkType::count));
 }
 
 const char* temperatureName(Temperature t)

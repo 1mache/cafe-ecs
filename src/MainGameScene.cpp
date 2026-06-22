@@ -1,6 +1,7 @@
 #include "MainGameScene.h"
 #include "Components.h"
 #include "Entities.h"
+#include "Menu.h"
 #include "PhysicsContext.h"
 #include "Systems.h"
 
@@ -11,6 +12,11 @@ void cafe::MainGameScene::onInit()
     _physics.init();
 
     auto& assets = getAssetManager();
+
+    // Validate pastry/coffee sprite counts against the enums before any customer spawns.
+    constexpr auto PROPS_TEX  = "props.png";
+    constexpr auto PROPS_DATA = "props.json";
+    validateOrderSprites(assets.getSpriteSheet(PROPS_TEX, PROPS_DATA));
 
     createBg(assets, BG_PATH);
     createBartop(assets, _physics);
