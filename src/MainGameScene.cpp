@@ -31,6 +31,9 @@ void cafe::MainGameScene::onInit()
     createIceMachine(assets, supply::ICE_MACHINE_POS);
     createSpawnButton(assets, _physics, supply::ICE_BUTTON, DropType::Ice);
 
+    // Microwave (gray placeholder square, no button): drag a pastry onto it to heat it.
+    createMicrowave(assets, _physics, supply::MICROWAVE_POS);
+
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone(_physics);
 

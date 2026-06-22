@@ -30,8 +30,8 @@ inline constexpr float    ICE_SPAWN_Y     = -1.0f;
 
 // Microwave: placeholder square; pats are dragged in and spat out at MICROWAVE_SPAWN.
 // Both are tunable — adjust by observation so the spawn lands on the counter beside it.
-inline constexpr WorldPos MICROWAVE_POS   = {  2.5f, -1.0f };
-inline constexpr WorldPos MICROWAVE_SPAWN = {  3.8f, -0.5f };
+inline constexpr WorldPos MICROWAVE_POS   = {  1.0f, -1.0f };
+inline constexpr WorldPos MICROWAVE_SPAWN = {  2.3f, -0.5f };
 } // namespace supply
 
 /** @brief Summons a cup/pastry into the first free supply slot when its button was
