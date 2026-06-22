@@ -22,10 +22,11 @@ namespace
 // from the spritesheet takes a random customer sprite
 SDL_FRect getRandomCustomerRect(const SpriteSheet& spriteSheet)
 {
+    constexpr int FRAMES_PER_CUSTOMER = 2;
     int nTags = static_cast<int>(std::ranges::size(spriteSheet.tags()));
     auto dist = std::uniform_int_distribution(0,  nTags - 1);
 
-    return spriteSheet.getFrame(dist(getRng()));
+    return spriteSheet.getFrame(dist(getRng()) * FRAMES_PER_CUSTOMER);
 }
 }
 

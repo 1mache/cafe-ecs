@@ -8,7 +8,7 @@ namespace cafe
 /** @brief Snapshot of a cup's beverage state, used for verification against an order. */
 struct CoffeeOverview
 {
-    float ratio[INGREDIENT_COUNT]; // Coffee, Milk, Water — normalized fractions
+    float ratio[INGREDIENT_COUNT]; // Coffee, Water, Milk — normalized fractions
     bool  isHot{};                 // actual serving temperature
     int   dropSum{};               // total drops poured
     float fillPercent{};           // dropSum / cup capacity (0..1)

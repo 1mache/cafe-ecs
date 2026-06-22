@@ -19,18 +19,18 @@ constexpr auto BUTTON_TEX = "buttons.png";
 // Pour-pipe positions relative to the machine center (world meters, Y-up).
 constexpr WorldPos PIPE_OFFSET[INGREDIENT_COUNT] = {
     { -1.05f, 0.23f }, // Coffee
-    {  1.3f, -0.3f }, // Milk
-    {  0.13f, 0.0f }, // Water
+    {  0.13f, 0.0f },  // Water
+    {  1.3f, -0.3f },  // Milk
 };
 
 constexpr int BUTTON_ON_TEX_ID[INGREDIENT_COUNT] = {
-    0,1,2
+    0, 2, 1
 };
 
 constexpr WorldPos BUTTON_OFFSET[INGREDIENT_COUNT] = {
-    {  -1.05f, 1.2f },
-    {  1.08f, 1.2f },
-    {  0.10f, 1.2f },
+    {  -1.05f, 1.2f }, // Coffee
+    {  0.10f, 1.2f },  // Water
+    {  1.08f, 1.2f },  // Milk
 };
 
 bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, LiquidIngredient kind)

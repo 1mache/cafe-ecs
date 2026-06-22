@@ -25,7 +25,7 @@ constexpr float BOTTOM_W_PIX           = 14.f;
 constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
 
 // tested how many particles fit at max without too much over the top
-constexpr int   CUP_CAPACITY           = 264;
+constexpr int   CUP_CAPACITY           = 250;
 
 constexpr float CUP_FRICTION    = 0.1f;
 constexpr float CUP_RESTITUTION = 0.1f;
