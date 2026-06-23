@@ -15,6 +15,7 @@ target_sources(
     component/CoffeeOverview.h
     component/CleanupZone.h
     component/Behavior.h
+    component/DayClock.h
     component/CheckCoffeeIntent.h
     component/DragIntent.h
     component/DragItemType.h
@@ -57,6 +58,8 @@ target_sources(
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/Systems.h
+    system/DayCycleSystem.h
+    system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp
     system/CoffeeMachineSystem.h
     system/CupSystem.h

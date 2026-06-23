@@ -26,4 +26,10 @@ void destroyPhysicalEntity(bagel::ent_type id);
  *  sprites so no orphaned particles or bodies remain.
  *  For any other item type (e.g. pastry), destroys only the item itself. */
 void destroyDeliveredItem(bagel::ent_type id);
+
+/** @brief Destroys every live entity (and its physics body, if it has one).
+ *  Tears down the whole ECS for a scene switch. Collects all entity ids first,
+ *  then destroys them (deferred destruction — never modifies the ECS while
+ *  iterating). */
+void destroyAllGameEntities();
 } // namespace cafe
