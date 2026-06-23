@@ -12,7 +12,7 @@ void Scene::init(SDL_Renderer* renderer)
 
     onInit();
 }
-void Scene::run()
+SceneId Scene::run()
 {
     const Uint64 performanceFrequency = SDL_GetPerformanceFrequency();
     const Uint64 ticksPerFrame        = performanceFrequency / FPS;
@@ -56,6 +56,7 @@ void Scene::run()
         // ============= FRAME EQUALIZER ============
         }
     }
+    return _next;
 }
 void Scene::cleanup()
 {

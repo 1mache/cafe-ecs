@@ -98,6 +98,7 @@ target_sources(
     entity/Entities.cpp
 
     # root helpers
+    SceneId.h
     GameConfig.h
     Utils.h
     RenderContext.h

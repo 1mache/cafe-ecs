@@ -1,0 +1,7 @@
+#pragma once
+
+namespace cafe
+{
+/** @brief Identifies which scene to run next. Returned by Scene::run(). */
+enum class SceneId { MainGame, DayReport, Quit };
+} // namespace cafe
