@@ -5,8 +5,9 @@
 namespace cafe
 {
 /** @brief A progress bar entity whose width tracks another entity's progress.
- *  source is the entity being measured (a Microwave); microwaveBarSystem reads
- *  its timer each frame and resizes this bar's Transform (width 0 = hidden). */
+ *  source is the entity being measured (e.g. a Microwave or a DayClock);
+ *  timerBarSystem reads its progress each frame and resizes this bar's
+ *  Transform (width 0 = hidden). */
 struct TimerBar
 {
     bagel::Entity source{ bagel::ent_type(-1) };

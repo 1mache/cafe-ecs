@@ -108,31 +108,4 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
         }
     }
 }
-
-void microwaveBarSystem()
-{
-    static const bagel::Mask barMask =
-        bagel::MaskBuilder().set<TimerBar>().set<Transform>().build();
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(barMask)) continue;
-
-        bagel::Entity src = e.get<TimerBar>().source;
-        if (!src.has<Microwave>() || !src.has<Transform>()) continue;
-
-        const auto& mw = src.get<Microwave>();
-        const auto& st = src.get<Transform>(); // source machine
-        auto&       bt = e.get<Transform>();   // this bar
-
-        const float frac = mw.busy ? std::clamp(mw.timer / HEAT_TIME, 0.f, 1.f) : 0.f;
-
-        // Transform half-width acts as the full bar span; left edge is (x - w).
-        // Anchor that left edge to the machine's left edge so the bar fills L->R.
-        // Height is set once by the factory; only width/position change here.
-        bt.w = st.w * frac;
-        bt.x = (st.x - st.w) + bt.w;
-        bt.y = st.y + st.h + BAR_GAP;
-    }
-}
 } // namespace cafe

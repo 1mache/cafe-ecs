@@ -47,7 +47,7 @@ bagel::Entity createMicrowave(AssetManager& assets, PhysicsContext& physics, Wor
     );
 
     // Heating-progress bar as its own child entity (placeholder: tinted particle.png).
-    // Starts at width 0 (hidden); microwaveBarSystem grows it from the machine's timer.
+    // Starts at width 0 (hidden); timerBarSystem grows it from the machine's timer.
     auto bar = bagel::Entity::create();
     bar.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = 0.f, .h = BAR_HEIGHT },

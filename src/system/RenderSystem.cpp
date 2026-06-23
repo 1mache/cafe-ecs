@@ -60,7 +60,7 @@ void drawSystem(SDL_Renderer* renderer)
 
         // TODO: remove after sprite is added.
         // Placeholder microwave: a solid square. The heating bar is its own child
-        // entity (TimerBar + Drawable), sized by microwaveBarSystem and drawn below
+        // entity (TimerBar + Drawable), sized by timerBarSystem and drawn below
         // via the generic Drawable path.
         if (e.has<Microwave>())
         {

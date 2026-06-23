@@ -64,6 +64,8 @@ target_sources(
     system/CoffeeMachineSystem.h
     system/CupSystem.h
     system/CupSystem.cpp
+    system/TimerBarSystem.h
+    system/TimerBarSystem.cpp
 
     # entities
     entity/CupFactory.h

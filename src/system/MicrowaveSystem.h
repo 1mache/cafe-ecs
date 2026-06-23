@@ -14,9 +14,4 @@ class PhysicsContext;
  *  PastryType with temperature = HEATED_TEMPERATURE. */
 void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt);
 
-/** @brief Resize each TimerBar to its source microwave's heating progress.
- *  Runs once per frame before drawSystem (after microwaveSystem ticks the timer).
- *  The bar spans the machine's width, sits BAR_GAP above it, and is left-anchored
- *  so it fills left-to-right; an idle/empty microwave leaves the bar at width 0. */
-void microwaveBarSystem();
 } // namespace cafe
