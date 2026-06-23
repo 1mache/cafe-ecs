@@ -32,4 +32,8 @@ void destroyDeliveredItem(bagel::ent_type id);
  *  then destroys them (deferred destruction — never modifies the ECS while
  *  iterating). */
 void destroyAllGameEntities();
+
+/** @brief Applies a physics impulse to bounce a draggable entity back toward
+ *  its origin. No-op if the entity has no PhysicsBody or a invalid body. */
+void rejectItem(bagel::Entity e);
 } // namespace cafe

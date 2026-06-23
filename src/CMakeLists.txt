@@ -17,6 +17,7 @@ target_sources(
     component/Behavior.h
     component/DayClock.h
     component/CheckCoffeeIntent.h
+    component/CheckPastryIntent.h
     component/DragIntent.h
     component/DragItemType.h
     component/DropSpace.h
@@ -49,6 +50,8 @@ target_sources(
     system/CustomerSystem.cpp
     system/CheckBeverageSystem.h
     system/CheckBeverageSystem.cpp
+    system/CheckPastrySystem.h
+    system/CheckPastrySystem.cpp
     system/DragAndDropSystem.h
     system/DragAndDropSystem.cpp
     system/IntentSystem.h

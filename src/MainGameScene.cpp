@@ -94,6 +94,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     microwaveSystem(getAssetManager(), _physics, dt);
     checkBeverageSystem();        // snapshot cup contents -> CoffeeOverview
     acceptGradedBeverageSystem(); // grades cups with CheckCoffeeIntent + CoffeeOverview
+    checkPastrySystem();          // grades pastries with CheckPastryIntent
     dragAndDropSystem();          // held: follow mouse; released: snap/drop
 
     machineButtonSystem();             // coffee-machine buttons -> pour state

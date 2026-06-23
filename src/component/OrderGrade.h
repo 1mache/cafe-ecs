@@ -7,7 +7,8 @@
 namespace cafe
 {
 
-inline constexpr int MAX_ITEM_GRADE = 100;
+inline constexpr int MAX_ITEM_GRADE     = 100;
+inline constexpr int PARTIAL_ITEM_GRADE = 50;
 
 /** @brief Tracks per-item delivery scores and served bitmask for a customer's order.
  *  Bit layout of servedMask: bit i = drinks[i] (i in 0..MAX_DRINKS-1),

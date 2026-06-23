@@ -4,6 +4,7 @@
 #include "Behavior.h"
 #include "DayClock.h"
 #include "CheckCoffeeIntent.h"
+#include "CheckPastryIntent.h"
 #include "ChildOf.h"
 #include "CleanupZone.h"
 #include "CoffeeOverview.h"

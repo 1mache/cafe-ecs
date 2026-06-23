@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CheckBeverageSystem.h"
+#include "CheckPastrySystem.h"
 #include "CupSystem.h"
 #include "CoffeeMachineSystem.h"
 #include "CustomerSystem.h"
