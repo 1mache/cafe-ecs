@@ -15,15 +15,21 @@ namespace
 {
 constexpr auto  TEX                    = "cup.png";
 
-constexpr float WALL_W_PIX             = 1.f;
+constexpr float WALL_W_PIX             = 2.f;
 constexpr float WALL_H_PIX             = 17.f;
-constexpr float L_WALL_X_OFFSET_PIX    = 0.f;
+constexpr float L_WALL_X_OFFSET_PIX    = -1.f;
 constexpr float R_WALL_X_OFFSET_PIX    = 7.f;
 constexpr float CUP_WALLS_Y_OFFSET_PIX = 12.f;
 constexpr float CUP_BOTTOM_Y_OFFSET_PIX= 2.f;
 constexpr float BOTTOM_W_PIX           = 14.f;
 constexpr float BOTTOM_L_OFFSET_PIX    = 2.f;
-constexpr int   CUP_CAPACITY           = 50;
+
+// tested how many particles fit at max without too much over the top
+constexpr int   CUP_CAPACITY           = 250;
+
+constexpr float CUP_FRICTION    = 0.1f;
+constexpr float CUP_RESTITUTION = 0.1f;
+
 } // namespace
 
 bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
@@ -32,7 +38,6 @@ bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos 
     constexpr float halfW = screenToWorldScale(CUP_DIMS.x);
     constexpr float halfH = screenToWorldScale(CUP_DIMS.y);
 
-    // wall thickness in world units (1 pixel)
     const float wallW     = screenToWorldDistance(WALL_W_PIX);
     const float wallHalfH = screenToWorldScale(WALL_H_PIX);
     const float wallHalfW = screenToWorldScale(WALL_W_PIX);
@@ -61,27 +66,46 @@ bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos 
     b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     // Solid walls + bottom — stop drops from passing through.
-    b2ShapeDef wall = b2DefaultShapeDef();
-    wall.material.friction = 0.1f;
-    wall.material.restitution = 0.1f;
-    wall.filter.categoryBits = filter::CUP_SOLID;
-    wall.filter.maskBits     = filter::MASK_CUP_SOLID;
+    b2ShapeDef wallShape = b2DefaultShapeDef();
+    wallShape.material.friction = CUP_FRICTION;
+    wallShape.material.restitution = CUP_RESTITUTION;
+    wallShape.filter.categoryBits = filter::CUP_SOLID;
+    wallShape.filter.maskBits     = filter::MASK_CUP_SOLID;
     b2Polygon leftWall  = b2MakeOffsetBox(wallHalfW, wallHalfH, { leftWallX, wallY }, b2Rot_identity);
     b2Polygon rightWall = b2MakeOffsetBox(wallHalfW, wallHalfH, { rightWallX, wallY }, b2Rot_identity);
     b2Polygon bottom    = b2MakeOffsetBox(bottomHalfW, bottomHalfH, { bottomX, bottomY }, b2Rot_identity);
-    b2CreatePolygonShape(body, &wall, &leftWall);
-    b2CreatePolygonShape(body, &wall, &rightWall);
-    b2CreatePolygonShape(body, &wall, &bottom);
+    b2CreatePolygonShape(body, &wallShape, &leftWall);
+    b2CreatePolygonShape(body, &wallShape, &rightWall);
+    b2CreatePolygonShape(body, &wallShape, &bottom);
+
+    // lid + guard that only collide with cup objects so cups can't go into each other
+    b2ShapeDef lidShape = b2DefaultShapeDef();
+    lidShape.material.friction = CUP_FRICTION;
+    lidShape.material.restitution = CUP_RESTITUTION;
+    lidShape.filter.categoryBits = filter::CUP_LID;
+    lidShape.filter.maskBits     = filter::MASK_CUP_LID;
+    b2Polygon lid = bottom; // same dimensions, only y position needs a tweak
+    lid.centroid.y *= -1.f;
+    b2Vec2 centerOfInsideCup = {-(rightWallX - leftWallX)/2 + (1.5f * wallW), wallW};
+    b2Polygon insideGuard = b2MakeOffsetBox((rightWallX - leftWallX) / 2.f,
+                                  wallHalfH,
+                                  centerOfInsideCup,
+                                  b2Rot_identity);
+    b2CreatePolygonShape(body, &lidShape, &lid);
+    b2CreatePolygonShape(body, &lidShape, &insideGuard);
 
     // Interior sensor — fires the begin-contact that counts a fill.
-    // enableSensorEvents must be set explicitly (Box2D 3.x default is false).
     b2ShapeDef sensor = b2DefaultShapeDef();
     sensor.isSensor            = true;
     sensor.enableSensorEvents  = true;
     sensor.filter.categoryBits = filter::CUP_INSIDE;
     sensor.filter.maskBits     = filter::MASK_CUP_INSIDE;
-    b2Polygon interior = b2MakeOffsetBox(halfW - wallW, halfH - wallW,
-                                         { 0.f, wallW * 0.5f }, b2Rot_identity);
+    // width is calculated based on wall positions and with + some epsilon
+    // to make the sensor overlap with the walls a little bit
+    b2Polygon interior = b2MakeOffsetBox((rightWallX - leftWallX - wallW)/2.f + 0.03f,
+                                        wallHalfH,
+                                         centerOfInsideCup,
+                                         b2Rot_identity);
     b2CreatePolygonShape(body, &sensor, &interior);
 
     SDL_FRect frontSrcRect = {0, 0, CUP_DIMS.x, CUP_DIMS.y};
@@ -93,8 +117,7 @@ bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos 
         PhysicsBody{ body },
         Cup{ .capacity = CUP_CAPACITY },
         DragIntent{},
-        DragItemType{ .dropType = DropType::Cup },
-        HomeSlot{ pos }
+        DragItemType{ .dropType = DropType::Cup }
     );
 
     addDraggableVisitorShape(body, halfW, halfH);

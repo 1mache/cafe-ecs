@@ -2,18 +2,38 @@
 
 #include "Components.h"
 #include "DragAndDropSystem.h"
+#include "Pastry.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
 #include "RenderLayers.h"
 #include "SpriteDims.h"
+#include "SpriteSheet.h"
+#include "Utils.h"
 #include "box2d/types.h"
 
 namespace cafe
 {
-// Creates a kinematic pastry entity sitting on the counter, draggable.
-bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
+namespace
 {
-    constexpr auto TEX_PROPS_PATH = "props.png";
+constexpr auto TEX_PROPS_PATH = "props.png";
+constexpr auto SPRITE_DATA    = "props.json";
+
+PastryType getRandomPastryType()
+{
+    std::uniform_int_distribution dist(0, static_cast<int>(PastryType::count) - 1);
+    return static_cast<PastryType>(dist(getRng()));
+}
+
+SDL_FRect getSpriteFromType(const SpriteSheet& sheet, PastryType type)
+{
+    return sheet.getFrame(static_cast<int>(type));
+}
+} // namespace
+
+// Creates a kinematic pastry entity sitting on the counter, draggable.
+bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos,
+                           PastryType type)
+{
 
     using namespace cafe;
 
@@ -38,16 +58,18 @@ bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldP
 
     addDraggableVisitorShape(body, halfW, halfH);
 
-    // Frame 0 of the 3-frame props strip = cinnamon roll.
-    SDL_FRect src = { 0.f, 0.f, PROP_DIMS.x, PROP_DIMS.y };
+    const SpriteSheet& propsSheet = assets.getSpriteSheet(TEX_PROPS_PATH, SPRITE_DATA);
+    if (type == PastryType::count)
+        type = getRandomPastryType();
+    SDL_FRect srcRect = getSpriteFromType(propsSheet,type);
     auto&     propsTex = assets.getTexture(TEX_PROPS_PATH);
     ent.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ propsTex.get(), src, layer::PROP },
+        Drawable{ propsTex.get(), srcRect, layer::PROP },
         PhysicsBody{ body },
         DragIntent{},
         DragItemType{ .dropType = DropType::Pastry },
-        HomeSlot{ pos }
+        Pastry(type)
     );
     return ent;
 }

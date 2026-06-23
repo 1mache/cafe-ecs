@@ -9,11 +9,27 @@
 #include "SpeechBubbleFactory.h"
 #include "SpriteDims.h"
 #include "Texture.h"
+#include "SpriteSheet.h"
 #include <bagel.h>
 #include <cassert>
+#include "Utils.h"
+
 
 namespace cafe
 {
+namespace
+{
+// from the spritesheet takes a random customer sprite
+SDL_FRect getRandomCustomerRect(const SpriteSheet& spriteSheet)
+{
+    constexpr int FRAMES_PER_CUSTOMER = 2;
+    int nTags = static_cast<int>(std::ranges::size(spriteSheet.tags()));
+    auto dist = std::uniform_int_distribution(0,  nTags - 1);
+
+    return spriteSheet.getFrame(dist(getRng()) * FRAMES_PER_CUSTOMER);
+}
+}
+
 // Attaches a static DropSpace sensor + OrderGrade to an existing client entity so
 // dragged items can be "dropped on" the customer.
 void makeCustomerDeliverable(PhysicsContext& physics, bagel::Entity client)
@@ -47,14 +63,16 @@ bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
                            WorldPos pos, Order order, float patience)
 {
     assert((order.hasDrink || order.hasPastry) && "createClient: order must have at least one item");
-    constexpr auto TEX = "def_customer.png";
+    constexpr auto TEX         = "customers.png";
+    constexpr auto SPRITE_DATA = "customers.json";
 
-    const Texture& tex = assets.getTexture(TEX);
-    auto [w, h] = tex.getSize();
+    const Texture& tex       = assets.getTexture(TEX);
+    const SpriteSheet& spriteSheet = assets.getSpriteSheet(TEX, SPRITE_DATA);
+    auto [w, h] = PERSON_DIMS;
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{.x = pos.x, .y = pos.y, .w = screenToWorldScale(w), .h = screenToWorldScale(h)},
-        Drawable{tex.get(), tex.getFullSrcRect(), layer::CUSTOMER},
+        Drawable{tex.get(), getRandomCustomerRect(spriteSheet), layer::CUSTOMER},
         order,
         Behavior{.patience = patience, .maxPatience = patience});
 
@@ -71,47 +89,43 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     // Speech bubble is a child of the customer; order icons are children of the bubble.
     auto bubble = createSpeechBubble(assets, customer, { 0.f, 28.f });
 
-    // The bubble is split into 4 equal columns (quarters of its width):
-    //   0: beverage   1: beverage temp   2: pastry   3: pastry temp
-    // Items stack vertically within their column (row 0 top -> row 2 bottom),
-    // up to BUBBLE_MAX_ICONS_PER_COLUMN per column.
-    constexpr int   BUBBLE_MAX_ICONS_PER_COLUMN = 3;
-    constexpr float BUBBLE_W  = BUBBLE_DIMS.x * BUBBLE_SCALE; // on-screen px
-    constexpr float BUBBLE_H  = BUBBLE_DIMS.y * BUBBLE_SCALE; // on-screen px
-    constexpr float COL_W     = BUBBLE_W / 4.f;
-    constexpr float ROW_H     = BUBBLE_H / BUBBLE_MAX_ICONS_PER_COLUMN;
-    // Icon must fit both a quarter-width column and one stacked row, then 0.7x.
-    constexpr float ICON_SIZE = (COL_W < ROW_H ? COL_W : ROW_H) * 0.7f;
-    // Pull icon centers toward the bubble center to tighten the gaps between them.
-    constexpr float GAP       = 0.8f;
-    constexpr float COL_DX    = COL_W * GAP;
-    constexpr float ROW_DY    = ROW_H * GAP;
-    // Column centers, left -> right, relative to bubble center (+x = right).
-    constexpr float COL_X[4]  = {-1.5f * COL_DX, -0.5f * COL_DX,
-                                 +0.5f * COL_DX, +1.5f * COL_DX};
-    // Row centers, top -> bottom, relative to bubble center (+y = up).
-    constexpr float ROW_Y[BUBBLE_MAX_ICONS_PER_COLUMN] = {+ROW_DY, 0.f, -ROW_DY};
+    // Order icons sit in a single left-aligned row of up to MAX_ORDER_ICONS slots.
+    // Drinks default to Hot and pastries to Cold; a temperature icon is shown
+    // only for the non-default case — ice next to a cold drink, fire next to a
+    // hot pastry. Orders are trimmed to fit, so the push cap is just a backstop.
+    constexpr auto PROPS_TEX         = "props.png";
+    constexpr auto PROPS_SPRITE_DATA = "props.json";
+    const SpriteSheet& props = assets.getSpriteSheet(PROPS_TEX, PROPS_SPRITE_DATA);
+    const int coffeeFrom = props.getTagBounds("coffee").first;
+    const int pastryFrom = props.getTagBounds("pastry").first;
 
-    for (int i = 0; i < order.drinkCount && i < BUBBLE_MAX_ICONS_PER_COLUMN; ++i)
+    int frames[MAX_ORDER_ICONS];
+    int n = 0;
+    auto push = [&](int f) { if (n < MAX_ORDER_ICONS) frames[n++] = f; };
+
+    for (int i = 0; i < order.drinkCount; ++i)
     {
-        const DrinkItem& d = order.drinks[i];
-        // Column 0: beverage icon — this drink's coffee frame in props.png.
-        createOrderIcon(assets, recipeFor(d.type).iconFrame, ICON_SIZE, ICON_SIZE,
-                        bubble, {COL_X[0], ROW_Y[i]});
-        // Column 1: beverage temperature — fire (Hot) or ice (Cold).
-        createOrderIcon(assets, temperatureFrame(d.temp), ICON_SIZE, ICON_SIZE,
-                        bubble, {COL_X[1], ROW_Y[i]});
+        const Order::DrinkItem& d = order.drinks[i];
+        push(coffeeFrom + static_cast<int>(d.type));
+        if (d.temp == Temperature::Cold)
+            push(temperatureFrame(Temperature::Cold)); // ice
+    }
+    for (int i = 0; i < order.pastryCount; ++i)
+    {
+        const Order::PastryItem& p = order.pastries[i];
+        push(pastryFrom + static_cast<int>(p.type));
+        if (p.temp == Temperature::Hot)
+            push(temperatureFrame(Temperature::Hot)); // fire / oven
     }
 
-    for (int i = 0; i < order.pastryCount && i < BUBBLE_MAX_ICONS_PER_COLUMN; ++i)
+    constexpr float BUBBLE_W  = BUBBLE_DIMS.x;     // full 64 px, unscaled
+    constexpr float SLOT_W    = BUBBLE_W / MAX_ORDER_ICONS;
+    constexpr float ICON_SIZE = SLOT_W * 0.85f;    // fits one slot
+    for (int i = 0; i < n; ++i)
     {
-        const PastryItem& p = order.pastries[i];
-        // Column 2: pastry icon — this pastry's frame in props.png.
-        createOrderIcon(assets, static_cast<int>(p.type), ICON_SIZE, ICON_SIZE,
-                        bubble, {COL_X[2], ROW_Y[i]});
-        // Column 3: pastry temperature — fire (Hot) or ice (Cold).
-        createOrderIcon(assets, temperatureFrame(p.temp), ICON_SIZE, ICON_SIZE,
-                        bubble, {COL_X[3], ROW_Y[i]});
+        // Slot center relative to bubble center (+x = right).
+        const float x = -BUBBLE_W * 0.5f + (static_cast<float>(i) + 0.5f) * SLOT_W;
+        createOrderIcon(assets, frames[i], ICON_SIZE, ICON_SIZE, bubble, {x, 0.f});
     }
 
     return customer;

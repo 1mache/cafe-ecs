@@ -6,48 +6,27 @@
 #include "Transform.h"
 #include <bagel.h>
 #include <box2d/box2d.h>
-#include <iostream>
-#include <ostream>
-#include <vector>
+#include <algorithm>
+#include <optional>
 
 namespace cafe
 {
 namespace
 {
-constexpr float MAX_FOLLOW_SPEED    = 20.f; // m/s the held body chases the cursor
+constexpr float MAX_FOLLOW_SPEED    = 25.f; // m/s the held body chases the cursor
 constexpr float ARRIVE_THRESHOLD    = 0.f; // m; within this, stop (deadzone)
 constexpr float ARRIVE_THRESHOLD_SQ = ARRIVE_THRESHOLD * ARRIVE_THRESHOLD;
+
+float speedByDist(float dist)
+{
+    return std::min(dist*dist, MAX_FOLLOW_SPEED);
+}
 
 bagel::ent_type entityIdFromBody(b2BodyId body)
 {
     return bagel::ent_type{
         static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(body)))
     };
-}
-
-void setBodySensorEvents(b2BodyId body, bool enabled)
-{
-    if (!b2Body_IsValid(body)) return;
-    const int count = b2Body_GetShapeCount(body);
-    if (count <= 0) return;
-    std::vector<b2ShapeId> shapes(static_cast<size_t>(count));
-    b2Body_GetShapes(body, shapes.data(), count);
-    for (b2ShapeId shapeId : shapes)
-        b2Shape_EnableSensorEvents(shapeId, enabled);
-}
-
-void enableBodySensorEventsIfDisabled(b2BodyId body)
-{
-    if (!b2Body_IsValid(body)) return;
-    const int count = b2Body_GetShapeCount(body);
-    if (count <= 0) return;
-    std::vector<b2ShapeId> shapes(static_cast<size_t>(count));
-    b2Body_GetShapes(body, shapes.data(), count);
-    for (b2ShapeId shapeId : shapes)
-    {
-        if (!b2Shape_AreSensorEventsEnabled(shapeId))
-            b2Shape_EnableSensorEvents(shapeId, true);
-    }
 }
 
 // Drives a held entity's body toward the mouse via linear velocity, so Box2D
@@ -79,13 +58,15 @@ void holdFollow(bagel::Entity e, const DragIntent& intent)
     // MAX_FOLLOW_SPEED overshoots when closer than one step of travel, which makes a
     // stationary held body oscillate between the two sides of the cursor.
     const float  dist  = b2Length(delta);
-    const float  speed = (dist * FPS < MAX_FOLLOW_SPEED) ? dist * FPS : MAX_FOLLOW_SPEED;
+    const float  speed = speedByDist(dist);
     const b2Vec2 dir   = b2Normalize(delta);
     b2Body_SetLinearVelocity(body, b2MulSV(speed, dir));
 }
 
-// Snaps a released entity onto its drop space (or restores gravity), disables
-// sensor events, and resets the intent back to None.
+// Snaps a released entity onto its drop space (or restores gravity) and resets
+// the intent back to None. Sensors stay permanently enabled; drop-space gating
+// is done purely in software by reading DragIntent state, so there is no sensor
+// toggling here.
 void releaseEntity(bagel::Entity e, DragIntent& intent)
 {
     if (intent.dropSpaceEntity.has_value())
@@ -111,50 +92,29 @@ void releaseEntity(bagel::Entity e, DragIntent& intent)
                 b2Body_SetGravityScale(body, 0.f);
             }
         }
-
-        if (dropSpace.has<PhysicsBody>())
-            setBodySensorEvents(dropSpace.get<PhysicsBody>().id, false);
     }
     else if (e.has<PhysicsBody>())
     {
         const b2BodyId body = e.get<PhysicsBody>().id;
         if (b2Body_IsValid(body))
-        {
-            b2Body_SetLinearVelocity(body, { 0.f, 0.f });
             b2Body_SetGravityScale(body, 1.f);
-            // Sensor-event toggling exists to gate drop-space detection, which only
-            // DragItemType carriers (cups/pastries) do. A plain physics draggable
-            // like an ice cube must keep its sensor events on, or the cup's interior
-            // sensor can't catch it once it's released.
-            if (e.has<DragItemType>())
-                setBodySensorEvents(body, false);
-        }
     }
 
     intent.intentType      = DragIntentType::None;
     intent.dropSpaceEntity = std::nullopt;
 }
 
-// Re-arms all DropSpace sensors so begin/end contacts fire while dragging.
-void enableDropSpaceSensors()
-{
-    static const bagel::Mask dropSpaceMask =
-        bagel::MaskBuilder().set<DropSpace>().set<PhysicsBody>().build();
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (e.test(dropSpaceMask))
-            enableBodySensorEventsIfDisabled(e.get<PhysicsBody>().id);
-    }
-}
 } // namespace
 
 void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH)
 {
     b2ShapeDef visitor = b2DefaultShapeDef();
     visitor.isSensor            = true;
-    visitor.filter.categoryBits |= filter::DRAGGABLE;
-    visitor.filter.maskBits     |= filter::MASK_DRAGGABLE;
+    // Assign, don't OR: the b2DefaultShapeDef filter is { categoryBits = 1,
+    // maskBits = UINT64_MAX }, and category bit 1 == filter::LIQUID. ORing would
+    // leave the shape tagged LIQUID and colliding with every category.
+    visitor.filter.categoryBits = filter::DRAGGABLE;
+    visitor.filter.maskBits     = filter::MASK_DRAGGABLE;
     visitor.enableSensorEvents  = true;
     b2Polygon box = b2MakeOffsetBox(halfW, halfH, { 0.f, 0.f }, b2Rot_identity);
     b2CreatePolygonShape(body, &visitor, &box);
@@ -164,8 +124,6 @@ void dragAndDropSystem()
 {
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<DragIntent>().set<Transform>().build();
-
-    bool anyHeld = false;
 
     // Single pass: branch per entity on its drag state. Field mutation only
     // (no add/del), so iterating while mutating is safe.
@@ -177,9 +135,6 @@ void dragAndDropSystem()
         switch (intent.intentType)
         {
         case DragIntentType::held:
-            anyHeld = true;
-            if (e.has<PhysicsBody>())
-                setBodySensorEvents(e.get<PhysicsBody>().id, true);
             holdFollow(e, intent);
             break;
 
@@ -191,11 +146,6 @@ void dragAndDropSystem()
             break;
         }
     }
-
-    // Re-arm DropSpace sensors only while dragging, so they stay disabled
-    // after a drop until the next drag begins.
-    if (anyHeld)
-        enableDropSpaceSensors();
 }
 
 void dropSpaceDetectionSystem(PhysicsContext& physics)
@@ -204,11 +154,10 @@ void dropSpaceDetectionSystem(PhysicsContext& physics)
         bagel::MaskBuilder().set<DragIntent>().set<DragItemType>().build();
     static const bagel::Mask dropSpaceMask = bagel::MaskBuilder().set<DropSpace>().build();
 
-    const b2SensorEvents events = b2World_GetSensorEvents(physics.world());
-
-    for (int i = 0; i < events.beginCount; ++i)
+    // Accumulated across every physics sub-step this frame (Box2D clears its own
+    // event buffer each b2World_Step).
+    for (const auto& be : physics.sensorBeginEvents())
     {
-        const auto& be = events.beginEvents[i];
         if (!b2Shape_IsValid(be.visitorShapeId)) continue;
         if (!b2Shape_IsValid(be.sensorShapeId))  continue;
 
@@ -229,9 +178,8 @@ void dropSpaceDetectionSystem(PhysicsContext& physics)
             intent.dropSpaceEntity = sensor.entity();
     }
 
-    for (int i = 0; i < events.endCount; ++i)
+    for (const auto& ee : physics.sensorEndEvents())
     {
-        const auto& ee = events.endEvents[i];
         if (!b2Shape_IsValid(ee.visitorShapeId)) continue;
         if (!b2Shape_IsValid(ee.sensorShapeId))  continue;
 

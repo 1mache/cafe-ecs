@@ -14,6 +14,7 @@ protected:
 private:
     PhysicsContext _physics{};
 
+    static constexpr float DAY_LENGTH        = 120.f; // seconds per day
     static constexpr float CUSTOMER_PATIENCE = 60.f; // seconds before a customer leaves unhappy
     static constexpr float SPAWN_INTERVAL    = 2.f;  // seconds between one customer leaving and the next
     static constexpr auto  BG_PATH = "bg.png";

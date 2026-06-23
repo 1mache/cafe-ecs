@@ -1,6 +1,7 @@
 #include "Menu.h"
-#include <cstdlib>
-#include <ctime>
+#include "Utils.h"
+#include <SDL3/SDL.h>
+#include <random>
 
 namespace cafe
 {
@@ -21,12 +22,10 @@ float sum = 0.f;
 }
 static_assert(ratiosSumToOne(), "each MENU ratio must sum to ~1.0");
 
-// Seed rand() once on first use so drinks vary between runs.
 int randInt(int below)
 {
-    static const bool seeded = (std::srand(static_cast<unsigned>(std::time(nullptr))), true);
-    (void)seeded;
-    return std::rand() % below;
+    std::uniform_int_distribution<int> dist(0, below - 1);
+    return dist(getRng());
 }
 } // namespace
 
@@ -44,28 +43,41 @@ Temperature randomDrinkTemp(const DrinkRecipe& r)
 Order randomOrder()
 {
     Order o;
-    o.drinkCount  = randInt(MAX_DRINKS + 1);    // 0..MAX_DRINKS
-    o.pastryCount = randInt(MAX_PASTRIES + 1);  // 0..MAX_PASTRIES
+    // Each item is added only while it fits the bubble's icon budget, so the
+    // order is built within the limit instead of generated then trimmed. A cold
+    // drink or hot pastry costs 2 icons (item + temp), otherwise 1.
+    int budget = MAX_ORDER_ICONS;
 
+    int wantDrinks   = randInt(MAX_DRINKS + 1);    // 0..MAX_DRINKS
+    int wantPastries = randInt(MAX_PASTRIES + 1);  // 0..MAX_PASTRIES
     // Invariant: an order must have at least one item.
-    if (o.drinkCount == 0 && o.pastryCount == 0)
+    if (wantDrinks == 0 && wantPastries == 0)
     {
         if (randInt(2))
-            o.drinkCount = 1;
+            wantDrinks = 1;
         else
-            o.pastryCount = 1;
+            wantPastries = 1;
     }
 
-    for (int i = 0; i < o.drinkCount; ++i)
+    for (int i = 0; i < wantDrinks; ++i)
     {
         const auto d = static_cast<DrinkType>(randInt(static_cast<int>(DrinkType::count)));
-        o.drinks[i] = { .type = d, .temp = randomDrinkTemp(recipeFor(d)) };
+        const Temperature t = randomDrinkTemp(recipeFor(d));
+        const int cost = t == Temperature::Cold ? 2 : 1;
+        if (cost > budget)
+            break;
+        o.drinks[o.drinkCount++] = { .type = d, .temp = t };
+        budget -= cost;
     }
-    for (int i = 0; i < o.pastryCount; ++i)
+    for (int i = 0; i < wantPastries; ++i)
     {
         const auto p = static_cast<PastryType>(randInt(static_cast<int>(PastryType::count)));
-        o.pastries[i] = { .type = p,
-                          .temp = randInt(2) ? Temperature::Cold : Temperature::Hot };
+        const Temperature t = randInt(2) ? Temperature::Cold : Temperature::Hot;
+        const int cost = t == Temperature::Hot ? 2 : 1;
+        if (cost > budget)
+            break;
+        o.pastries[o.pastryCount++] = { .type = p, .temp = t };
+        budget -= cost;
     }
 
     o.hasDrink  = o.drinkCount  > 0;
@@ -79,9 +91,31 @@ const char* pastryName(PastryType p)
     {
     case PastryType::Croissant:    return "Croissant";
     case PastryType::CinnamonRoll: return "Cinnamon roll";
-    case PastryType::Toast:        return "Toast";
+    case PastryType::Bourekas:     return "Bourekas";
+    case PastryType::Cheesecake:   return "Cheesecake";
+    case PastryType::CarrotCake:   return "Carrot cake";
     default:                       return "Unknown";
     }
+}
+
+void validateOrderSprites(const SpriteSheet& props)
+{
+    const int pastrySprites = props.tagFrameCount("pastry");
+    const int coffeeSprites = props.tagFrameCount("coffee");
+
+    // enum bigger than sprites -> types we can't draw -> fatal
+    assertFatal(static_cast<int>(PastryType::count) <= pastrySprites,
+        "PastryType has more entries than props.json 'pastry' sprites");
+    assertFatal(static_cast<int>(DrinkType::count) <= coffeeSprites,
+        "DrinkType has more entries than props.json 'coffee' sprites");
+
+    // sprites bigger than enum -> unimplemented art -> warning only
+    if (pastrySprites > static_cast<int>(PastryType::count))
+        SDL_Log("Warning: props.json 'pastry' has %d sprites, only %d PastryType impl'd",
+                pastrySprites, static_cast<int>(PastryType::count));
+    if (coffeeSprites > static_cast<int>(DrinkType::count))
+        SDL_Log("Warning: props.json 'coffee' has %d sprites, only %d DrinkType impl'd",
+                coffeeSprites, static_cast<int>(DrinkType::count));
 }
 
 const char* temperatureName(Temperature t)

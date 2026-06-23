@@ -9,7 +9,7 @@ namespace cafe
 /** @brief Emits a stream of drops of one ingredient while active. */
 struct LiquidSpawner
 {
-    Ingredient kind{ Ingredient::Coffee }; // which liquid this pipe pours
+    LiquidIngredient kind{ LiquidIngredient::Coffee }; // which liquid this pipe pours
     float    interval{ 0.05f };  // seconds between drops
     float    accumulator{};
     bool     active{};           // runtime "currently pouring" flag (set by intentSystem)

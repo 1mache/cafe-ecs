@@ -15,6 +15,7 @@ target_sources(
     component/CoffeeOverview.h
     component/CleanupZone.h
     component/Behavior.h
+    component/DayClock.h
     component/CheckCoffeeIntent.h
     component/DragIntent.h
     component/DragItemType.h
@@ -22,16 +23,17 @@ target_sources(
     component/Falling.h
     component/SpawnButton.h
     component/SpawnSensor.h
-    component/HomeSlot.h
     component/Ice.h
     component/IceMachine.h
     component/InSensorArea.h
     component/Leaving.h
+    component/Pastry.h
     component/Order.h
     component/OrderGrade.h
     component/OrderGrade.cpp
     component/Sensor.h
     component/Sensor.cpp
+    component/TimerBar.h
     component/Components.h
 
     # systems
@@ -41,6 +43,8 @@ target_sources(
     system/TransformSystem.cpp
     system/LiquidSystem.h
     system/LiquidSystem.cpp
+    system/MicrowaveSystem.h
+    system/MicrowaveSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
     system/CheckBeverageSystem.h
@@ -54,14 +58,22 @@ target_sources(
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/Systems.h
+    system/DayCycleSystem.h
+    system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp
     system/CoffeeMachineSystem.h
+    system/CupSystem.h
+    system/CupSystem.cpp
+    system/TimerBarSystem.h
+    system/TimerBarSystem.cpp
 
     # entities
     entity/CupFactory.h
     entity/CupFactory.cpp
     entity/LiquidDropFactory.h
     entity/LiquidDropFactory.cpp
+    entity/MicrowaveFactory.h
+    entity/MicrowaveFactory.cpp
     entity/CoffeeMachineFactory.h
     entity/CoffeeMachineFactory.cpp
     entity/CleanupZoneFactory.h
@@ -86,17 +98,24 @@ target_sources(
     entity/Entities.cpp
 
     # root helpers
+    SceneId.h
     GameConfig.h
     Utils.h
     RenderContext.h
     RenderLayers.h
     DrinkType.h
-    PastryType.h
+
     DropType.h
     OrderMatch.h
     OrderMatch.cpp
     Menu.h
     Menu.cpp
+    DayState.h
+    DayReport.h
+    DayReport.cpp
+    Glyph.h
+    Text.h
+    Text.cpp
 
     PhysicsFilters.h
     PhysicsContext.h
@@ -108,11 +127,15 @@ target_sources(
     Scene.cpp
     MainGameScene.h
     MainGameScene.cpp
+    DayReportScene.h
+    DayReportScene.cpp
 
     AssetManager.h
     AssetManager.cpp
     Texture.h
     Texture.cpp
+    SpriteSheet.h
+    SpriteSheet.cpp
     CafeGame.h
     CafeGame.cpp
 

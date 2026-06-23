@@ -10,7 +10,7 @@ void machineButtonSystem()
     static const bagel::Mask buttonMask  = bagel::MaskBuilder().set<MachineButton>().build();
     static const bagel::Mask spawnerMask = bagel::MaskBuilder().set<LiquidSpawner>().build();
 
-    std::array<bool, static_cast<std::size_t>(Ingredient::count)> currentlyPressed = {};
+    std::array<bool, static_cast<std::size_t>(LiquidIngredient::count)> currentlyPressed = {};
 
     for (auto btn = bagel::Entity::first(); !btn.eof(); btn.next())
     {

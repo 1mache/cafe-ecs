@@ -20,8 +20,8 @@ bagel::Entity createSpeechBubble(AssetManager& assets,
     const Texture& tex = assets.getTexture(TEX);
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{.w = screenToWorldScale(BUBBLE_DIMS.x * BUBBLE_SCALE),
-                  .h = screenToWorldScale(BUBBLE_DIMS.y * BUBBLE_SCALE)},
+        Transform{.w = screenToWorldScale(BUBBLE_DIMS.x),
+                  .h = screenToWorldScale(BUBBLE_DIMS.y)},
         Drawable{tex.get(), tex.getFullSrcRect(), layer::UI1},
         ChildOf{parent, offsetPx});
     return ent;

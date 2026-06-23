@@ -11,6 +11,7 @@ struct Drawable
     SDL_Texture* texture{};
     SDL_FRect    srcRect{};
     layer::RenderLayer  renderLayer{layer::BG};
+    SDL_Color tint{255, 255, 255, 255};
 };
 } // namespace cafe
 

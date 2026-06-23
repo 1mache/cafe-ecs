@@ -8,7 +8,7 @@ namespace cafe
 /** @brief Cup was dropped on a customer: expected drink spec + target customer. */
 struct CheckCoffeeIntent
 {
-    float ratio[INGREDIENT_COUNT]{}; // Coffee, Milk, Water — normalized fractions
+    float ratio[INGREDIENT_COUNT]{}; // Coffee, Water, Milk — normalized fractions
     bool  isHot{};                   // expected serving temperature
     int   dropSum{};                 // expected total drops poured (unused by grading)
     float targetFill{};              // ideal fill fraction (0..1) of cup capacity

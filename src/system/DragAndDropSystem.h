@@ -14,10 +14,10 @@ void addDraggableVisitorShape(b2BodyId body, float halfW, float halfH);
 /**
  * @brief Single-pass drag pipeline; run before PhysicsContext::step().
  *        Switches on DragIntent.intentType per entity:
- *          - held:     enables sensor events and follows the mouse.
- *          - released: snaps valid drops / restores gravity, disables sensor
- *                      events, and resets the intent to None.
- *        Re-arms DropSpace sensors while anything is held.
+ *          - held:     follows the mouse.
+ *          - released: snaps valid drops / restores gravity, resets intent to None.
+ *        Sensors stay permanently enabled; drop-space gating is done in software
+ *        via DragIntent state in dropSpaceDetectionSystem (no sensor toggling).
  */
 void dragAndDropSystem();
 

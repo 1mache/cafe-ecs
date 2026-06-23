@@ -6,7 +6,7 @@ namespace cafe
 {
 struct MachineButton
 {
-    Ingredient kind{Ingredient::count};
+    LiquidIngredient kind{LiquidIngredient::count};
     bool pressed{};
     bool loopAction{}; // whether we want to loop onClick() as long as pressed.
 };

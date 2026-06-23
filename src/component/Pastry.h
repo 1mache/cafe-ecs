@@ -1,0 +1,22 @@
+#pragma once
+
+namespace cafe
+{
+/** @brief A pastry on the menu. Value == its props.png frame index.
+ *  `count` is a sentinel (must stay last). */
+enum class PastryType
+{
+    Croissant = 0,
+    CinnamonRoll,
+    Bourekas,
+    Cheesecake,
+    CarrotCake,
+    count
+};
+
+struct Pastry
+{
+    PastryType type{PastryType::count};
+    float temperature{}; // TODO: erase/change type
+};
+}

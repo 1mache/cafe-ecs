@@ -49,6 +49,7 @@ void drawSystem(SDL_Renderer* renderer)
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
+        // TODO: remove after sprite is added
         // Placeholder ice machine: a solid gray square (no art asset yet).
         if (e.has<IceMachine>())
         {
@@ -57,31 +58,40 @@ void drawSystem(SDL_Renderer* renderer)
             continue;
         }
 
-        // tint particles to their ingredient color (shared particle.png)
-        if (e.has<Liquid>())
+        // TODO: remove after sprite is added.
+        // Placeholder microwave: a solid square. The heating bar is its own child
+        // entity (TimerBar + Drawable), sized by timerBarSystem and drawn below
+        // via the generic Drawable path.
+        if (e.has<Microwave>())
         {
-            const SDL_Color col = ingredientColors[static_cast<size_t>(e.get<Liquid>().kind)];
-            SDL_SetTextureColorMod(d.texture, col.r, col.g, col.b);
-            SDL_SetTextureAlphaMod(d.texture, col.a);
-            SDL_SetTextureBlendMode(d.texture, col.a < 255 ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE);
+            SDL_SetRenderDrawColor(renderer, 90, 90, 110, 255);
+            SDL_RenderFillRect(renderer, &dstRect);
+            continue;
         }
-        else if (e.has<Ice>())
+
+        const SDL_Color& tint = d.tint;
+        const bool hasTint = tint.r != 255 || tint.g != 255 || tint.b != 255 || tint.a != 255;
+
+        // Sprites carry an alpha channel, so always blend. Using NONE leaves
+        // transparent pixels opaque-black, and the mode is sticky per-texture —
+        // shared textures (cup.png, particle.png) would then render black on the
+        // next untinted draw.
+        SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_BLEND);
+        if (hasTint)
         {
-            // Ice reuses particle.png; tint it icy blue so it reads on the counter.
-            SDL_SetTextureColorMod(d.texture, 120, 200, 255);
-            SDL_SetTextureAlphaMod(d.texture, 255);
-            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_NONE);
+            SDL_SetTextureColorMod(d.texture, tint.r, tint.g, tint.b);
+            SDL_SetTextureAlphaMod(d.texture, tint.a);
         }
 
         SDL_RenderTexture(renderer, d.texture, &d.srcRect, &dstRect);
 
-        if (e.has<Liquid>() || e.has<Ice>())
+        // Reset the (sticky, per-texture) mods so a shared texture isn't left tinted.
+        if (hasTint)
         {
             SDL_SetTextureColorMod(d.texture, 255, 255, 255);
             SDL_SetTextureAlphaMod(d.texture, 255);
-            SDL_SetTextureBlendMode(d.texture, SDL_BLENDMODE_BLEND); // restore default
         }
-    }
+    } 
 }
 void debugHighlightPhysics(SDL_Renderer* renderer)
 {
@@ -118,6 +128,36 @@ void debugHighlightPhysics(SDL_Renderer* renderer)
             }
         }
     }
+
+    // Sensors — neon green
+    SDL_SetRenderDrawColor(renderer, 57, 255, 20, 160);
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+
+        const b2BodyId body = e.get<PhysicsBody>().id;
+        const b2Transform xf = b2Body_GetTransform(body);
+
+        b2ShapeId shapes[16];
+        const int count = b2Body_GetShapes(body, shapes, 16);
+        for (int i = 0; i < count; ++i)
+        {
+            if (b2Shape_GetType(shapes[i]) != b2_polygonShape) continue;
+            if (!b2Shape_IsSensor(shapes[i])) continue;
+
+            const b2Polygon poly = b2Shape_GetPolygon(shapes[i]);
+            for (int v = 0; v < poly.count; ++v)
+            {
+                const b2Vec2 wA = b2TransformPoint(xf, poly.vertices[v]);
+                const b2Vec2 wB = b2TransformPoint(xf, poly.vertices[(v + 1) % poly.count]);
+
+                const SDL_FPoint sA = worldToScreenPoint({ wA.x, wA.y }, cam);
+                const SDL_FPoint sB = worldToScreenPoint({ wB.x, wB.y }, cam);
+                SDL_RenderLine(renderer, sA.x, sA.y, sB.x, sB.y);
+            }
+        }
+    }
+
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 }

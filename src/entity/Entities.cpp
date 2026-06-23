@@ -42,4 +42,14 @@ void destroyDeliveredItem(bagel::ent_type id)
         destroyPhysicalEntity(dep);
     destroyPhysicalEntity(id);
 }
+
+void destroyAllGameEntities()
+{
+    std::vector<bagel::ent_type> toDestroy;
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+        toDestroy.push_back(e.entity());
+
+    for (auto id : toDestroy)
+        destroyPhysicalEntity(id);
+}
 } // namespace cafe

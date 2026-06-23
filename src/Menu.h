@@ -3,6 +3,8 @@
 #include "Ingredient.h"
 #include "DrinkType.h"
 #include "Order.h"
+#include "Pastry.h"
+#include "SpriteSheet.h"
 #include <iterator>
 
 constexpr int name = 0;
@@ -17,7 +19,7 @@ namespace cafe
 struct DrinkRecipe
 {
     const char* name;
-    float       ratio[INGREDIENT_COUNT]; // Coffee, Milk, Water — fractions, sum to 1.0
+    float       ratio[INGREDIENT_COUNT]; // Coffee, Water, Milk — fractions, sum to 1.0
     bool        allowsHot;
     bool        allowsCold;
     int         iconFrame;               // index into props.png (16x16 frames)
@@ -26,12 +28,12 @@ struct DrinkRecipe
 
 // Indexed by DrinkType (order MUST match the enum). Each ratio sums to 1.0.
 inline constexpr DrinkRecipe MENU[] = {
-    // name           ratio                    hot    cold   iconFrame  targetFill
-    { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false, 4,         0.35f },
-    { "Americano",   { 0.33f, 0.00f, 0.67f }, true,  true,  5,         0.85f },
-    { "Cappuccino",  { 0.50f, 0.50f, 0.00f }, true,  true,  7,         0.80f },
-    { "Black coffee",{ 1.00f, 0.00f, 0.00f }, true,  true,  3,         0.85f },
-    { "Macchiato",   { 0.75f, 0.25f, 0.00f }, true,  false, 6,         0.45f },
+    // name           {coffee, water, milk}                    hot    cold   iconFrame  targetFill
+    { "Black coffee",{ 0.80f, 0.20f, 0.00f }, true,  true,  5,         1.f },
+    { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false, 6,         0.5f },
+    { "Americano",   { 0.35f, 0.50f, 0.15f }, true,  true,  7,         1.f },
+    { "Latte",       { 0.20f, 0.70f, 0.10f }, true,  false, 8,         1.f },
+    { "Cappuccino",  { 0.30f, 0.70f, 0.00f }, true,  true,  9,         0.75f },
 };
 static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
               "MENU must have one entry per DrinkType");
@@ -39,13 +41,19 @@ static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
 constexpr const DrinkRecipe& recipeFor(DrinkType d) { return MENU[static_cast<size_t>(d)]; }
 
 /** @brief Builds a random order: 0-MAX_DRINKS beverages and 0-MAX_PASTRIES
- *  pastries (at least one item total), each with a random type and temperature. */
+ *  pastries (at least one item total), each with a random type and temperature.
+ *  Built within MAX_ORDER_ICONS so it always fits the speech bubble. */
 Order randomOrder();
+
+/** @brief Validates that every PastryType and DrinkType has a sprite in props.json.
+ *  json bigger than enum → SDL_Log warning (art exists, type not yet implemented).
+ *  enum bigger than json → assertFatal (we'd try to draw a non-existent frame). */
+void validateOrderSprites(const SpriteSheet& props);
 
 const char* temperatureName(Temperature t);
 
 /** @brief props.png frame index for a temperature icon (Hot = fire, Cold = ice). */
-constexpr int temperatureFrame(Temperature t) { return t == Temperature::Hot ? 8 : 9; }
+constexpr int temperatureFrame(Temperature t) { return t == Temperature::Hot ? 10 : 11; }
 
 /** @brief Display name for a pastry type. */
 const char* pastryName(PastryType p);

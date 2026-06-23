@@ -1,5 +1,6 @@
 #pragma once
 #include "AssetManager.h"
+#include "Pastry.h"
 #include "WorldPos.h"
 #include "bagel.h"
 
@@ -7,5 +8,6 @@ namespace cafe
 {
 class PhysicsContext;
 
-bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos);
+bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldPos pos,
+                           PastryType type = PastryType::count);
 }

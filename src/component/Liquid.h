@@ -10,7 +10,7 @@ namespace cafe
  *  cup's drops can be destroyed without touching any other cup's contents. */
 struct Liquid
 {
-    Ingredient      kind{ Ingredient::Coffee };
+    LiquidIngredient      kind{ LiquidIngredient::Coffee };
     bagel::ent_type holdingContainer{ -1 };
 };
 } // namespace cafe
