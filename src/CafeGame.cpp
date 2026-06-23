@@ -3,6 +3,7 @@
 #include "Components.h"
 #include "Entities.h"
 #include "GameConfig.h"
+#include "DayReportScene.h"
 #include "MainGameScene.h"
 #include "PhysicsContext.h"
 #include "RenderContext.h"
@@ -68,9 +69,14 @@ void CafeGame::run()
 
 std::unique_ptr<Scene> CafeGame::makeScene(SceneId id)
 {
-    // DayReportScene is wired in Task 9; until then everything maps to MainGameScene.
-    (void)id;
-    return std::make_unique<MainGameScene>();
+    switch (id)
+    {
+    case SceneId::DayReport:
+        return std::make_unique<DayReportScene>();
+    case SceneId::MainGame:
+    default:
+        return std::make_unique<MainGameScene>();
+    }
 }
 
 void CafeGame::destroy()

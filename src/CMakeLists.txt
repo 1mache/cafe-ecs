@@ -127,6 +127,8 @@ target_sources(
     Scene.cpp
     MainGameScene.h
     MainGameScene.cpp
+    DayReportScene.h
+    DayReportScene.cpp
 
     AssetManager.h
     AssetManager.cpp

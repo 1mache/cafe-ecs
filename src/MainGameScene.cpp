@@ -1,9 +1,11 @@
 #include "MainGameScene.h"
 #include "Components.h"
+#include "DayState.h"
 #include "Entities.h"
 #include "Menu.h"
 #include "PhysicsContext.h"
 #include "Systems.h"
+#include "Texture.h"
 
 #include <iostream>
 
@@ -50,6 +52,27 @@ void cafe::MainGameScene::onInit()
                          .patience = CUSTOMER_PATIENCE,
                          .interval = SPAWN_INTERVAL,
                          .cooldown = 0.f });
+
+    // --- Day cycle ---
+    DayState::beginNewDay();
+
+    // Day clock + its HUD anchor Transform (the day-progress bar reads this).
+    constexpr float DAY_BAR_HALF_W = 8.0f; // world half-width => 16-unit span
+    constexpr float DAY_BAR_Y      = 4.6f; // near the top of the canvas
+    auto dayEntity = bagel::Entity::create();
+    dayEntity.addAll(
+        Transform{ .x = 0.f, .y = DAY_BAR_Y, .w = DAY_BAR_HALF_W, .h = 0.1f },
+        DayClock{ .timeRemaining = DAY_LENGTH, .dayLength = DAY_LENGTH });
+
+    // Day-progress bar: the SAME TimerBar component the microwave bar uses.
+    // timerBarSystem() sizes it each frame from the DayClock fraction.
+    const Texture& barTex = getAssetManager().getTexture("particle.png");
+    auto dayBar = bagel::Entity::create();
+    dayBar.addAll(
+        Transform{ .x = 0.f, .y = DAY_BAR_Y, .w = 0.f, .h = 0.35f },
+        Drawable{ barTex.get(), barTex.getFullSrcRect(), layer::UI1,
+                  SDL_Color{ 90, 200, 120, 255 } },
+        TimerBar{ .source = dayEntity });
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
@@ -86,6 +109,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     behaviorSystem(dt);           // tick patience; adds Leaving on timeout
     orderSystem();                // all items served -> add Leaving (success)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
+    recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup
     reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
     hierarchySystem();            // children follow parents; orphan children of Leaving
     customerCleanupSystem();      // destroy all Leaving entities
@@ -97,10 +121,16 @@ bool cafe::MainGameScene::onUpdate(float dt)
     debugHighlightPhysics(renderer);
     SDL_RenderPresent(renderer);
 
+    if (dayClockSystem(dt))
+    {
+        requestNext(SceneId::DayReport);
+        return false;
+    }
     return true;
 }
 void cafe::MainGameScene::onCleanup()
 {
+    destroyAllGameEntities();   // global ECS registry: clear it before the next scene
     _physics.cleanup();
     std::cout << "[Main scene] Ended\n";
 }
