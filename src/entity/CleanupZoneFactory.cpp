@@ -13,7 +13,7 @@ bagel::Entity createCleanupZone(PhysicsContext& physics)
     // Static body just below the visible play area.
     b2BodyDef bd = b2DefaultBodyDef();
     bd.type     = b2_staticBody;
-    bd.position = { 0.f, -screenToWorldDistance(LOGICAL_H)};
+    bd.position = { 0.f, -texToWorldDistance(LOGICAL_H)};
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
     b2BodyId body = b2CreateBody(physics.world(), &bd);
 

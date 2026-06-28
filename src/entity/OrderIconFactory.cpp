@@ -25,7 +25,7 @@ bagel::Entity createOrderIcon(AssetManager& assets, int propId,
     SDL_FRect srcRect = props.getFrame(propId);
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{.w = screenToWorldScale(displayW), .h = screenToWorldScale(displayH)},
+        Transform{.w = texToWorldScale(displayW), .h = texToWorldScale(displayH)},
         Drawable{tex.get(), srcRect, layer::UI2},
         ChildOf{parentBubble, offsetPx});
     return ent;

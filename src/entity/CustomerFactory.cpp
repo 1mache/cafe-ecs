@@ -71,7 +71,7 @@ bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
     auto [w, h] = PERSON_DIMS;
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{.x = pos.x, .y = pos.y, .w = screenToWorldScale(w), .h = screenToWorldScale(h)},
+        Transform{.x = pos.x, .y = pos.y, .w = texToWorldScale(w), .h = texToWorldScale(h)},
         Drawable{tex.get(), getRandomCustomerRect(spriteSheet), layer::CUSTOMER},
         order,
         Behavior{.patience = patience, .maxPatience = patience});

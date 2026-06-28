@@ -56,8 +56,8 @@ bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Ent
     ent.addAll(
         Drawable{ tex.get(), srcRect, layer::PROP},
         Transform{ .x = machinePos.x, .y = machinePos.y,
-                   .w = screenToWorldScale(BUTTON_DIMS.x),
-                   .h = screenToWorldScale(BUTTON_DIMS.y) },
+                   .w = texToWorldScale(BUTTON_DIMS.x),
+                   .h = texToWorldScale(BUTTON_DIMS.y) },
         MachineButton{ kind},
         ChildOf(machineEnt, {off.x, off.y}, true)
     );
@@ -71,8 +71,8 @@ bagel::Entity createCoffeeMachine(AssetManager& assets, PhysicsContext& physics,
     auto [x, y] = tex.getSize();
     auto ent = bagel::Entity::create();
 
-    const float halfW = screenToWorldScale(x);
-    const float halfH = screenToWorldScale(y);
+    const float halfW = texToWorldScale(x);
+    const float halfH = texToWorldScale(y);
     Transform t{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH };
 
     // Kinematic body, no fixtures — the machine is just a position anchor.

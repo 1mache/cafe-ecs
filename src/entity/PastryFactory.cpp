@@ -37,8 +37,8 @@ bagel::Entity createPastry(AssetManager& assets, PhysicsContext& physics, WorldP
 
     using namespace cafe;
 
-    const float halfW = screenToWorldScale(PROP_DIMS.x);
-    const float halfH = screenToWorldScale(PROP_DIMS.y);
+    const float halfW = texToWorldScale(PROP_DIMS.x);
+    const float halfH = texToWorldScale(PROP_DIMS.y);
 
     auto ent = bagel::Entity::create();
 

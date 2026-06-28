@@ -18,6 +18,7 @@ struct Transform
     float rot{};
 };
 
+// FUNCTIONS FOR OBJECTS ALREADY ON SCREEN:
 /**
  * @brief Converts a world point to SDL screen coordinates.
  *
@@ -67,6 +68,23 @@ constexpr float screenToWorldScale(float screenSize)
 {
     return screenToWorldDistance(screenSize) / 2.f;
 }
+
+// FUNCTIONS FOR CONVERTING TEXTURE TO WORLD SIZES, when creating objects
+// (these do not consider the zoom because textures have none)
+
+constexpr float texToWorldScale(float texSize)
+{
+    // return half extent => /2
+    return texSize / (PTM * 2.f);
+}
+
+constexpr float texToWorldDistance(float texDist)
+{
+    return texDist / PTM;
+}
+
+
+// TRANSFORM TRANSLATION FUNCTIONS:
 
 /** @brief Converts a Transform to an SDL_FRect in screen pixels for rendering. */
 SDL_FRect transformToFrect(const Transform& t, WorldPos camPos);
