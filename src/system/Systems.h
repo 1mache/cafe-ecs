@@ -1,13 +1,17 @@
 #pragma once
 
 #include "CheckBeverageSystem.h"
+#include "CheckPastrySystem.h"
 #include "CupSystem.h"
 #include "CoffeeMachineSystem.h"
 #include "CustomerSystem.h"
+#include "DayCycleSystem.h"
 #include "DragAndDropSystem.h"
 #include "IntentSystem.h"
 #include "LiquidSystem.h"
+#include "MicrowaveSystem.h"
 #include "RenderSystem.h"
 #include "SensorSystem.h"
 #include "SupplySystem.h"
+#include "TimerBarSystem.h"
 #include "TransformSystem.h"

@@ -3,6 +3,8 @@
 #include "Components.h"
 #include "Entities.h"
 #include "GameConfig.h"
+#include "DayReportScene.h"
+#include "MainGameScene.h"
 #include "PhysicsContext.h"
 #include "RenderContext.h"
 #include "SpriteDims.h"
@@ -51,18 +53,34 @@ void CafeGame::init()
 
     _window   = window;
     _renderer = renderer;
-
-    _currentScene->init(_renderer);
 }
 
 void CafeGame::run()
 {
-    _currentScene->run();
+    while (_next != SceneId::Quit)
+    {
+        std::unique_ptr<Scene> scene = makeScene(_next);
+        scene->init(_renderer);
+        SceneId next = scene->run();
+        scene->cleanup();
+        _next = next;
+    }
+}
+
+std::unique_ptr<Scene> CafeGame::makeScene(SceneId id)
+{
+    switch (id)
+    {
+    case SceneId::DayReport:
+        return std::make_unique<DayReportScene>();
+    case SceneId::MainGame:
+    default:
+        return std::make_unique<MainGameScene>();
+    }
 }
 
 void CafeGame::destroy()
 {
-    _currentScene->cleanup();
     SDL_DestroyRenderer(_renderer);
     SDL_DestroyWindow(_window);
     SDL_Quit();

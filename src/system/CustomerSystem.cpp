@@ -3,34 +3,12 @@
 #include "Entities.h"
 #include "Menu.h"
 #include <bagel.h>
-#include <box2d/box2d.h>
 #include <cmath>
 #include <iostream>
 #include <vector>
 
 namespace cafe
 {
-namespace
-{
-constexpr float REJECT_IMPULSE = 300.f; // N·s applied to a rejected item
-constexpr float PI = 3.14159f;
-
-void rejectItem(bagel::Entity e)
-{
-    if (!e.has<PhysicsBody>()) return;
-    const b2BodyId body = e.get<PhysicsBody>().id;
-    if (!b2Body_IsValid(body)) return;
-
-    b2Body_SetGravityScale(body, 1.f);
-    b2Vec2 incomingVelocity = b2Body_GetLinearVelocity(body);
-    // zero out so by the end only our impulse has effect
-    b2Body_SetLinearVelocity(body, {});
-    // reject vector is the opposite to the incoming velocity vector
-    float rejectAngle = std::atan2(-incomingVelocity.y, -incomingVelocity.x);
-    b2Body_ApplyLinearImpulseToCenter(
-        body, { REJECT_IMPULSE * std::cos(rejectAngle), REJECT_IMPULSE * std::sin(rejectAngle) }, true);
-}
-} // namespace
 
 void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
 {
@@ -87,9 +65,6 @@ void deliverySystem()
     static const bagel::Mask dragMask =
         bagel::MaskBuilder().set<DragIntent>().build();
 
-    // Pastries to destroy immediately after the loop (structural changes deferred).
-    std::vector<bagel::ent_type> pastriesToDestroy;
-
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(dragMask)) continue;
@@ -103,7 +78,7 @@ void deliverySystem()
         if (!target.has<Order>() || !target.has<OrderGrade>()) continue;
 
         const auto& order = target.get<Order>();
-        auto& grade       = target.get<OrderGrade>();
+        const auto& grade = target.get<OrderGrade>();
 
         if (e.has<Cup>())
         {
@@ -121,31 +96,29 @@ void deliverySystem()
             for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
                 coffeeIntent.ratio[i] = recipe.ratio[i];
             coffeeIntent.targetFill = recipe.targetFill;
-            coffeeIntent.isHot    = order.drinks[slot].temp == Temperature::Hot;
-            coffeeIntent.customer = target.entity();
+            coffeeIntent.isHot     = order.drinks[slot].temp == Temperature::Hot;
+            coffeeIntent.customer  = target.entity();
             coffeeIntent.drinkSlot = slot;
             e.add(coffeeIntent);
         }
         else // pastry
         {
             const int slot = firstUnservedPastry(order, grade);
-            if (slot < 0)
+            if (slot < 0 || e.has<CheckPastryIntent>())
             {
                 rejectItem(e);
                 intent.dropSpaceEntity = std::nullopt;
                 continue;
             }
 
-            // Stub: pastry temperature grading not yet implemented; award full points.
-            grade.pastryGrades[slot] = MAX_ITEM_GRADE;
-            markPastryServed(grade, slot);
-            pastriesToDestroy.push_back(e.entity());
+            CheckPastryIntent pastryIntent{};
+            pastryIntent.type       = order.pastries[slot].type;
+            pastryIntent.temp       = order.pastries[slot].temp;
+            pastryIntent.customer   = target.entity();
+            pastryIntent.pastrySlot = slot;
+            e.add(pastryIntent);
         }
     }
-
-    // Destroy accepted pastries immediately (after iteration to avoid invalidating it).
-    for (auto id : pastriesToDestroy)
-        destroyDeliveredItem(id);
 }
 
 void orderSystem()

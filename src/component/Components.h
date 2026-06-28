@@ -2,7 +2,9 @@
 
 #include "../DropType.h"
 #include "Behavior.h"
+#include "DayClock.h"
 #include "CheckCoffeeIntent.h"
+#include "CheckPastryIntent.h"
 #include "ChildOf.h"
 #include "CleanupZone.h"
 #include "CoffeeOverview.h"
@@ -21,6 +23,7 @@
 #include "Leaving.h"
 #include "Liquid.h"
 #include "MachineButton.h"
+#include "Microwave.h"
 #include "Pastry.h"
 #include "Order.h"
 #include "OrderGrade.h"
@@ -28,4 +31,5 @@
 #include "Sensor.h"
 #include "SpawnButton.h"
 #include "Spawner.h"
+#include "TimerBar.h"
 #include "Transform.h"

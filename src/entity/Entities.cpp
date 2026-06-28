@@ -1,6 +1,7 @@
 #include "Entities.h"
 #include "Components.h"
 #include <box2d/box2d.h>
+#include <cmath>
 #include <vector>
 
 namespace cafe
@@ -41,5 +42,30 @@ void destroyDeliveredItem(bagel::ent_type id)
     for (auto dep : toDestroy)
         destroyPhysicalEntity(dep);
     destroyPhysicalEntity(id);
+}
+
+void destroyAllGameEntities()
+{
+    std::vector<bagel::ent_type> toDestroy;
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+        toDestroy.push_back(e.entity());
+
+    for (auto id : toDestroy)
+        destroyPhysicalEntity(id);
+}
+
+void rejectItem(bagel::Entity e)
+{
+    if (!e.has<PhysicsBody>()) return;
+    const b2BodyId body = e.get<PhysicsBody>().id;
+    if (!b2Body_IsValid(body)) return;
+
+    constexpr float REJECT_IMPULSE = 300.f;
+    b2Body_SetGravityScale(body, 1.f);
+    b2Vec2 incomingVelocity = b2Body_GetLinearVelocity(body);
+    b2Body_SetLinearVelocity(body, {});
+    const float rejectAngle = std::atan2(-incomingVelocity.y, -incomingVelocity.x);
+    b2Body_ApplyLinearImpulseToCenter(
+        body, { REJECT_IMPULSE * std::cos(rejectAngle), REJECT_IMPULSE * std::sin(rejectAngle) }, true);
 }
 } // namespace cafe

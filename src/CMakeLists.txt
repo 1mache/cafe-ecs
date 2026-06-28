@@ -15,7 +15,9 @@ target_sources(
     component/CoffeeOverview.h
     component/CleanupZone.h
     component/Behavior.h
+    component/DayClock.h
     component/CheckCoffeeIntent.h
+    component/CheckPastryIntent.h
     component/DragIntent.h
     component/DragItemType.h
     component/DropSpace.h
@@ -32,6 +34,7 @@ target_sources(
     component/OrderGrade.cpp
     component/Sensor.h
     component/Sensor.cpp
+    component/TimerBar.h
     component/Components.h
 
     # systems
@@ -41,10 +44,14 @@ target_sources(
     system/TransformSystem.cpp
     system/LiquidSystem.h
     system/LiquidSystem.cpp
+    system/MicrowaveSystem.h
+    system/MicrowaveSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
     system/CheckBeverageSystem.h
     system/CheckBeverageSystem.cpp
+    system/CheckPastrySystem.h
+    system/CheckPastrySystem.cpp
     system/DragAndDropSystem.h
     system/DragAndDropSystem.cpp
     system/IntentSystem.h
@@ -54,16 +61,22 @@ target_sources(
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/Systems.h
+    system/DayCycleSystem.h
+    system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp
     system/CoffeeMachineSystem.h
     system/CupSystem.h
     system/CupSystem.cpp
+    system/TimerBarSystem.h
+    system/TimerBarSystem.cpp
 
     # entities
     entity/CupFactory.h
     entity/CupFactory.cpp
     entity/LiquidDropFactory.h
     entity/LiquidDropFactory.cpp
+    entity/MicrowaveFactory.h
+    entity/MicrowaveFactory.cpp
     entity/CoffeeMachineFactory.h
     entity/CoffeeMachineFactory.cpp
     entity/CleanupZoneFactory.h
@@ -88,6 +101,7 @@ target_sources(
     entity/Entities.cpp
 
     # root helpers
+    SceneId.h
     GameConfig.h
     Utils.h
     RenderContext.h
@@ -99,6 +113,12 @@ target_sources(
     OrderMatch.cpp
     Menu.h
     Menu.cpp
+    DayState.h
+    DayReport.h
+    DayReport.cpp
+    Glyph.h
+    Text.h
+    Text.cpp
 
     PhysicsFilters.h
     PhysicsContext.h
@@ -110,6 +130,8 @@ target_sources(
     Scene.cpp
     MainGameScene.h
     MainGameScene.cpp
+    DayReportScene.h
+    DayReportScene.cpp
 
     AssetManager.h
     AssetManager.cpp
