@@ -23,15 +23,15 @@ void cafe::MainGameScene::onInit()
     createBg(assets, BG_PATH);
     createBartop(assets, _physics);
 
-    createCoffeeMachine(assets, _physics, {-7.f, -1.f});
+    createCoffeeMachine(assets, _physics, supply::COFFEE_MACHINE_POS);
 
     // Supply is summoned on demand: click a button to drop a fresh cup/pastry in.
-    createSpawnButton(assets, _physics, supply::CUP_BUTTON, DropType::Cup);
-    createSpawnButton(assets, _physics, supply::PASTRY_BUTTON, DropType::Pastry);
+    createSpawnButton(assets, _physics, supply::CUP_BUTTON_POS, DropType::Cup);
+    createSpawnButton(assets, _physics, supply::PASTRY_BUTTON_POS, DropType::Pastry);
 
     // Ice machine (gray placeholder square) with its spawn button on the machine face.
     createIceMachine(assets, supply::ICE_MACHINE_POS);
-    createSpawnButton(assets, _physics, supply::ICE_BUTTON, DropType::Ice);
+    createSpawnButton(assets, _physics, supply::ICE_BUTTON_POS, DropType::Ice);
 
     // Microwave (gray placeholder square, no button): drag a pastry onto it to heat it.
     createMicrowave(assets, _physics, supply::MICROWAVE_POS);
