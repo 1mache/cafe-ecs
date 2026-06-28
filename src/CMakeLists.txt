@@ -106,7 +106,7 @@ target_sources(
     Utils.h
     RenderContext.h
     RenderLayers.h
-    DrinkType.h
+    ItemTypes.h
 
     DropType.h
     OrderMatch.h

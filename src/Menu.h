@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Ingredient.h"
-#include "DrinkType.h"
+#include "ItemTypes.h"
 #include "Order.h"
 #include "Pastry.h"
 #include "SpriteSheet.h"
@@ -35,10 +35,10 @@ inline constexpr DrinkRecipe MENU[] = {
     { "Latte",       { 0.20f, 0.70f, 0.10f }, true,  false, 8,         1.f },
     { "Cappuccino",  { 0.30f, 0.70f, 0.00f }, true,  true,  9,         0.75f },
 };
-static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
+static_assert(std::size(MENU) == static_cast<size_t>(ItemTypes::count),
               "MENU must have one entry per DrinkType");
 
-constexpr const DrinkRecipe& recipeFor(DrinkType d) { return MENU[static_cast<size_t>(d)]; }
+constexpr const DrinkRecipe& recipeFor(ItemTypes d) { return MENU[static_cast<size_t>(d)]; }
 
 /** @brief Builds a random order: 0-MAX_DRINKS beverages and 0-MAX_PASTRIES
  *  pastries (at least one item total), each with a random type and temperature.

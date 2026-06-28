@@ -61,7 +61,7 @@ Order randomOrder()
 
     for (int i = 0; i < wantDrinks; ++i)
     {
-        const auto d = static_cast<DrinkType>(randInt(static_cast<int>(DrinkType::count)));
+        const auto d = static_cast<ItemTypes>(randInt(static_cast<int>(ItemTypes::count)));
         const Temperature t = randomDrinkTemp(recipeFor(d));
         const int cost = t == Temperature::Cold ? 2 : 1;
         if (cost > budget)
@@ -106,16 +106,16 @@ void validateOrderSprites(const SpriteSheet& props)
     // enum bigger than sprites -> types we can't draw -> fatal
     assertFatal(static_cast<int>(PastryType::count) <= pastrySprites,
         "PastryType has more entries than props.json 'pastry' sprites");
-    assertFatal(static_cast<int>(DrinkType::count) <= coffeeSprites,
+    assertFatal(static_cast<int>(ItemTypes::count) <= coffeeSprites,
         "DrinkType has more entries than props.json 'coffee' sprites");
 
     // sprites bigger than enum -> unimplemented art -> warning only
     if (pastrySprites > static_cast<int>(PastryType::count))
         SDL_Log("Warning: props.json 'pastry' has %d sprites, only %d PastryType impl'd",
                 pastrySprites, static_cast<int>(PastryType::count));
-    if (coffeeSprites > static_cast<int>(DrinkType::count))
+    if (coffeeSprites > static_cast<int>(ItemTypes::count))
         SDL_Log("Warning: props.json 'coffee' has %d sprites, only %d DrinkType impl'd",
-                coffeeSprites, static_cast<int>(DrinkType::count));
+                coffeeSprites, static_cast<int>(ItemTypes::count));
 }
 
 const char* temperatureName(Temperature t)

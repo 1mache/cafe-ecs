@@ -100,7 +100,7 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
         if (m.timer >= HEAT_TIME)
         {
             auto pat = createPastry(assets, physics, supply::MICROWAVE_SPAWN, m.cooking);
-            pat.get<Pastry>().temperature = HEATED_TEMPERATURE;
+            pat.get<Pastry>().temperature = Temperature::Hot;
 
             m.busy    = false;
             m.timer   = 0.f;

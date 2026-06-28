@@ -16,13 +16,12 @@ struct Microwave
 };
 
 inline constexpr float HEAT_TIME          = 3.0f; // seconds to fully heat a pat
-inline constexpr float HEATED_TEMPERATURE = 1.0f; // value written to Pastry.temperature when heated
 
 inline constexpr float BAR_HEIGHT = 0.18f; // world half-height of the heating bar
 inline constexpr float BAR_GAP    = 0.20f; // world gap between the bar and the machine top
 } // namespace cafe
 
-template <> struct bagel::Storage<cafe::Microwave> final : bagel::NoInstance
+template <> struct bagel::Storage<cafe::Microwave> final : NoInstance
 {
-    using type = bagel::SparseStorage<cafe::Microwave>;
+    using type = SparseStorage<cafe::Microwave>;
 };

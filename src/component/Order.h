@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DrinkType.h"
+#include "ItemTypes.h"
 #include "Pastry.h"
 #include <bagel.h>
 
@@ -17,7 +17,7 @@ struct Order
 {
     struct DrinkItem
     {
-        DrinkType   type{ DrinkType::Espresso };
+        ItemTypes   type{ ItemTypes::Espresso };
         Temperature temp{ Temperature::Hot };
     };
 

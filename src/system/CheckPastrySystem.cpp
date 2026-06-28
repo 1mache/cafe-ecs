@@ -41,7 +41,7 @@ void checkPastrySystem()
         }
 
         const bool wantHot = intent.temp == Temperature::Hot;
-        const bool isHot   = e.get<Pastry>().temperature == HEATED_TEMPERATURE;
+        const bool isHot   = e.get<Pastry>().temperature == Temperature::Hot;
         grade.pastryGrades[slot] = (wantHot == isHot) ? MAX_ITEM_GRADE : PARTIAL_ITEM_GRADE;
         markPastryServed(grade, slot);
 
