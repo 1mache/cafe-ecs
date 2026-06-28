@@ -48,6 +48,14 @@ void CafeGame::init()
     }
 
     SDL_SetDefaultTextureScaleMode(renderer, SDL_SCALEMODE_NEAREST);
+    // Render into a fixed logical canvas; SDL scales it up to the
+    // physical window. INTEGER_SCALE keeps pixel art crisp (whole
+    // multiples only, letterboxing the remainder).
+    SDL_SetRenderLogicalPresentation(renderer,
+                                     LOGICAL_W,
+                                     LOGICAL_H,
+                                     SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
+    SDL_SetWindowResizable(window, true);
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     RenderContext::init(window, renderer);
 
