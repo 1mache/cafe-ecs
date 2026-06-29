@@ -61,9 +61,9 @@ Order randomOrder()
 
     for (int i = 0; i < wantDrinks; ++i)
     {
-        const auto d = static_cast<ItemTypes>(randInt(static_cast<int>(ItemTypes::count)));
+        const auto d = static_cast<DrinkType>(randInt(static_cast<int>(DrinkType::count)));
         const Temperature t = randomDrinkTemp(recipeFor(d));
-        const int cost = t == Temperature::Cold ? 2 : 1;
+        const int cost = t == Temperature::Cold ? 2 : 1; // cold coffee requires 2 sprites to show that its cold
         if (cost > budget)
             break;
         o.drinks[o.drinkCount++] = { .type = d, .temp = t };
@@ -73,7 +73,7 @@ Order randomOrder()
     {
         const auto p = static_cast<PastryType>(randInt(static_cast<int>(PastryType::count)));
         const Temperature t = randInt(2) ? Temperature::Cold : Temperature::Hot;
-        const int cost = t == Temperature::Hot ? 2 : 1;
+        const int cost = t == Temperature::Hot ? 2 : 1; // hot pastry requires 2 sprites to show that its hot
         if (cost > budget)
             break;
         o.pastries[o.pastryCount++] = { .type = p, .temp = t };
@@ -106,16 +106,16 @@ void validateOrderSprites(const SpriteSheet& props)
     // enum bigger than sprites -> types we can't draw -> fatal
     assertFatal(static_cast<int>(PastryType::count) <= pastrySprites,
         "PastryType has more entries than props.json 'pastry' sprites");
-    assertFatal(static_cast<int>(ItemTypes::count) <= coffeeSprites,
+    assertFatal(static_cast<int>(DrinkType::count) <= coffeeSprites,
         "DrinkType has more entries than props.json 'coffee' sprites");
 
     // sprites bigger than enum -> unimplemented art -> warning only
     if (pastrySprites > static_cast<int>(PastryType::count))
         SDL_Log("Warning: props.json 'pastry' has %d sprites, only %d PastryType impl'd",
                 pastrySprites, static_cast<int>(PastryType::count));
-    if (coffeeSprites > static_cast<int>(ItemTypes::count))
+    if (coffeeSprites > static_cast<int>(DrinkType::count))
         SDL_Log("Warning: props.json 'coffee' has %d sprites, only %d DrinkType impl'd",
-                coffeeSprites, static_cast<int>(ItemTypes::count));
+                coffeeSprites, static_cast<int>(DrinkType::count));
 }
 
 const char* temperatureName(Temperature t)

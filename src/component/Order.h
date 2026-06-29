@@ -17,7 +17,7 @@ struct Order
 {
     struct DrinkItem
     {
-        ItemTypes   type{ ItemTypes::Espresso };
+        DrinkType   type{ DrinkType::Espresso };
         Temperature temp{ Temperature::Hot };
     };
 

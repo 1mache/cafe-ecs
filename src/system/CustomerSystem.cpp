@@ -1,6 +1,7 @@
 #include "CustomerSystem.h"
 #include "Components.h"
 #include "Entities.h"
+#include "MainGameScene.h"
 #include "Menu.h"
 #include <bagel.h>
 #include <cmath>
@@ -9,11 +10,14 @@
 
 namespace cafe
 {
+// TODO: remove after change to dynamic patience
+static constexpr float CUSTOMER_PATIENCE = 60.f; // seconds before a customer leaves unhappy
+
 
 void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
 {
     static const bagel::Mask spawnerMask =
-        bagel::MaskBuilder().set<Spawner>().build();
+        bagel::MaskBuilder().set<CustomerSpawner>().build();
     static const bagel::Mask customerMask =
         bagel::MaskBuilder().set<Order>().set<Behavior>().build();
 
@@ -25,7 +29,7 @@ void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(spawnerMask)) continue;
-        auto& sp = e.get<Spawner>();
+        auto& sp = e.get<CustomerSpawner>();
 
         // Seat busy: hold the timer armed so the full interval is waited once it frees.
         if (customers > 0)
@@ -37,7 +41,7 @@ void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float 
         sp.cooldown -= dtSeconds;
         if (sp.cooldown <= 0.f)
         {
-            spawnCustomer(assets, physics, sp.seat, randomOrder(), sp.patience);
+            spawnCustomer(assets, physics, sp.seat, randomOrder(), CUSTOMER_PATIENCE);
             sp.cooldown = sp.interval;
         }
     }

@@ -3,7 +3,7 @@
 namespace cafe
 {
 /** @brief A named beverage on the menu. `count` is a sentinel (must stay last). */
-enum class ItemTypes
+enum class DrinkType
 {
     Black,
     Espresso,
