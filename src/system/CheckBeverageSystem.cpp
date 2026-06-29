@@ -66,23 +66,10 @@ void checkBeverageSystem()
         else
             e.add(overview);
 
-        const auto& intent = e.get<CheckCoffeeIntent>();
-        const Cup&  cup    = e.get<Cup>();
-        const int expectedDrops = static_cast<int>(
-            std::lround(intent.targetFill * static_cast<float>(cup.capacity)));
+        const Cup& cup = e.get<Cup>();
 
         //**start score log
         std::cout << "[BeverageScore] snapshot (cup waiting on customer)\n";
-        for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
-        {
-            std::cout << "[BeverageScore]   expected " << kIngredientNames[i]
-                      << " ratio: " << intent.ratio[i] << "\n";
-        }
-        std::cout << "[BeverageScore]   expected drops: " << expectedDrops
-                  << " (targetFill " << intent.targetFill
-                  << " * capacity " << cup.capacity << ")\n";
-        std::cout << "[BeverageScore]   expected temperature: "
-                  << (intent.isHot ? "Hot" : "Cold") << "\n";
         std::cout << "[BeverageScore]   actual drops: " << overview.dropSum
                   << " (" << static_cast<int>(overview.fillPercent * 100.f) << "% fill)\n";
         for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
@@ -118,13 +105,23 @@ void acceptGradedBeverageSystem()
             continue;
         }
 
-        const int              slot  = intent.drinkSlot;
-        const CoffeeOverview&  ov    = e.get<CoffeeOverview>();
-        const Order&           order = customer.get<Order>();
-        const DrinkRecipe&     recipe = recipeFor(order.drinks[slot].type);
-        const Cup&             cup   = e.get<Cup>();
+        const CoffeeOverview& ov    = e.get<CoffeeOverview>();
+        const Order&          order = customer.get<Order>();
+        auto&                 grade = customer.get<OrderGrade>();
+        const int             slot  = matchDrinkSlotByRatio(order, grade, ov);
+
+        if (slot < 0)
+        {
+            e.del<CheckCoffeeIntent>();
+            toDestroy.push_back(e.entity());
+            continue;
+        }
+
+        const DrinkRecipe& recipe     = recipeFor(order.drinks[slot].type);
+        const bool         expectedHot = order.drinks[slot].temp == Temperature::Hot;
+        const Cup&         cup        = e.get<Cup>();
         const int expectedDrops = static_cast<int>(
-            std::lround(intent.targetFill * static_cast<float>(cup.capacity)));
+            std::lround(recipe.targetFill * static_cast<float>(cup.capacity)));
 
         //**start score log
         std::cout << "[BeverageScore] === Beverage submitted ===\n";
@@ -133,13 +130,13 @@ void acceptGradedBeverageSystem()
         for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
         {
             std::cout << "[BeverageScore]   expected " << kIngredientNames[i]
-                      << " ratio: " << intent.ratio[i] << "\n";
+                      << " ratio: " << recipe.ratio[i] << "\n";
         }
         std::cout << "[BeverageScore]   expected drops: " << expectedDrops
-                  << " (targetFill " << intent.targetFill
+                  << " (targetFill " << recipe.targetFill
                   << " * capacity " << cup.capacity << ")\n";
         std::cout << "[BeverageScore]   expected temperature: "
-                  << (intent.isHot ? "Hot" : "Cold") << "\n";
+                  << (expectedHot ? "Hot" : "Cold") << "\n";
         std::cout << "[BeverageScore]   actual drops: " << ov.dropSum
                   << " (" << static_cast<int>(ov.fillPercent * 100.f) << "% fill)\n";
         for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
@@ -153,8 +150,7 @@ void acceptGradedBeverageSystem()
                   << (ov.isHot ? "Hot" : "Cold") << "\n";
         //**end score log
 
-        auto& grade = customer.get<OrderGrade>();
-        grade.drinkGrades[slot] = gradeDrink(intent, ov);
+        grade.drinkGrades[slot] = gradeDrink(recipe, expectedHot, ov);
 
         //**start score log
         std::cout << "[BeverageScore] final drinkGrades[" << slot << "] = "

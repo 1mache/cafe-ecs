@@ -3,12 +3,9 @@
 
 using namespace cafe;
 
-static CheckCoffeeIntent blackCoffeeIntent()
+static DrinkRecipe blackCoffeeRecipe()
 {
-    return CheckCoffeeIntent{
-        .ratio      = { 0.80f, 0.20f, 0.00f },
-        .targetFill = 1.0f,
-    };
+    return recipeFor(DrinkType::Black);
 }
 
 static CoffeeOverview perfectBlackCoffeeOverview(bool isHot = false)
@@ -33,70 +30,64 @@ static CoffeeOverview pureCoffeeOverview(bool isHot = false)
 
 TEST_CASE("gradeDrink returns 0 for empty cup")
 {
-    const CheckCoffeeIntent intent = blackCoffeeIntent();
-    const CoffeeOverview  overview{};
+    const DrinkRecipe    recipe = blackCoffeeRecipe();
+    const CoffeeOverview overview{};
 
-    REQUIRE(gradeDrink(intent, overview) == 0);
+    REQUIRE(gradeDrink(recipe, false, overview) == 0);
 }
 
 TEST_CASE("gradeDrink scores perfect black coffee at 100")
 {
-    const CheckCoffeeIntent intent = blackCoffeeIntent();
-    const CoffeeOverview  overview = perfectBlackCoffeeOverview();
+    const DrinkRecipe    recipe   = blackCoffeeRecipe();
+    const CoffeeOverview overview = perfectBlackCoffeeOverview();
 
-    REQUIRE(gradeDrink(intent, overview) == 100);
+    REQUIRE(gradeDrink(recipe, false, overview) == 100);
 }
 
 TEST_CASE("gradeDrink forgives compositional ratio error for black coffee served as pure coffee")
 {
-    CheckCoffeeIntent intent = blackCoffeeIntent();
-    intent.isHot             = true;
+    const DrinkRecipe    recipe   = blackCoffeeRecipe();
     const CoffeeOverview overview = pureCoffeeOverview(true);
 
-    REQUIRE(gradeDrink(intent, overview) == 84);
+    REQUIRE(gradeDrink(recipe, true, overview) == 84);
 }
 
 TEST_CASE("gradeDrink scores perfect cold drink at 100 with cold match bonus")
 {
-    CheckCoffeeIntent intent = blackCoffeeIntent();
-    intent.isHot             = false;
+    const DrinkRecipe    recipe   = blackCoffeeRecipe();
     const CoffeeOverview overview = perfectBlackCoffeeOverview(false);
 
-    REQUIRE(gradeDrink(intent, overview) == 100);
+    REQUIRE(gradeDrink(recipe, false, overview) == 100);
 }
 
 TEST_CASE("gradeDrink scores perfect hot drink at 100 with no temperature bonus")
 {
-    CheckCoffeeIntent intent = blackCoffeeIntent();
-    intent.isHot             = true;
+    const DrinkRecipe    recipe   = blackCoffeeRecipe();
     const CoffeeOverview overview = perfectBlackCoffeeOverview(true);
 
-    REQUIRE(gradeDrink(intent, overview) == 100);
+    REQUIRE(gradeDrink(recipe, true, overview) == 100);
 }
 
 TEST_CASE("gradeDrink halves score on temperature mismatch")
 {
-    CheckCoffeeIntent intent = blackCoffeeIntent();
-    intent.isHot             = true;
+    const DrinkRecipe    recipe   = blackCoffeeRecipe();
     const CoffeeOverview overview = perfectBlackCoffeeOverview(false);
 
-    REQUIRE(gradeDrink(intent, overview) == 50);
+    REQUIRE(gradeDrink(recipe, true, overview) == 50);
 }
 
 TEST_CASE("gradeDrink applies cold match bonus to imperfect drink capped at 100")
 {
-    CheckCoffeeIntent intent = blackCoffeeIntent();
-    intent.isHot             = false;
+    const DrinkRecipe    recipe   = blackCoffeeRecipe();
     const CoffeeOverview overview = pureCoffeeOverview(false);
 
-    REQUIRE(gradeDrink(intent, overview) == 100);
+    REQUIRE(gradeDrink(recipe, false, overview) == 100);
 }
 
 TEST_CASE("gradeDrink halves imperfect drink score on temperature mismatch")
 {
-    CheckCoffeeIntent intent = blackCoffeeIntent();
-    intent.isHot             = true;
+    const DrinkRecipe    recipe   = blackCoffeeRecipe();
     const CoffeeOverview overview = pureCoffeeOverview(false);
 
-    REQUIRE(gradeDrink(intent, overview) == 42);
+    REQUIRE(gradeDrink(recipe, true, overview) == 42);
 }

@@ -1,18 +1,12 @@
 #pragma once
 
-#include "Ingredient.h"
 #include <bagel.h>
 
 namespace cafe
 {
-/** @brief Cup was dropped on a customer: expected drink spec + target customer. */
+/** @brief Cup was dropped on a customer: target customer for grading. */
 struct CheckCoffeeIntent
 {
-    float ratio[INGREDIENT_COUNT]{}; // Coffee, Water, Milk — normalized fractions
-    bool  isHot{};                   // expected serving temperature
-    int   dropSum{};                 // expected total drops poured (unused by grading)
-    float targetFill{};              // ideal fill fraction (0..1) of cup capacity
-    int   drinkSlot{};               // which drinks[] slot on the customer this cup fulfills
     bagel::ent_type customer{ -1 };
 };
 } // namespace cafe

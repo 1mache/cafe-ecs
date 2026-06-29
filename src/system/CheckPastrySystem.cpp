@@ -27,11 +27,12 @@ void checkPastrySystem()
             continue;
         }
 
-        const int slot = intent.pastrySlot;
-        auto& grade    = customer.get<OrderGrade>();
+        const Pastry& pastry = e.get<Pastry>();
+        const Order&  order  = customer.get<Order>();
+        auto&         grade  = customer.get<OrderGrade>();
+        const int     slot   = matchPastrySlot(order, grade, pastry.type, pastry.temperature);
 
-        // Wrong pastry type: bounce it back so the player can correct the order.
-        if (e.get<Pastry>().type != intent.type)
+        if (slot < 0)
         {
             if (e.has<DragIntent>())
                 e.get<DragIntent>().dropSpaceEntity = std::nullopt;
@@ -40,8 +41,8 @@ void checkPastrySystem()
             continue;
         }
 
-        const bool wantHot = intent.temp == Temperature::Hot;
-        const bool isHot   = e.get<Pastry>().temperature == Temperature::Hot;
+        const bool wantHot = order.pastries[slot].temp == Temperature::Hot;
+        const bool isHot   = pastry.temperature == Temperature::Hot;
         grade.pastryGrades[slot] = (wantHot == isHot) ? MAX_ITEM_GRADE : PARTIAL_ITEM_GRADE;
         markPastryServed(grade, slot);
 

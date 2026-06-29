@@ -86,41 +86,25 @@ void deliverySystem()
 
         if (e.has<Cup>())
         {
-            // Find the first unserved drink slot; grade via acceptGradedBeverageSystem.
-            const int slot = firstUnservedDrink(order, grade);
-            if (slot < 0 || e.has<CheckCoffeeIntent>())
+            if (firstUnservedDrink(order, grade) < 0 || e.has<CheckCoffeeIntent>())
             {
                 rejectItem(e);
                 intent.dropSpaceEntity = std::nullopt;
                 continue;
             }
 
-            const auto& recipe = recipeFor(order.drinks[slot].type);
-            CheckCoffeeIntent coffeeIntent{};
-            for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
-                coffeeIntent.ratio[i] = recipe.ratio[i];
-            coffeeIntent.targetFill = recipe.targetFill;
-            coffeeIntent.isHot     = order.drinks[slot].temp == Temperature::Hot;
-            coffeeIntent.customer  = target.entity();
-            coffeeIntent.drinkSlot = slot;
-            e.add(coffeeIntent);
+            e.add(CheckCoffeeIntent{ .customer = target.entity() });
         }
         else // pastry
         {
-            const int slot = firstUnservedPastry(order, grade);
-            if (slot < 0 || e.has<CheckPastryIntent>())
+            if (firstUnservedPastry(order, grade) < 0 || e.has<CheckPastryIntent>())
             {
                 rejectItem(e);
                 intent.dropSpaceEntity = std::nullopt;
                 continue;
             }
 
-            CheckPastryIntent pastryIntent{};
-            pastryIntent.type       = order.pastries[slot].type;
-            pastryIntent.temp       = order.pastries[slot].temp;
-            pastryIntent.customer   = target.entity();
-            pastryIntent.pastrySlot = slot;
-            e.add(pastryIntent);
+            e.add(CheckPastryIntent{ .customer = target.entity() });
         }
     }
 }

@@ -29,7 +29,7 @@ static float ratioGradeDivisor(int expectedTypeCount)
 }
 } // namespace
 
-int gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
+int gradeDrink(const DrinkRecipe& recipe, bool expectedHot, const CoffeeOverview& overview)
 {
     if (overview.dropSum == 0)
     {
@@ -43,7 +43,7 @@ int gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
     int   expectedTypeCount  = 0;
     for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
     {
-        const float want  = intent.ratio[i];
+        const float want  = recipe.ratio[i];
         const float got   = overview.ratio[i];
         const float delta = std::fabs(want - got);
         totalDelta += delta;
@@ -78,11 +78,11 @@ int gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
     //**end score log
 
     const float volumeGrade = std::clamp(
-        1.0f - std::fabs(overview.fillPercent - intent.targetFill),
+        1.0f - std::fabs(overview.fillPercent - recipe.targetFill),
         kNormalizedGradeMin, kNormalizedGradeMax);
 
     //**start score log
-    std::cout << "[BeverageScore] fill: expected " << intent.targetFill
+    std::cout << "[BeverageScore] fill: expected " << recipe.targetFill
               << " (targetFill), got " << overview.fillPercent
               << " (fillPercent), volumeGrade " << volumeGrade << "\n";
     //**end score log
@@ -96,12 +96,12 @@ int gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
               << " + " << kVolumeGradeWeight << " * " << volumeGrade << " = " << grade << "\n";
     std::cout << "[BeverageScore] base score: " << score << "\n";
     std::cout << "[BeverageScore] temperature: expected "
-              << (intent.isHot ? "Hot" : "Cold") << ", actual "
+              << (expectedHot ? "Hot" : "Cold") << ", actual "
               << (overview.isHot ? "Hot" : "Cold") << " (ice present: "
               << (overview.isHot ? "no" : "yes") << ")\n";
     //**end score log
 
-    if (!intent.isHot && !overview.isHot)
+    if (!expectedHot && !overview.isHot)
     {
         const int scoreBeforeBonus = score;
         score                      = std::min(kMaxDrinkScore, score + kColdMatchBonus);
@@ -111,7 +111,7 @@ int gradeDrink(const CheckCoffeeIntent& intent, const CoffeeOverview& overview)
         //**end score log
     }
 
-    if (intent.isHot != overview.isHot)
+    if (expectedHot != overview.isHot)
     {
         const int scoreBeforePenalty = score;
         score                        = static_cast<int>(std::round(static_cast<float>(score) * kTempMismatchPenaltyFactor));
