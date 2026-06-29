@@ -23,17 +23,17 @@ bagel::Entity createBg(AssetManager& assets, std::string_view bgPath)
     bgEnt.addAll(Drawable{bgTex.get(), bgSrcRect, layer::BG},
                  Transform{.x = 0.f,
                            .y = 0.f,
-                           .w = screenToWorldScale(LOGICAL_W),
-                           .h = screenToWorldScale(LOGICAL_H)});
+                           .w = texToWorldScale(LOGICAL_W),
+                           .h = texToWorldScale(LOGICAL_H)});
     return bgEnt;
 }
 bagel::Entity createBartop(AssetManager& assets, PhysicsContext& physicsContext)
 {
     const Texture& bartopTex     = assets.getTexture(TEX_BARTOP);
     const auto  bartopSrcRect    = bartopTex.getFullSrcRect();
-    const float bartopHalfWidth  = screenToWorldScale(bartopSrcRect.w);
-    const float bartopHalfHeight = screenToWorldScale(bartopSrcRect.h);
-    const float bartopY = -(screenToWorldDistance(LOGICAL_H / 2) - bartopHalfHeight);
+    const float bartopHalfWidth  = texToWorldScale(bartopSrcRect.w);
+    const float bartopHalfHeight = texToWorldScale(bartopSrcRect.h);
+    const float bartopY = -(texToWorldDistance(LOGICAL_H / 2) - bartopHalfHeight);
     auto  ent        = bagel::Entity::create();
 
     auto world = physicsContext.world();
@@ -45,7 +45,7 @@ bagel::Entity createBartop(AssetManager& assets, PhysicsContext& physicsContext)
 
     // Polygon covering the top 10% of the texture (a strip at the top edge).
     const float stripHalfHeight = 0.1f * bartopHalfHeight; // 10% of full height
-    const float stripOffsetY     = bartopHalfHeight - stripHalfHeight - screenToWorldDistance(16.f); // top, body-local
+    const float stripOffsetY     = bartopHalfHeight - stripHalfHeight - texToWorldDistance(16.f); // top, body-local
     const b2Polygon topStrip =
         b2MakeOffsetBox(bartopHalfWidth, stripHalfHeight, { 0.f, stripOffsetY }, b2Rot_identity);
 

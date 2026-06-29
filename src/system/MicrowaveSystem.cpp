@@ -2,7 +2,7 @@
 
 #include "Components.h"
 #include "Entities.h"      // createPastry, destroyDeliveredItem
-#include "SupplySystem.h"  // supply::MICROWAVE_SPAWN
+#include "SupplySystem.h"  // supply::MICROWAVE_SPAWN_POS
 #include <bagel.h>
 #include <algorithm>
 #include <cmath>
@@ -99,8 +99,8 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
         m.timer += dt;
         if (m.timer >= HEAT_TIME)
         {
-            auto pat = createPastry(assets, physics, supply::MICROWAVE_SPAWN, m.cooking);
-            pat.get<Pastry>().temperature = HEATED_TEMPERATURE;
+            auto pat = createPastry(assets, physics, supply::MICROWAVE_SPAWN_POS, m.cooking);
+            pat.get<Pastry>().temperature = Temperature::Hot;
 
             m.busy    = false;
             m.timer   = 0.f;

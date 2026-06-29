@@ -23,15 +23,15 @@ void cafe::MainGameScene::onInit()
     createBg(assets, BG_PATH);
     createBartop(assets, _physics);
 
-    createCoffeeMachine(assets, _physics, {-7.f, -1.f});
+    createCoffeeMachine(assets, _physics, supply::COFFEE_MACHINE_POS);
 
     // Supply is summoned on demand: click a button to drop a fresh cup/pastry in.
-    createSpawnButton(assets, _physics, supply::CUP_BUTTON, DropType::Cup);
-    createSpawnButton(assets, _physics, supply::PASTRY_BUTTON, DropType::Pastry);
+    createSpawnButton(assets, _physics, supply::CUP_BUTTON_POS, DropType::Cup);
+    createSpawnButton(assets, _physics, supply::PASTRY_BUTTON_POS, DropType::Pastry);
 
     // Ice machine (gray placeholder square) with its spawn button on the machine face.
     createIceMachine(assets, supply::ICE_MACHINE_POS);
-    createSpawnButton(assets, _physics, supply::ICE_BUTTON, DropType::Ice);
+    createSpawnButton(assets, _physics, supply::ICE_BUTTON_POS, DropType::Ice);
 
     // Microwave (gray placeholder square, no button): drag a pastry onto it to heat it.
     createMicrowave(assets, _physics, supply::MICROWAVE_POS);
@@ -39,17 +39,13 @@ void cafe::MainGameScene::onInit()
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone(_physics);
 
-    std::cout << "[Demo] Hold 1/2/3 to pour Coffee/Water/Milk. Left-drag to move the cup or pastry.\n"
-              << "[Demo] Serve a cup matching the order ratio + a pastry to the customer in 60 s.\n";
-
     // --- Customer cycle ---
     // One spawner entity drives the loop: it keeps a single customer at the seat,
     // spawning the next (with a fresh random order) SPAWN_INTERVAL s after it leaves.
     // cooldown = 0 so the first customer appears on the first frame. The customer's
     // speech bubble + order-icon grid are built per-spawn in spawnCustomer().
     auto spawner = bagel::Entity::create();
-    spawner.add(Spawner{ .seat     = { 5.f, -1.f },
-                         .patience = CUSTOMER_PATIENCE,
+    spawner.add(CustomerSpawner{ .seat     = { 5.f, 0.f },
                          .interval = SPAWN_INTERVAL,
                          .cooldown = 0.f });
 
@@ -100,7 +96,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     machineButtonSystem();             // coffee-machine buttons -> pour state
     liquidSpawnerSystem(getAssetManager(), _physics, dt);    // spawn drops while pouring
     _physics.step(dt);
-    liquidVelocityClampSystem();
+    liquidVelocityClampSystem(); // TODO: remove and check effects in the end
     liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
     dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 

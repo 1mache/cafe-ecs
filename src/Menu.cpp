@@ -63,7 +63,7 @@ Order randomOrder()
     {
         const auto d = static_cast<DrinkType>(randInt(static_cast<int>(DrinkType::count)));
         const Temperature t = randomDrinkTemp(recipeFor(d));
-        const int cost = t == Temperature::Cold ? 2 : 1;
+        const int cost = t == Temperature::Cold ? 2 : 1; // cold coffee requires 2 sprites to show that its cold
         if (cost > budget)
             break;
         o.drinks[o.drinkCount++] = { .type = d, .temp = t };
@@ -73,7 +73,7 @@ Order randomOrder()
     {
         const auto p = static_cast<PastryType>(randInt(static_cast<int>(PastryType::count)));
         const Temperature t = randInt(2) ? Temperature::Cold : Temperature::Hot;
-        const int cost = t == Temperature::Hot ? 2 : 1;
+        const int cost = t == Temperature::Hot ? 2 : 1; // hot pastry requires 2 sprites to show that its hot
         if (cost > budget)
             break;
         o.pastries[o.pastryCount++] = { .type = p, .temp = t };

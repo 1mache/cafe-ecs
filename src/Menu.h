@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Ingredient.h"
-#include "DrinkType.h"
+#include "ItemTypes.h"
 #include "Order.h"
 #include "Pastry.h"
 #include "SpriteSheet.h"
@@ -11,7 +11,6 @@ constexpr int name = 0;
 constexpr int ratio = 1;
 constexpr int allowsHot = 2;
 constexpr int allowsCold = 3;
-constexpr int iconFrame = 4;
 
 namespace cafe
 {
@@ -22,18 +21,17 @@ struct DrinkRecipe
     float       ratio[INGREDIENT_COUNT]; // Coffee, Water, Milk — fractions, sum to 1.0
     bool        allowsHot;
     bool        allowsCold;
-    int         iconFrame;               // index into props.png (16x16 frames)
-    float       targetFill;             // ideal fill fraction (0..1) of cup capacity
+    float       targetFill;              // ideal fill fraction (0..1) of cup capacity
 };
 
 // Indexed by DrinkType (order MUST match the enum). Each ratio sums to 1.0.
 inline constexpr DrinkRecipe MENU[] = {
     // name           {coffee, water, milk}                    hot    cold   iconFrame  targetFill
-    { "Black coffee",{ 0.80f, 0.20f, 0.00f }, true,  true,  5,         1.f },
-    { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false, 6,         0.5f },
-    { "Americano",   { 0.35f, 0.50f, 0.15f }, true,  true,  7,         1.f },
-    { "Latte",       { 0.20f, 0.70f, 0.10f }, true,  false, 8,         1.f },
-    { "Cappuccino",  { 0.30f, 0.70f, 0.00f }, true,  true,  9,         0.75f },
+    { "Black coffee",{ 0.80f, 0.20f, 0.00f }, true,  true,          1.f },
+    { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false,         0.5f },
+    { "Americano",   { 0.35f, 0.50f, 0.15f }, true,  true,          1.f },
+    { "Latte",       { 0.20f, 0.70f, 0.10f }, true,  false,         1.f },
+    { "Cappuccino",  { 0.30f, 0.70f, 0.00f }, true,  true,          0.75f },
 };
 static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
               "MENU must have one entry per DrinkType");

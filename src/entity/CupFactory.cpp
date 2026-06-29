@@ -35,22 +35,22 @@ constexpr float CUP_RESTITUTION = 0.1f;
 bagel::Entity createCup(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     const Texture& tex = assets.getTexture(TEX);
-    constexpr float halfW = screenToWorldScale(CUP_DIMS.x);
-    constexpr float halfH = screenToWorldScale(CUP_DIMS.y);
+    constexpr float halfW = texToWorldScale(CUP_DIMS.x);
+    constexpr float halfH = texToWorldScale(CUP_DIMS.y);
 
-    const float wallW     = screenToWorldDistance(WALL_W_PIX);
-    const float wallHalfH = screenToWorldScale(WALL_H_PIX);
-    const float wallHalfW = screenToWorldScale(WALL_W_PIX);
+    const float wallW     = texToWorldDistance(WALL_W_PIX);
+    const float wallHalfH = texToWorldScale(WALL_H_PIX);
+    const float wallHalfW = texToWorldScale(WALL_W_PIX);
     const float leftWallX =
-        (-halfW + screenToWorldDistance(L_WALL_X_OFFSET_PIX) + wallW);
+        (-halfW + texToWorldDistance(L_WALL_X_OFFSET_PIX) + wallW);
     const float rightWallX =
-        (halfW - screenToWorldDistance(R_WALL_X_OFFSET_PIX) - wallW);
-    const float wallY       = -halfH + screenToWorldDistance(CUP_WALLS_Y_OFFSET_PIX);
+        (halfW - texToWorldDistance(R_WALL_X_OFFSET_PIX) - wallW);
+    const float wallY       = -halfH + texToWorldDistance(CUP_WALLS_Y_OFFSET_PIX);
     const float bottomHalfH = wallHalfW; // same thickness as walls
-    const float bottomHalfW = screenToWorldScale(BOTTOM_W_PIX);
-    const float bottomX     = (-halfW + screenToWorldDistance(BOTTOM_L_OFFSET_PIX) + bottomHalfW);
+    const float bottomHalfW = texToWorldScale(BOTTOM_W_PIX);
+    const float bottomX     = (-halfW + texToWorldDistance(BOTTOM_L_OFFSET_PIX) + bottomHalfW);
     const float bottomY =
-        -halfH + wallW + screenToWorldDistance(CUP_BOTTOM_Y_OFFSET_PIX);
+        -halfH + wallW + texToWorldDistance(CUP_BOTTOM_Y_OFFSET_PIX);
 
     Transform t{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH };
 

@@ -71,7 +71,7 @@ bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
     auto [w, h] = PERSON_DIMS;
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{.x = pos.x, .y = pos.y, .w = screenToWorldScale(w), .h = screenToWorldScale(h)},
+        Transform{.x = pos.x, .y = pos.y, .w = texToWorldScale(w), .h = texToWorldScale(h)},
         Drawable{tex.get(), getRandomCustomerRect(spriteSheet), layer::CUSTOMER},
         order,
         Behavior{.patience = patience, .maxPatience = patience});
@@ -87,7 +87,7 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     auto customer = createCustomer(assets, physics, pos, order, patience);
 
     // Speech bubble is a child of the customer; order icons are children of the bubble.
-    auto bubble = createSpeechBubble(assets, customer, { 0.f, 28.f });
+    auto bubble = createSpeechBubble(assets, customer, { 0.f, PERSON_DIMS.y/2.f });
 
     // Order icons sit in a single left-aligned row of up to MAX_ORDER_ICONS slots.
     // Drinks default to Hot and pastries to Cold; a temperature icon is shown
@@ -99,9 +99,9 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     const int coffeeFrom = props.getTagBounds("coffee").first;
     const int pastryFrom = props.getTagBounds("pastry").first;
 
-    int frames[MAX_ORDER_ICONS];
+    int icons[MAX_ORDER_ICONS];
     int n = 0;
-    auto push = [&](int f) { if (n < MAX_ORDER_ICONS) frames[n++] = f; };
+    auto push = [&](int f) { if (n < MAX_ORDER_ICONS) icons[n++] = f; };
 
     for (int i = 0; i < order.drinkCount; ++i)
     {
@@ -119,13 +119,14 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     }
 
     constexpr float BUBBLE_W  = BUBBLE_DIMS.x;     // full 64 px, unscaled
-    constexpr float SLOT_W    = BUBBLE_W / MAX_ORDER_ICONS;
-    constexpr float ICON_SIZE = SLOT_W * 0.85f;    // fits one slot
+    constexpr float MARGIN    = 0.05f * BUBBLE_W;
+    constexpr float BETWEEN   = 0.02f * BUBBLE_W;
+    constexpr float SLOT_W    = (BUBBLE_W - ((MAX_ORDER_ICONS-1) * BETWEEN) - (2 * MARGIN)) / MAX_ORDER_ICONS;
     for (int i = 0; i < n; ++i)
     {
         // Slot center relative to bubble center (+x = right).
-        const float x = -BUBBLE_W * 0.5f + (static_cast<float>(i) + 0.5f) * SLOT_W;
-        createOrderIcon(assets, frames[i], ICON_SIZE, ICON_SIZE, bubble, {x, 0.f});
+        const float x = -(BUBBLE_W * 0.5f) + MARGIN + SLOT_W * 0.5f + static_cast<float>(i) * (SLOT_W + BETWEEN);
+        createOrderIcon(assets, icons[i], SLOT_W, SLOT_W, bubble, {x, 0.f});
     }
 
     return customer;

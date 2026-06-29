@@ -26,9 +26,6 @@ WorldPos screenToWorldPoint(SDL_FPoint screenPos, WorldPos camPos)
 
 SDL_FRect transformToFrect(const Transform& t, WorldPos camPos)
 {
-    constexpr auto ptm = PTM;
-    const float    s   = SCALE_FACTOR;
-
     // Y-up world: top-left of AABB is (x - w, y + h).
     const auto topLeft = worldToScreenPoint({t.x - t.w, t.y + t.h}, camPos);
 

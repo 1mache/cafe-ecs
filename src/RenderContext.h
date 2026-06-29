@@ -16,14 +16,6 @@ public:
         assertFatal(renderer != nullptr, "RenderContext::init: renderer is nullptr");
         _window   = window;
         _renderer = renderer;
-
-        // Render into a fixed logical canvas; SDL scales it up to the
-        // physical window. INTEGER_SCALE keeps pixel art crisp (whole
-        // multiples only, letterboxing the remainder).
-        SDL_SetRenderLogicalPresentation(_renderer,
-                                         LOGICAL_W,
-                                         LOGICAL_H,
-                                         SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
     };
 
     static SDL_Window* getWindow()

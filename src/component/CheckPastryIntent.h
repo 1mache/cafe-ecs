@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DrinkType.h"
+#include "ItemTypes.h"
 #include "Pastry.h"
 #include <bagel.h>
 
@@ -16,7 +16,7 @@ struct CheckPastryIntent
 };
 } // namespace cafe
 
-template <> struct bagel::Storage<cafe::CheckPastryIntent> final : bagel::NoInstance
+template <> struct bagel::Storage<cafe::CheckPastryIntent> final : NoInstance
 {
-    using type = bagel::SparseStorage<cafe::CheckPastryIntent>;
+    using type = SparseStorage<cafe::CheckPastryIntent>;
 };

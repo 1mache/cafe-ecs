@@ -14,7 +14,7 @@ namespace
 {
 b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
 {
-    constexpr float CHECK_RADIUS = screenToWorldDistance(CUP_DIMS.x/2);
+    constexpr float CHECK_RADIUS = texToWorldDistance(CUP_DIMS.x/2);
 
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
@@ -41,8 +41,8 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
     const float srcX = item == DropType::Cup ? 0.f : 0.f + BUTTON_DIMS.x;
     const SDL_FRect src = { srcX, 0.f, BUTTON_DIMS.x, BUTTON_DIMS.y };
 
-    const float halfW = screenToWorldScale(BUTTON_DIMS.x);
-    const float halfH = screenToWorldScale(BUTTON_DIMS.y);
+    const float halfW = texToWorldScale(BUTTON_DIMS.x);
+    const float halfH = texToWorldScale(BUTTON_DIMS.y);
 
     // Cup/pastry drop in from above the screen; ice drops from the ice machine spout.
     const WorldPos spawnPos =
