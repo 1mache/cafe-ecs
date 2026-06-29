@@ -11,9 +11,10 @@ namespace cafe
 constexpr float BASE_ANIM_DURATION = 0.1f;
 struct AnimationFrame
 {
-    Transform transform{}; // does the transform of the body change
-    float     duration{BASE_ANIM_DURATION};
-    int       spriteIndex{-1}; // index of the frame on sprite sheet. have to set
+    SDL_FPoint relativeScale{1.f, 1.f}; // scale multipliers for x and y
+    float      rotation{}; // rotation this frame
+    float      duration{BASE_ANIM_DURATION};
+    int        spriteIndex{-1}; // index of the frame on sprite sheet. have to set
 };
 
 constexpr auto MAX_ANIM_FRAMES = 4;

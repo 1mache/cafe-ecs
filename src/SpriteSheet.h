@@ -27,7 +27,7 @@ public:
     [[nodiscard]]
     const std::string& textureFilename() const { return _textureFilename; }
     [[nodiscard]]
-    SDL_FRect getFrame(int frameIndex) const;
+    SDL_FRect getFrameRect(int frameIndex) const;
     [[nodiscard]]
     auto tags() const { return std::views::keys(_tagMap); }
     [[nodiscard]]
