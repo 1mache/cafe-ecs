@@ -36,7 +36,7 @@ inline constexpr uint64_t DRAGGABLE        = bit2Filter(DRAGGABLE_BIT); // dragg
 inline constexpr uint64_t FURNITURE        = bit2Filter(FURNITURE_BIT); // solid furniture
 inline constexpr uint64_t ICE              = bit2Filter(ICE_BIT); // ice cube: rests on furniture, caught by cup
 
-inline constexpr uint64_t MASK_LIQUID           = CUP_SOLID | CUP_INSIDE | CLEANUP;
+inline constexpr uint64_t MASK_LIQUID           = CUP_SOLID | ICE | CUP_INSIDE | CLEANUP;
 inline constexpr uint64_t MASK_CUP_SOLID        = LIQUID | FURNITURE | CUP_SOLID | DRAGGABLE | ICE;
 inline constexpr uint64_t MASK_CUP_INSIDE       = LIQUID | ICE;
 inline constexpr uint64_t MASK_CUP_LID          = CUP_LID | CUP_SOLID;

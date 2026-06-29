@@ -11,11 +11,11 @@ namespace cafe
 {
 bagel::Entity createIceCube(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
-    static constexpr auto TEX = "particle.png";
+    static constexpr auto TEX = "ice.png";
     const Texture& tex = assets.getTexture(TEX);
 
     auto ent = bagel::Entity::create();
-    constexpr float r = 0.18f; // ~3x a liquid drop (drop r = 0.06). Tune to taste.
+    const float r = texToWorldScale(tex.getSize().x);
 
     b2BodyDef bd = b2DefaultBodyDef();
     bd.type          = b2_dynamicBody;
@@ -34,7 +34,7 @@ bagel::Entity createIceCube(AssetManager& assets, PhysicsContext& physics, World
     // enableSensorEvents: the visitor side of a sensor pair must opt in (Box2D 3.x).
     b2ShapeDef sd = b2DefaultShapeDef();
     sd.density              = 12.f;
-    sd.material.friction    = 0.5f;
+    sd.material.friction    = 0.2f;
     sd.material.restitution = 0.05f;
     sd.enableSensorEvents   = true;
     sd.filter.categoryBits  = filter::ICE;
