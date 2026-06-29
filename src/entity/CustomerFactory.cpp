@@ -38,23 +38,22 @@ constexpr Animation createTalkingAnimation(int customerId)
 {
     AnimationFrame frameMouthShut
     {
-        .spriteIndex = customerId
+        .spritesheetIndex = customerId
     };
 
     AnimationFrame frameMouthOpen
     {
-        .relativeScale = {1.f, 0.9f},
-        .spriteIndex = customerId + 1
+        .spritesheetIndex = customerId + 1
     };
 
     return Animation
     {
         {frameMouthShut, frameMouthOpen},
+        SPRITE_DATA,
         0,
+        frameMouthOpen.duration,
         2,
-        TEX,
         true,
-        false,
         false
     };
 }

@@ -36,6 +36,7 @@ target_sources(
     component/Sensor.cpp
     component/TimerBar.h
     component/Animation.h
+    component/Animation.cpp
     component/Components.h
 
     # systems
@@ -61,7 +62,6 @@ target_sources(
     system/SupplySystem.cpp
     system/SensorSystem.h
     system/SensorSystem.cpp
-    system/Systems.h
     system/DayCycleSystem.h
     system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp
@@ -70,6 +70,9 @@ target_sources(
     system/CupSystem.cpp
     system/TimerBarSystem.h
     system/TimerBarSystem.cpp
+    system/AnimationSystem.h
+    system/AnimationSystem.cpp
+    system/Systems.h
 
     # entities
     entity/CupFactory.h

@@ -1,5 +1,7 @@
 #include "Animation.h"
 
+#include "Utils.h"
+
 namespace cafe
 {
 std::optional<int> getNextAnimationFrame(Animation& animation)
@@ -18,4 +20,12 @@ std::optional<int> getNextAnimationFrame(Animation& animation)
 
     return animation.currentFrame;
 }
+void updateAnimationWithFrame(Animation& animation, int frameId)
+{
+    assertFatal(frameId < animation.frameCount,
+        "Animation frame index out of range " + std::to_string(frameId));
+    AnimationFrame& frame = animation.frames[toSizet(frameId)];
+    animation.currentFrame = frameId;
+    animation.timer = frame.duration;
 }
+} // namespace cafe

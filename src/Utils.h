@@ -6,11 +6,18 @@
 
 namespace cafe
 {
-/** @brief Logs @p message, shows a message box, and terminates immediately. */
-[[noreturn]] inline void fatalError(const char* message)
+template <typename T>
+requires std::integral<T>
+constexpr std::size_t toSizet(T value)
 {
-    SDL_Log("Fatal error: %s", message);
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", message, nullptr);
+    return static_cast<size_t>(value);
+}
+
+/** @brief Logs @p message, shows a message box, and terminates immediately. */
+[[noreturn]] inline void fatalError(std::string_view message)
+{
+    SDL_Log("Fatal error: %s", message.data());
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", message.data(), nullptr);
     SDL_Quit();
     std::exit(1);
 }

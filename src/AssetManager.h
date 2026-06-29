@@ -21,6 +21,8 @@ public:
     // loads a texture for this
     const SpriteSheet& getSpriteSheet(std::string_view textureFilename,
                                       std::string_view spriteSheetFilename);
+    // for already loaded sprite sheets
+    const SpriteSheet& getSpriteSheet(std::string_view spriteSheetFilename);
 
     void clear()
     {
@@ -32,6 +34,6 @@ private:
     std::unordered_map<std::string, SpriteSheet>  _spriteSheets{};
     SDL_Renderer* _renderer{};
 
-    static constexpr std::string RES_DIR_PATH = "res/";
+    static constexpr auto RES_DIR_PATH = "res/";
 };
 }

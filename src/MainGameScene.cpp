@@ -1,4 +1,6 @@
 #include "MainGameScene.h"
+
+#include "AnimationSystem.h"
 #include "Components.h"
 #include "DayState.h"
 #include "Entities.h"
@@ -103,6 +105,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     physicsToTransformSystem();    // physics position -> Transform
 
     customerSpawnerSystem(getAssetManager(), _physics, dt); // keep one customer at the seat
+    animationSystem(getAssetManager(), dt);
     behaviorSystem(dt);           // tick patience; adds Leaving on timeout
     orderSystem();                // all items served -> add Leaving (success)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
