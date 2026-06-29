@@ -35,6 +35,7 @@ target_sources(
     component/Sensor.h
     component/Sensor.cpp
     component/TimerBar.h
+    component/Animation.h
     component/Components.h
 
     # systems
