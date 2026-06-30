@@ -1,7 +1,9 @@
 #include "CheckBeverageSystem.h"
 #include "Components.h"
 #include "Entities.h"
+#include "Menu.h"
 #include "OrderMatch.h"
+#include <cmath>
 #include <iostream>
 #include <vector>
 
@@ -9,6 +11,8 @@ namespace cafe
 {
 namespace
 {
+static constexpr const char* kIngredientNames[] = { "Coffee", "Water", "Milk" };
+
 CoffeeOverview buildOverview(bagel::ent_type cupId)
 {
     static const bagel::Mask liquidMask = bagel::MaskBuilder().set<Liquid>().build();
@@ -61,6 +65,21 @@ void checkBeverageSystem()
             e.get<CoffeeOverview>() = overview;
         else
             e.add(overview);
+
+        const Cup& cup = e.get<Cup>();
+
+        //**start score log
+        std::cout << "[BeverageScore] snapshot (cup waiting on customer)\n";
+        std::cout << "[BeverageScore]   actual drops: " << overview.dropSum
+                  << " (" << static_cast<int>(overview.fillPercent * 100.f) << "% fill)\n";
+        for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
+        {
+            std::cout << "[BeverageScore]   actual " << kIngredientNames[i]
+                      << " ratio: " << overview.ratio[i] << "\n";
+        }
+        std::cout << "[BeverageScore]   ice count: " << cup.iceCount
+                  << ", ice found: " << (cup.iceCount > 0 ? "yes" : "no") << "\n";
+        //**end score log
     }
 }
 
@@ -86,12 +105,58 @@ void acceptGradedBeverageSystem()
             continue;
         }
 
-        const int slot  = intent.drinkSlot;
-        const CoffeeOverview& ov = e.get<CoffeeOverview>();
-        std::cout << "[Delivery] cup delivered: " << ov.dropSum
-                  << " particles (" << static_cast<int>(ov.fillPercent * 100.f) << "% fill)\n";
-        auto& grade     = customer.get<OrderGrade>();
-        grade.drinkGrades[slot] = gradeDrink(intent, ov);
+        const CoffeeOverview& ov    = e.get<CoffeeOverview>();
+        const Order&          order = customer.get<Order>();
+        auto&                 grade = customer.get<OrderGrade>();
+        const int             slot  = matchDrinkSlotByRatio(order, grade, ov);
+
+        if (slot < 0)
+        {
+            e.del<CheckCoffeeIntent>();
+            toDestroy.push_back(e.entity());
+            continue;
+        }
+
+        const DrinkRecipe& recipe     = recipeFor(order.drinks[slot].type);
+        const bool         expectedHot = order.drinks[slot].temp == Temperature::Hot;
+        const Cup&         cup        = e.get<Cup>();
+        const int expectedDrops = static_cast<int>(
+            std::lround(recipe.targetFill * static_cast<float>(cup.capacity)));
+
+        //**start score log
+        std::cout << "[BeverageScore] === Beverage submitted ===\n";
+        std::cout << "[BeverageScore] drink slot: " << slot
+                  << ", drink: " << recipe.name << "\n";
+        for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
+        {
+            std::cout << "[BeverageScore]   expected " << kIngredientNames[i]
+                      << " ratio: " << recipe.ratio[i] << "\n";
+        }
+        std::cout << "[BeverageScore]   expected drops: " << expectedDrops
+                  << " (targetFill " << recipe.targetFill
+                  << " * capacity " << cup.capacity << ")\n";
+        std::cout << "[BeverageScore]   expected temperature: "
+                  << (expectedHot ? "Hot" : "Cold") << "\n";
+        std::cout << "[BeverageScore]   actual drops: " << ov.dropSum
+                  << " (" << static_cast<int>(ov.fillPercent * 100.f) << "% fill)\n";
+        for (size_t i = 0; i < INGREDIENT_COUNT; ++i)
+        {
+            std::cout << "[BeverageScore]   actual " << kIngredientNames[i]
+                      << " ratio: " << ov.ratio[i] << "\n";
+        }
+        std::cout << "[BeverageScore]   ice count: " << cup.iceCount
+                  << ", ice found: " << (cup.iceCount > 0 ? "yes" : "no") << "\n";
+        std::cout << "[BeverageScore]   actual temperature: "
+                  << (ov.isHot ? "Hot" : "Cold") << "\n";
+        //**end score log
+
+        grade.drinkGrades[slot] = gradeDrink(recipe, expectedHot, ov);
+
+        //**start score log
+        std::cout << "[BeverageScore] final drinkGrades[" << slot << "] = "
+                  << grade.drinkGrades[slot] << "\n";
+        //**end score log
+
         markDrinkServed(grade, slot);
 
         e.del<CheckCoffeeIntent>();

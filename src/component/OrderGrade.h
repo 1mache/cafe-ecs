@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CoffeeOverview.h"
+#include "ItemTypes.h"
 #include "Order.h"
 #include <bagel.h>
 #include <cstdint>
@@ -37,6 +39,13 @@ bool allItemsServed(const Order& order, const OrderGrade& grade);
 
 /** Returns the raw sum of all per-item grades (max = order item count * MAX_ITEM_GRADE). */
 int sumItemGrades(const Order& order, const OrderGrade& grade);
+
+/** Returns the unserved drink slot whose recipe best matches overview ratios, or -1. */
+int matchDrinkSlotByRatio(const Order& order, const OrderGrade& grade, const CoffeeOverview& overview);
+
+/** Returns the unserved pastry slot matching type/temp, or the last type-only match, or -1. */
+int matchPastrySlot(const Order& order, const OrderGrade& grade,
+                    PastryType pastryType, Temperature pastryTemp);
 
 } // namespace cafe
 
