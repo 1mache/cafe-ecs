@@ -14,12 +14,14 @@ struct Microwave
     float         timer{ 0.f };                 // seconds elapsed this heating cycle
     PastryType    cooking{ PastryType::count }; // type captured on intake (count = idle)
     bagel::Entity display{ bagel::ent_type(-1) }; // child number-display entity; invalid while idle
+    bagel::Entity glow{ bagel::ent_type(-1) };    // child glow overlay; invalid while idle
 };
 
 inline constexpr auto OVEN_TEX              = "oven.png";
 inline constexpr auto OVEN_SPRITE_DATA      = "oven.json";
 inline constexpr int  OVEN_DEFAULT_SPRITE_ID = 0;
 inline constexpr int  OVEN_COOKING_SPRITE_ID = 1;
+inline constexpr int  OVEN_GLOW_SPRITE_ID    = 2;
 
 inline constexpr auto OVEN_NUMBERS_TEX  = "oven_numbers.png";
 inline constexpr auto OVEN_NUMBERS_DATA = "oven_numbers.json";

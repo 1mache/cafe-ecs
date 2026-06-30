@@ -18,7 +18,24 @@ namespace
 {
 // Position of the number display relative to the oven center (world meters, Y-up).
 // Edit freely to align with the number-pad face on the oven sprite.
-constexpr SDL_FPoint NUMBER_OFFSET = { 1.65f, 0.9f };
+constexpr SDL_FPoint NUMBER_OFFSET = { 1.65f, 0.85f };
+
+bagel::Entity createOvenGlow(AssetManager& assets, bagel::Entity oven)
+{
+    const SpriteSheet& sheet = assets.getSpriteSheet(OVEN_SPRITE_DATA);
+    const auto& ovenT = oven.get<Transform>();
+
+    auto ent = bagel::Entity::create();
+    ent.addAll(
+        Transform{ .x = ovenT.x, .y = ovenT.y, .w = ovenT.w, .h = ovenT.h },
+        Drawable{ assets.getTexture(OVEN_TEX).get(),
+                  sheet.getFrameRect(OVEN_GLOW_SPRITE_ID),
+                  layer::STATIC_OVERLAY,
+                  SDL_Color{ 255, 255, 255, 77 } }, // 30% opacity
+        ChildOf(oven /*no offset*/)
+    );
+    return ent;
+}
 
 bagel::Entity createOvenNumber(AssetManager& assets, bagel::Entity oven)
 {
@@ -82,6 +99,7 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
         mw.timer   = 0.f;
         mw.cooking = e.get<Pastry>().type;
         mw.display = createOvenNumber(assets, target);
+        mw.glow    = createOvenGlow(assets, target);
         target.get<Drawable>().srcRect =
             assets.getSpriteSheet(OVEN_SPRITE_DATA).getFrameRect(OVEN_COOKING_SPRITE_ID);
         intent.dropSpaceEntity = std::nullopt;
@@ -105,9 +123,11 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
 
         if (m.timer >= HEAT_TIME)
         {
-            // Destroy the number overlay.
+            // Destroy the number overlay and glow.
             m.display.destroy();
             m.display = bagel::Entity{ bagel::ent_type(-1) };
+            m.glow.destroy();
+            m.glow = bagel::Entity{ bagel::ent_type(-1) };
 
             // Restore idle oven sprite.
             mw.get<Drawable>().srcRect =
