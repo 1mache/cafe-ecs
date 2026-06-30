@@ -12,6 +12,8 @@ namespace cafe
 {
 bagel::Entity createMicrowave(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
+    // just to load the sprite sheet.
+    [[maybe_unused]] auto& numbers =  assets.getSpriteSheet(OVEN_NUMBERS_TEX, OVEN_NUMBERS_DATA);
     auto& spriteSheet = assets.getSpriteSheet(OVEN_TEX, OVEN_SPRITE_DATA);
     constexpr float halfW = texToWorldScale(OVEN_DIMS.x); // world half-extents — tune freely
     constexpr float halfH = texToWorldScale(OVEN_DIMS.y);

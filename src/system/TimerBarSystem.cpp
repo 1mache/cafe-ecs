@@ -11,11 +11,6 @@ namespace
 // 0..1 progress for a bar's source entity, or -1 if the source isn't timed.
 float sourceFraction(bagel::Entity src)
 {
-    if (src.has<Microwave>())
-    {
-        const auto& mw = src.get<Microwave>();
-        return mw.busy ? std::clamp(mw.timer / HEAT_TIME, 0.f, 1.f) : 0.f;
-    }
     if (src.has<DayClock>())
     {
         const auto& dc = src.get<DayClock>();

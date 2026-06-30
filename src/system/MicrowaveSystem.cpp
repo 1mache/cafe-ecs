@@ -1,14 +1,46 @@
 #include "MicrowaveSystem.h"
 
+#include "AssetManager.h"
 #include "Components.h"
 #include "Entities.h"      // createPastry, destroyDeliveredItem
+#include "RenderLayers.h"
 #include "SupplySystem.h"  // supply::MICROWAVE_SPAWN_POS
+#include "Transform.h"     // texToWorldScale
 #include <bagel.h>
+#include <algorithm>       // std::clamp
+#include <cmath>           // std::floor
 #include <optional>
 #include <vector>
 
 namespace cafe
 {
+namespace
+{
+// Position of the number display relative to the oven center (world meters, Y-up).
+// Edit freely to align with the number-pad face on the oven sprite.
+constexpr SDL_FPoint NUMBER_OFFSET = { 1.65f, 0.9f };
+
+bagel::Entity createOvenNumber(AssetManager& assets, bagel::Entity oven)
+{
+    const SpriteSheet& sheet = assets.getSpriteSheet(OVEN_NUMBERS_DATA);
+    const SDL_FPoint   sz    = sheet.spriteSize(); // 3 x 5 px
+    const float        halfW = texToWorldScale(sz.x);
+    const float        halfH = texToWorldScale(sz.y);
+
+    const auto& ovenT = oven.get<Transform>();
+
+    auto ent = bagel::Entity::create();
+    ent.addAll(
+        Transform{ .x = ovenT.x, .y = ovenT.y, .w = halfW, .h = halfH },
+        Drawable{ assets.getTexture(OVEN_NUMBERS_TEX).get(),
+                  sheet.getFrameRect(0),
+                  layer::STATIC_OVERLAY },
+        ChildOf(oven, NUMBER_OFFSET, /*isWorldOffset=*/true)
+    );
+    return ent;
+}
+} // namespace
+
 void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
 {
     static const bagel::Mask pastryMask =
@@ -47,28 +79,41 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
 
         // Free: capture the type, start heating, remove the pastry from the world.
         mw.busy    = true;
-        target.get<Drawable>().srcRect = assets.getSpriteSheet(OVEN_SPRITE_DATA).getFrameRect(OVEN_COOKING_SPRITE_ID);
         mw.timer   = 0.f;
         mw.cooking = e.get<Pastry>().type;
+        mw.display = createOvenNumber(assets, target);
+        target.get<Drawable>().srcRect =
+            assets.getSpriteSheet(OVEN_SPRITE_DATA).getFrameRect(OVEN_COOKING_SPRITE_ID);
         intent.dropSpaceEntity = std::nullopt;
         absorbed = e.entity();
     }
     if (absorbed)
         destroyDeliveredItem(*absorbed);
 
-    // --- Cook + spit-out ---
+    // --- Cook + update number + spit-out ---
+    const SpriteSheet& numbersSheet = assets.getSpriteSheet(OVEN_NUMBERS_DATA);
     for (auto mw : microwaves)
     {
         auto& m = mw.get<Microwave>();
-        auto& d  = mw.get<Drawable>();
-
         if (!m.busy) continue;
 
         m.timer += dt;
+
+        // Update countdown digit sprite.
+        const int digit = std::clamp(static_cast<int>(std::floor(HEAT_TIME - m.timer)), 0, 5);
+        m.display.get<Drawable>().srcRect = numbersSheet.getFrameRect(digit);
+
         if (m.timer >= HEAT_TIME)
         {
-            // set the sprite to default one
-            d.srcRect = assets.getSpriteSheet(OVEN_SPRITE_DATA).getFrameRect(OVEN_DEFAULT_SPRITE_ID);
+            // Destroy the number overlay.
+            m.display.destroy();
+            m.display = bagel::Entity{ bagel::ent_type(-1) };
+
+            // Restore idle oven sprite.
+            mw.get<Drawable>().srcRect =
+                assets.getSpriteSheet(OVEN_SPRITE_DATA).getFrameRect(OVEN_DEFAULT_SPRITE_ID);
+
+            // Spit out heated pastry.
             auto pastry = createPastry(assets, physics, supply::MICROWAVE_SPAWN_POS, m.cooking);
             pastry.get<Pastry>().temperature = Temperature::Hot;
 
