@@ -11,7 +11,7 @@ target_sources(
     component/Liquid.h
     component/PhysicsBody.h
     component/Cup.h
-    component/CoffeeSpawner.h
+    component/LiquidSpawner.h
     component/CoffeeOverview.h
     component/CleanupZone.h
     component/Behavior.h
@@ -23,7 +23,6 @@ target_sources(
     component/DropSpace.h
     component/Falling.h
     component/SpawnButton.h
-    component/SpawnSensor.h
     component/Ice.h
     component/IceMachine.h
     component/InSensorArea.h

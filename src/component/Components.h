@@ -7,7 +7,7 @@
 #include "ChildOf.h"
 #include "CleanupZone.h"
 #include "CoffeeOverview.h"
-#include "CoffeeSpawner.h"
+#include "LiquidSpawner.h"
 #include "Cup.h"
 #include "CustomerSpawner.h"
 #include "DayClock.h"

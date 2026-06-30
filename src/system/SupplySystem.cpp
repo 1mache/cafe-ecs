@@ -2,7 +2,6 @@
 
 #include "Components.h"
 #include "Entities.h"
-#include "SpawnSensor.h"
 #include "Transform.h"
 #include "Utils.h"
 
