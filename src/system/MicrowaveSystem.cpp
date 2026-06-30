@@ -4,23 +4,10 @@
 #include "Entities.h"      // createPastry, destroyDeliveredItem
 #include "SupplySystem.h"  // supply::MICROWAVE_SPAWN_POS
 #include <bagel.h>
-#include <algorithm>
-#include <cmath>
 #include <vector>
 
 namespace cafe
 {
-namespace
-{
-// AABB overlap of two centered boxes. Transform.w/h are half-extents, so this is
-// the same overlap the DropSpace sensor represents — just computed statelessly.
-bool boxesOverlap(const Transform& a, const Transform& b)
-{
-    return std::abs(a.x - b.x) <= a.w + b.w &&
-           std::abs(a.y - b.y) <= a.h + b.h;
-}
-} // namespace
-
 void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
 {
     static const bagel::Mask patMask =
