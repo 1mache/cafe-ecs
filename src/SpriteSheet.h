@@ -27,6 +27,8 @@ public:
     [[nodiscard]]
     const std::string& textureFilename() const { return _textureFilename; }
     [[nodiscard]]
+    const SDL_FPoint& spriteSize() const { return _spriteSize; }
+    [[nodiscard]]
     SDL_FRect getFrameRect(int frameIndex) const;
     [[nodiscard]]
     auto tags() const { return std::views::keys(_tagMap); }

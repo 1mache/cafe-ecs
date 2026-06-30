@@ -47,7 +47,7 @@ void cafe::MainGameScene::onInit()
     // cooldown = 0 so the first customer appears on the first frame. The customer's
     // speech bubble + order-icon grid are built per-spawn in spawnCustomer().
     auto spawner = bagel::Entity::create();
-    spawner.add(CustomerSpawner{ .seat     = { 5.f, 0.f },
+    spawner.add(CustomerSpawner{ .seat     = { 5.9f, 0.f },
                          .interval = SPAWN_INTERVAL,
                          .cooldown = 0.f });
 

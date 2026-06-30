@@ -22,14 +22,14 @@ inline constexpr WorldPos PASTRY_BUTTON_POS  = {8.5f, -4.7f};
 // spawn button on the machine face. The cube drops from the machine spout
 // (ICE_SPAWN_*) onto the counter — not from above the screen like cup/pastry.
 // All four are tunable; keep ICE_SPAWN_* aligned with ICE_MACHINE_POS.
-inline constexpr WorldPos ICE_MACHINE_POS = {-2.5f, -1.0f};
+inline constexpr WorldPos ICE_MACHINE_POS = {-3.5f, -1.0f};
 inline constexpr WorldPos ICE_BUTTON_POS  = {-2.5f, -1.5f};
 inline constexpr float    ICE_SPAWN_X     = -2.5f;
 inline constexpr float    ICE_SPAWN_Y     = -1.0f;
 
 // Microwave: placeholder square; pats are dragged in and spat out at MICROWAVE_SPAWN_POS.
 // Both are tunable — adjust by observation so the spawn lands on the counter beside it.
-inline constexpr WorldPos MICROWAVE_POS       = {1.0f, -1.0f};
+inline constexpr WorldPos MICROWAVE_POS       = {1.0f, -1.4f};
 inline constexpr WorldPos MICROWAVE_SPAWN_POS = {2.3f, -0.5f};
 } // namespace supply
 

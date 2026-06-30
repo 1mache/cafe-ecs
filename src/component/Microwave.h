@@ -15,7 +15,13 @@ struct Microwave
     PastryType cooking{ PastryType::count }; // type captured on intake (count = idle)
 };
 
-inline constexpr float HEAT_TIME          = 3.0f; // seconds to fully heat a pat
+inline constexpr auto OVEN_TEX  = "oven.png";
+inline constexpr auto OVEN_SPRITE_DATA = "oven.json";
+inline constexpr int  OVEN_DEFAULT_SPRITE_ID = 0;
+inline constexpr int  OVEN_COOKING_SPRITE_ID = 1;
+
+inline constexpr float HEAT_TIME          = 5.5f; // seconds to fully heat a pat
+static_assert(HEAT_TIME > 0.f && HEAT_TIME < 5.9f, "Only have microwave numbers 0-5");
 
 inline constexpr float BAR_HEIGHT = 0.18f; // world half-height of the heating bar
 inline constexpr float BAR_GAP    = 0.20f; // world gap between the bar and the machine top

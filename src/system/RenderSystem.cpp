@@ -58,16 +58,6 @@ void drawSystem(SDL_Renderer* renderer)
             continue;
         }
 
-        // TODO: remove after sprite is added.
-        // Placeholder microwave: a solid square. The heating bar is its own child
-        // entity (TimerBar + Drawable), sized by timerBarSystem and drawn below
-        // via the generic Drawable path.
-        if (e.has<Microwave>())
-        {
-            SDL_SetRenderDrawColor(renderer, 90, 90, 110, 255);
-            SDL_RenderFillRect(renderer, &dstRect);
-            continue;
-        }
 
         const SDL_Color& tint = d.tint;
         const bool hasTint = tint.r != 255 || tint.g != 255 || tint.b != 255 || tint.a != 255;
