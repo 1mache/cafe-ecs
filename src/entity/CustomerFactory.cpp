@@ -45,6 +45,7 @@ constexpr Animation createTalkingAnimation(int customerId)
     {
         .spritesheetIndex = customerId + 1
     };
+    frameMouthOpen.relativeTransform.h = 0.95f;
 
     return Animation
     {
