@@ -15,13 +15,15 @@ struct AnimationFrame
 };
 
 constexpr auto MAX_ANIM_FRAMES = 4;
+// constexpr auto
 struct Animation
 {
     std::array<AnimationFrame, MAX_ANIM_FRAMES> frames;
     std::string                                 spriteSheetName{}; // sprite sheet to pull frames from
     int                                         currentFrame{0};
-    float                                       timer{};
     int                                         frameCount{1};
+    float                                       frameTimer{};
+    std::optional<float>                        globalTimer{std::nullopt}; // if set, after this time the animation will be set to ended
     bool                                        isLoop{false};
     bool                                        ended{false}; // force end through this
 };

@@ -26,6 +26,6 @@ void updateAnimationWithFrame(Animation& animation, int frameId)
         "Animation frame index out of range " + std::to_string(frameId));
     AnimationFrame& frame = animation.frames[toSizet(frameId)];
     animation.currentFrame = frameId;
-    animation.timer = frame.duration;
+    animation.frameTimer = frame.duration;
 }
 } // namespace cafe

@@ -21,8 +21,9 @@ namespace cafe
 {
 namespace
 {
-constexpr auto TEX         = "customers.png";
-constexpr auto SPRITE_DATA = "customers.json";
+constexpr auto TEX          = "customers.png";
+constexpr auto SPRITE_DATA  = "customers.json";
+constexpr auto TALKING_TIME = 3.0f;
 
 // from the spritesheet takes a random customer sprite
 int getRandomCustomerId(const SpriteSheet& spriteSheet)
@@ -51,8 +52,9 @@ constexpr Animation createTalkingAnimation(int customerId)
         {frameMouthShut, frameMouthOpen},
         SPRITE_DATA,
         0,
-        frameMouthOpen.duration,
         2,
+        frameMouthOpen.duration,
+        TALKING_TIME,
         true,
         false
     };

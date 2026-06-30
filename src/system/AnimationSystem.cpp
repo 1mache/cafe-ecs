@@ -18,12 +18,21 @@ void animationSystem(AssetManager& assets, float dt)
         auto& animation = ent.get<Animation>();
         auto& d = ent.get<Drawable>();
 
-        animation.timer -= dt;
-        if (animation.timer < 0)
+        animation.frameTimer -= dt;
+        if (animation.globalTimer.has_value())
+        {
+            *(animation.globalTimer) -=dt;
+            if (*animation.globalTimer < 0) animation.ended = true;
+        };
+
+        auto spriteSheet = assets.getSpriteSheet(animation.spriteSheetName);
+        if (animation.frameTimer < 0)
         {
             auto frameIdOpt = getNextAnimationFrame(animation);
             if (!frameIdOpt.has_value())
             {
+                // TODO: check if necessary
+                d.srcRect = spriteSheet.getFrameRect(animation.frames[0].spritesheetIndex); // set to first frame
                 ent.del<Animation>(); // animation has ended
                 continue;
             }
@@ -33,7 +42,7 @@ void animationSystem(AssetManager& assets, float dt)
             AnimationFrame& frame = animation.frames[toSizet(frameId)];
 
             if (frame.spritesheetIndex < 0) fatalError("Spritesheet index -1 for animation frame");
-            d.srcRect = assets.getSpriteSheet(animation.spriteSheetName).getFrameRect(frame.spritesheetIndex);
+            d.srcRect = spriteSheet.getFrameRect(frame.spritesheetIndex);
         }
     }
 }
