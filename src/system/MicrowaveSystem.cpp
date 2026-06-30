@@ -4,31 +4,18 @@
 #include "Entities.h"      // createPastry, destroyDeliveredItem
 #include "SupplySystem.h"  // supply::MICROWAVE_SPAWN_POS
 #include <bagel.h>
-#include <algorithm>
-#include <cmath>
 #include <vector>
 
 namespace cafe
 {
-namespace
-{
-// AABB overlap of two centered boxes. Transform.w/h are half-extents, so this is
-// the same overlap the DropSpace sensor represents — just computed statelessly.
-bool boxesOverlap(const Transform& a, const Transform& b)
-{
-    return std::abs(a.x - b.x) <= a.w + b.w &&
-           std::abs(a.y - b.y) <= a.h + b.h;
-}
-} // namespace
-
 void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
 {
     static const bagel::Mask patMask =
-        bagel::MaskBuilder().set<DragIntent>().set<Pastry>().set<Transform>().build();
+        bagel::MaskBuilder().set<DragIntent>().set<Pastry>().build();
     static const bagel::Mask mwMask =
         bagel::MaskBuilder().set<Microwave>().set<Transform>().build();
 
-    // Gather microwaves once (normally just one); reused by intake and cook below.
+    // Gather microwaves once (normally just one); reused by cook below.
     std::vector<bagel::Entity> microwaves;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
         if (e.test(mwMask))
@@ -43,36 +30,12 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
 
         auto& intent = e.get<DragIntent>();
         if (intent.intentType != DragIntentType::released) continue;
+        if (!intent.dropSpaceEntity.has_value()) continue;
 
-        // Resolve which microwave (if any) the pat was dropped on.
-        // Primary: the sensor-driven dropSpaceEntity. Fallback: geometric overlap.
-        // The sensor's begin-touch only fires on a held ENTER transition, so a pat
-        // that started already inside the zone never gets dropSpaceEntity set; the
-        // overlap test catches that case without depending on any event.
-        bool           onMicro = false;
-        bagel::ent_type targetId{};
-        if (intent.dropSpaceEntity.has_value())
-        {
-            bagel::Entity t{ *intent.dropSpaceEntity };
-            if (!t.has<Microwave>()) continue; // dropped on some other zone — not ours
-            targetId = *intent.dropSpaceEntity;
-            onMicro  = true;
-        }
-        else
-        {
-            const auto& pt = e.get<Transform>();
-            for (auto mw : microwaves)
-                if (boxesOverlap(pt, mw.get<Transform>()))
-                {
-                    targetId = mw.entity();
-                    onMicro  = true;
-                    break;
-                }
-        }
-        if (!onMicro) continue;
+        bagel::Entity target{ *intent.dropSpaceEntity };
+        if (!target.has<Microwave>()) continue; // dropped on some other zone — not ours
 
-        bagel::Entity target{ targetId };
-        auto&         mw = target.get<Microwave>();
+        auto& mw = target.get<Microwave>();
         if (mw.busy)
         {
             // Occupied: drop the target so releaseEntity lets the pat fall normally.
