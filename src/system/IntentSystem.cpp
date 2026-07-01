@@ -11,12 +11,6 @@ namespace cafe
 {
 namespace
 {
-bool isPointInsideTransform(const WorldPos& p, const Transform& t)
-{
-    return p.x > t.x - t.w && p.x < t.x + t.w &&
-           p.y > t.y - t.h && p.y < t.y + t.h;
-}
-
 void updateDragIntent(bagel::Entity e, UserInput input)
 {
     const WorldPos worldMouse =

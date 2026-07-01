@@ -58,6 +58,8 @@ target_sources(
     system/IntentSystem.cpp
     system/SupplySystem.h
     system/SupplySystem.cpp
+    system/UpgradeSystem.h
+    system/UpgradeSystem.cpp
     system/SensorSystem.h
     system/SensorSystem.cpp
     system/DayCycleSystem.h

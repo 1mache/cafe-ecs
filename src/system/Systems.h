@@ -14,4 +14,5 @@
 #include "SensorSystem.h"
 #include "SupplySystem.h"
 #include "TransformSystem.h"
+#include "UpgradeSystem.h"
 #include "AnimationSystem.h"

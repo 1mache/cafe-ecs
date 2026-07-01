@@ -57,6 +57,9 @@ void cafe::MainGameScene::onInit()
     // Day-progress driver: the day ends after CUSTOMERS_PER_DAY customers (served+lost).
     auto dayEntity = bagel::Entity::create();
     dayEntity.add(DayProgress{ .target = CUSTOMERS_PER_DAY });
+
+    // Apply purchased upgrades to this day's machines (level 0 = base values).
+    applyUpgradesSystem();
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
