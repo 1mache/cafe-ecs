@@ -304,6 +304,24 @@
     "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 48 },
     "sourceSize": { "w": 32, "h": 48 },
     "duration": 100
+   },
+   {
+    "filename": "customers 34.aseprite",
+    "frame": { "x": 128, "y": 240, "w": 32, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 48 },
+    "sourceSize": { "w": 32, "h": 48 },
+    "duration": 100
+   },
+   {
+    "filename": "customers 35.aseprite",
+    "frame": { "x": 160, "y": 240, "w": 32, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 48 },
+    "sourceSize": { "w": 32, "h": 48 },
+    "duration": 100
    }
  ],
  "meta": {
@@ -330,7 +348,8 @@
    { "name": "15", "from": 26, "to": 27, "direction": "forward", "color": "#000000ff" },
    { "name": "16", "from": 28, "to": 29, "direction": "forward", "color": "#000000ff" },
    { "name": "17", "from": 30, "to": 31, "direction": "forward", "color": "#000000ff" },
-   { "name": "18", "from": 32, "to": 33, "direction": "forward", "color": "#000000ff" }
+   { "name": "18", "from": 32, "to": 33, "direction": "forward", "color": "#000000ff" },
+   { "name": "19", "from": 34, "to": 35, "direction": "forward", "color": "#000000ff" }
   ],
   "layers": [
    { "name": "Base layer", "opacity": 255, "blendMode": "normal" },
