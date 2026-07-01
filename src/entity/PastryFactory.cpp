@@ -26,7 +26,7 @@ PastryType getRandomPastryType()
 
 SDL_FRect getSpriteFromType(const SpriteSheet& sheet, PastryType type)
 {
-    return sheet.getFrame(static_cast<int>(type));
+    return sheet.getFrameRect(static_cast<int>(type));
 }
 } // namespace
 

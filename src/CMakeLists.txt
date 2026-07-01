@@ -11,7 +11,7 @@ target_sources(
     component/Liquid.h
     component/PhysicsBody.h
     component/Cup.h
-    component/CoffeeSpawner.h
+    component/LiquidSpawner.h
     component/CoffeeOverview.h
     component/CleanupZone.h
     component/Behavior.h
@@ -23,7 +23,6 @@ target_sources(
     component/DropSpace.h
     component/Falling.h
     component/SpawnButton.h
-    component/SpawnSensor.h
     component/Ice.h
     component/IceMachine.h
     component/InSensorArea.h
@@ -35,6 +34,8 @@ target_sources(
     component/Sensor.h
     component/Sensor.cpp
     component/TimerBar.h
+    component/Animation.h
+    component/Animation.cpp
     component/Components.h
 
     # systems
@@ -60,7 +61,6 @@ target_sources(
     system/SupplySystem.cpp
     system/SensorSystem.h
     system/SensorSystem.cpp
-    system/Systems.h
     system/DayCycleSystem.h
     system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp
@@ -69,6 +69,9 @@ target_sources(
     system/CupSystem.cpp
     system/TimerBarSystem.h
     system/TimerBarSystem.cpp
+    system/AnimationSystem.h
+    system/AnimationSystem.cpp
+    system/Systems.h
 
     # entities
     entity/CupFactory.h

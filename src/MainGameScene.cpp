@@ -1,4 +1,6 @@
 #include "MainGameScene.h"
+
+#include "AnimationSystem.h"
 #include "Components.h"
 #include "DayState.h"
 #include "Entities.h"
@@ -46,7 +48,7 @@ void cafe::MainGameScene::onInit()
     // cooldown = 0 so the first customer appears on the first frame. The customer's
     // speech bubble + order-icon grid are built per-spawn in spawnCustomer().
     auto spawner = bagel::Entity::create();
-    spawner.add(CustomerSpawner{ .seat     = { 5.f, 0.f },
+    spawner.add(CustomerSpawner{ .seat     = { 5.9f, 0.f },
                          .interval = SPAWN_INTERVAL,
                          .cooldown = 0.f });
 
@@ -104,6 +106,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     physicsToTransformSystem();    // physics position -> Transform
 
     customerSpawnerSystem(getAssetManager(), _physics, dt); // keep one customer at the seat
+    animationSystem(getAssetManager(), dt);
     behaviorSystem(dt);           // tick patience; adds Leaving on timeout
     orderSystem();                // all items served -> add Leaving (success)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating

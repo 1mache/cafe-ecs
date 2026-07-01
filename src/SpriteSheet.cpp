@@ -57,11 +57,11 @@ void SpriteSheet::load(std::string_view filename)
 
     ifs.close();
 }
-SDL_FRect SpriteSheet::getFrame(int frameIndex) const
+SDL_FRect SpriteSheet::getFrameRect(int frameIndex) const
 {
     if (frameIndex < 0 || frameIndex >= frameCount())
     {
-        fatalError(("SpriteSheet::getFrame got Invalid frame index" +
+        fatalError(("SpriteSheet::getFrameRect got Invalid frame index" +
                     std::to_string(frameIndex))
                        .data());
     }

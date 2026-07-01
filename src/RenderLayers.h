@@ -8,6 +8,7 @@ enum RenderLayer : int
     CUSTOMER,
     BARTOP,
     STATIC_ON_BARTOP, // coffee machine, pastry holder
+    STATIC_OVERLAY,   // labels/numbers drawn on top of static furniture
     CONTAINER_BACK,
     LIQUID,
     CONTAINER_FRONT,

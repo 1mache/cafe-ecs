@@ -2,31 +2,62 @@
 #include "RenderLayers.h"
 #include "Components.h"
 #include "CustomerFactory.h"
+
+#include "Animation.h"
 #include "Menu.h"
 #include "OrderIconFactory.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
 #include "SpeechBubbleFactory.h"
 #include "SpriteDims.h"
-#include "Texture.h"
 #include "SpriteSheet.h"
+#include "Texture.h"
+#include "Utils.h"
 #include <bagel.h>
 #include <cassert>
-#include "Utils.h"
 
 
 namespace cafe
 {
 namespace
 {
+constexpr auto TEX          = "customers.png";
+constexpr auto SPRITE_DATA  = "customers.json";
+constexpr auto TALKING_TIME = 3.0f;
+
 // from the spritesheet takes a random customer sprite
-SDL_FRect getRandomCustomerRect(const SpriteSheet& spriteSheet)
+int getRandomCustomerId(const SpriteSheet& spriteSheet)
 {
     constexpr int FRAMES_PER_CUSTOMER = 2;
     int nTags = static_cast<int>(std::ranges::size(spriteSheet.tags()));
     auto dist = std::uniform_int_distribution(0,  nTags - 1);
 
-    return spriteSheet.getFrame(dist(getRng()) * FRAMES_PER_CUSTOMER);
+    return dist(getRng()) * FRAMES_PER_CUSTOMER;
+}
+
+constexpr Animation createTalkingAnimation(int customerId)
+{
+    AnimationFrame frameMouthShut
+    {
+        .spritesheetIndex = customerId
+    };
+
+    AnimationFrame frameMouthOpen
+    {
+        .spritesheetIndex = customerId + 1
+    };
+
+    return Animation
+    {
+        {frameMouthShut, frameMouthOpen},
+        SPRITE_DATA,
+        0,
+        2,
+        frameMouthOpen.duration,
+        TALKING_TIME,
+        true,
+        false
+    };
 }
 }
 
@@ -63,16 +94,16 @@ bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
                            WorldPos pos, Order order, float patience)
 {
     assert((order.hasDrink || order.hasPastry) && "createClient: order must have at least one item");
-    constexpr auto TEX         = "customers.png";
-    constexpr auto SPRITE_DATA = "customers.json";
 
     const Texture& tex       = assets.getTexture(TEX);
     const SpriteSheet& spriteSheet = assets.getSpriteSheet(TEX, SPRITE_DATA);
+    const int customerId = getRandomCustomerId(spriteSheet);
     auto [w, h] = PERSON_DIMS;
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{.x = pos.x, .y = pos.y, .w = texToWorldScale(w), .h = texToWorldScale(h)},
-        Drawable{tex.get(), getRandomCustomerRect(spriteSheet), layer::CUSTOMER},
+        Drawable{tex.get(), spriteSheet.getFrameRect(customerId), layer::CUSTOMER},
+        createTalkingAnimation(customerId),
         order,
         Behavior{.patience = patience, .maxPatience = patience});
 

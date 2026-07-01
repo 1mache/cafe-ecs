@@ -5,20 +5,18 @@
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
 #include "RenderLayers.h"
-#include "Texture.h"
+#include "SpriteDims.h"
 #include <box2d/box2d.h>
 
 namespace cafe
 {
 bagel::Entity createMicrowave(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
-    // particle.png is reused only to give Drawable a valid texture handle;
-    // drawSystem renders a Microwave as a solid square (placeholder art).
-    static constexpr auto TEX = "particle.png";
-    const Texture& tex = assets.getTexture(TEX);
-
-    constexpr float halfW = 1.2f; // world half-extents — tune freely
-    constexpr float halfH = 1.4f;
+    // just to load the sprite sheet.
+    [[maybe_unused]] auto& numbers =  assets.getSpriteSheet(OVEN_NUMBERS_TEX, OVEN_NUMBERS_DATA);
+    auto& spriteSheet = assets.getSpriteSheet(OVEN_TEX, OVEN_SPRITE_DATA);
+    constexpr float halfW = texToWorldScale(OVEN_DIMS.x); // world half-extents — tune freely
+    constexpr float halfH = texToWorldScale(OVEN_DIMS.y);
 
     auto ent = bagel::Entity::create();
 
@@ -40,20 +38,16 @@ bagel::Entity createMicrowave(AssetManager& assets, PhysicsContext& physics, Wor
 
     ent.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ tex.get(), tex.getFullSrcRect(), layer::STATIC_ON_BARTOP },
+        Drawable{
+            assets.getTexture(OVEN_TEX).get(),
+            spriteSheet.getFrameRect(OVEN_DEFAULT_SPRITE_ID),
+            layer::STATIC_ON_BARTOP
+        },
         PhysicsBody{ body },
         DropSpace{ DropType::Pastry },
         Microwave{}
     );
 
-    // Heating-progress bar as its own child entity (placeholder: tinted particle.png).
-    // Starts at width 0 (hidden); timerBarSystem grows it from the machine's timer.
-    auto bar = bagel::Entity::create();
-    bar.addAll(
-        Transform{ .x = pos.x, .y = pos.y, .w = 0.f, .h = BAR_HEIGHT },
-        Drawable{ tex.get(), tex.getFullSrcRect(), layer::UI1, SDL_Color{ 240, 180, 40, 255 } },
-        TimerBar{ .source = ent }
-    );
     return ent;
 }
 } // namespace cafe

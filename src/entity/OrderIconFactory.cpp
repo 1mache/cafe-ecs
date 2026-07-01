@@ -22,7 +22,7 @@ bagel::Entity createOrderIcon(AssetManager& assets, int propId,
 {
     const Texture&     tex   = assets.getTexture(TEX);
     const SpriteSheet& props = assets.getSpriteSheet(TEX, SPRITE_DATA);
-    SDL_FRect srcRect = props.getFrame(propId);
+    SDL_FRect srcRect = props.getFrameRect(propId);
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{.w = texToWorldScale(displayW), .h = texToWorldScale(displayH)},

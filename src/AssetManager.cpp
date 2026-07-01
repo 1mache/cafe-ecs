@@ -14,7 +14,7 @@ void AssetManager::init(SDL_Renderer* renderer)
 
 const Texture& AssetManager::getTexture(std::string_view filename)
 {
-    std::string fullPath = RES_DIR_PATH + std::string(filename);
+    std::string fullPath = std::string(RES_DIR_PATH) + std::string(filename);
     auto [it, success] = _textures.try_emplace(filename.data());
     if (success) // key didnt previously exist
     {
@@ -32,8 +32,15 @@ const SpriteSheet& AssetManager::getSpriteSheet(std::string_view textureFilename
     auto [it, success] = _spriteSheets.try_emplace(spriteSheetFilename.data(), std::string(textureFilename));
     if (success)
     {
-        it->second.load(RES_DIR_PATH + std::string(spriteSheetFilename));
+        it->second.load(std::string(RES_DIR_PATH) + std::string(spriteSheetFilename));
     }
+
+    return it->second;
+}
+const SpriteSheet& AssetManager::getSpriteSheet(std::string_view spriteSheetFilename)
+{
+    auto it = _spriteSheets.find(spriteSheetFilename.data());
+    if (it == _spriteSheets.end()) fatalError("Trying to access spritesheet " + std::string(spriteSheetFilename) + " that doesnt exist");
 
     return it->second;
 }

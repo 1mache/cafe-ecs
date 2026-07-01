@@ -1,0 +1,45 @@
+{ "frames": [
+   {
+    "filename": "oven_0.aseprite",
+    "frame": { "x": 0, "y": 0, "w": 40, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 25 },
+    "sourceSize": { "w": 40, "h": 25 },
+    "duration": 100
+   },
+   {
+    "filename": "oven_1.aseprite",
+    "frame": { "x": 40, "y": 0, "w": 40, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 25 },
+    "sourceSize": { "w": 40, "h": 25 },
+    "duration": 100
+   },
+   {
+    "filename": "oven_2.aseprite",
+    "frame": { "x": 0, "y": 25, "w": 40, "h": 25 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 40, "h": 25 },
+    "sourceSize": { "w": 40, "h": 25 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.3.17.2-x64",
+  "image": "oven.png",
+  "format": "RGBA8888",
+  "size": { "w": 80, "h": 50 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "Layer 1", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}

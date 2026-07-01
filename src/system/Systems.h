@@ -15,3 +15,4 @@
 #include "SupplySystem.h"
 #include "TimerBarSystem.h"
 #include "TransformSystem.h"
+#include "AnimationSystem.h"

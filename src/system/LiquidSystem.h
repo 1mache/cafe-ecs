@@ -7,7 +7,7 @@ namespace cafe
 class AssetManager;
 class PhysicsContext;
 
-/** @brief Spawns drops from every active CoffeeSpawner, each of its own kind. */
+/** @brief Spawns drops from every active LiquidSpawner, each of its own kind. */
 void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds);
 
 void liquidVelocityClampSystem();
