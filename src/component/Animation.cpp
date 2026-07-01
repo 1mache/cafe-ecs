@@ -1,6 +1,6 @@
 #include "Animation.h"
-
 #include "Utils.h"
+#include <string>
 
 namespace cafe
 {
