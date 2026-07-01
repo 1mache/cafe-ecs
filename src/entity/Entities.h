@@ -9,6 +9,7 @@
 #include "IceMachineFactory.h"
 #include "LiquidDropFactory.h"
 #include "MicrowaveFactory.h"
+#include "NapkinFactory.h"
 #include "OrderIconFactory.h"
 #include "PastryFactory.h"
 #include "SpawnButtonFactory.h"

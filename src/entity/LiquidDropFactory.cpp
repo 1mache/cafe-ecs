@@ -25,10 +25,11 @@ bagel::Entity createLiquidDrop(AssetManager& assets, PhysicsContext& physics, Wo
     bd.isBullet = true; // CCD — prevents tunneling through the thin cup walls
     bd.userData = reinterpret_cast<void*>(static_cast<uintptr_t>(ent.entity().id));
     b2BodyId body = b2CreateBody(physics.world(), &bd);
+    b2Body_SetGravityScale(body, 0.5f);
 
     // Visitor side of a sensor pair must also opt in to sensor events.
     b2ShapeDef sd = b2DefaultShapeDef();
-    sd.density             = 12.f;
+    sd.density             = 1.f;
     sd.material.friction   = 1.f;
     sd.material.restitution = 0.f; // liquid isn't bouncy
     sd.enableSensorEvents  = true;

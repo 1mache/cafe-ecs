@@ -9,6 +9,8 @@
 
 namespace cafe
 {
+constexpr float IceCubeFriction = 0.05f;
+
 bagel::Entity createIceCube(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     static constexpr auto TEX = "particle.png";
@@ -33,8 +35,8 @@ bagel::Entity createIceCube(AssetManager& assets, PhysicsContext& physics, World
     // the desk instead of falling through it.
     // enableSensorEvents: the visitor side of a sensor pair must opt in (Box2D 3.x).
     b2ShapeDef sd = b2DefaultShapeDef();
-    sd.density              = 12.f;
-    sd.material.friction    = 0.5f;
+    sd.density              = 0.5f;
+    sd.material.friction    = IceCubeFriction;
     sd.material.restitution = 0.05f;
     sd.enableSensorEvents   = true;
     sd.filter.categoryBits  = filter::ICE;

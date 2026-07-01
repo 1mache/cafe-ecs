@@ -77,6 +77,8 @@ target_sources(
     entity/LiquidDropFactory.cpp
     entity/MicrowaveFactory.h
     entity/MicrowaveFactory.cpp
+    entity/NapkinFactory.h
+    entity/NapkinFactory.cpp
     entity/CoffeeMachineFactory.h
     entity/CoffeeMachineFactory.cpp
     entity/CleanupZoneFactory.h

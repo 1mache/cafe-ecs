@@ -22,6 +22,7 @@ void cafe::MainGameScene::onInit()
 
     createBg(assets, BG_PATH);
     createBartop(assets, _physics);
+    createNapkin(assets);
 
     createCoffeeMachine(assets, _physics, supply::COFFEE_MACHINE_POS);
 
