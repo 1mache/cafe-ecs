@@ -64,6 +64,8 @@ target_sources(
     system/UpgradeSystem.cpp
     system/SensorSystem.h
     system/SensorSystem.cpp
+    system/ShopSystem.h
+    system/ShopSystem.cpp
     system/DayCycleSystem.h
     system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp

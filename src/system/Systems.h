@@ -12,6 +12,7 @@
 #include "MicrowaveSystem.h"
 #include "RenderSystem.h"
 #include "SensorSystem.h"
+#include "ShopSystem.h"
 #include "SupplySystem.h"
 #include "TransformSystem.h"
 #include "UpgradeSystem.h"
