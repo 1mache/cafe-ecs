@@ -15,7 +15,7 @@ target_sources(
     component/CoffeeOverview.h
     component/CleanupZone.h
     component/Behavior.h
-    component/DayClock.h
+    component/DayProgress.h
     component/CheckCoffeeIntent.h
     component/CheckPastryIntent.h
     component/DragIntent.h
@@ -33,7 +33,6 @@ target_sources(
     component/OrderGrade.cpp
     component/Sensor.h
     component/Sensor.cpp
-    component/TimerBar.h
     component/Animation.h
     component/Animation.cpp
     component/Components.h
@@ -67,8 +66,6 @@ target_sources(
     system/CoffeeMachineSystem.h
     system/CupSystem.h
     system/CupSystem.cpp
-    system/TimerBarSystem.h
-    system/TimerBarSystem.cpp
     system/AnimationSystem.h
     system/AnimationSystem.cpp
     system/Systems.h

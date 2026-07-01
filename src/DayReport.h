@@ -16,6 +16,6 @@ struct ReportRow
  *  adding a DayState field and pushing one more row here. */
 std::vector<ReportRow> buildReportRows();
 
-/** @brief Decrement @p timeRemaining by @p dt; return true once it reaches 0. */
-bool tickDayClock(float& timeRemaining, float dt);
+/** @brief Day-end predicate: true once @p handled customers reaches @p target. */
+bool dayIsOver(int handled, int target);
 } // namespace cafe

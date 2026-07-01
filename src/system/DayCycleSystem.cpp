@@ -7,17 +7,17 @@
 namespace cafe
 {
 
-bool dayClockSystem(float dt)
+bool dayEndSystem()
 {
-    static const bagel::Mask clockMask =
-        bagel::MaskBuilder().set<DayClock>().build();
+    static const bagel::Mask progressMask =
+        bagel::MaskBuilder().set<DayProgress>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (!e.test(clockMask)) continue;
+        if (!e.test(progressMask)) continue;
 
-        auto& clock = e.get<DayClock>();
-        if (tickDayClock(clock.timeRemaining, dt))
+        const auto& dp = e.get<DayProgress>();
+        if (dayIsOver(DayState::served() + DayState::lost(), dp.target))
             return true;
     }
     return false;

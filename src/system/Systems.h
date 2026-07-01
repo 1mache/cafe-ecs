@@ -13,6 +13,5 @@
 #include "RenderSystem.h"
 #include "SensorSystem.h"
 #include "SupplySystem.h"
-#include "TimerBarSystem.h"
 #include "TransformSystem.h"
 #include "AnimationSystem.h"

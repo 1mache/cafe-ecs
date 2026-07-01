@@ -54,23 +54,9 @@ void cafe::MainGameScene::onInit()
     // --- Day cycle ---
     DayState::beginNewDay();
 
-    // Day clock + its HUD anchor Transform (the day-progress bar reads this).
-    constexpr float DAY_BAR_HALF_W = 8.0f; // world half-width => 16-unit span
-    constexpr float DAY_BAR_Y      = 4.6f; // near the top of the canvas
+    // Day-progress driver: the day ends after CUSTOMERS_PER_DAY customers (served+lost).
     auto dayEntity = bagel::Entity::create();
-    dayEntity.addAll(
-        Transform{ .x = 0.f, .y = DAY_BAR_Y, .w = DAY_BAR_HALF_W, .h = 0.1f },
-        DayClock{ .timeRemaining = DAY_LENGTH, .dayLength = DAY_LENGTH });
-
-    // Day-progress bar: the SAME TimerBar component the microwave bar uses.
-    // timerBarSystem() sizes it each frame from the DayClock fraction.
-    const Texture& barTex = getAssetManager().getTexture("particle.png");
-    auto dayBar = bagel::Entity::create();
-    dayBar.addAll(
-        Transform{ .x = 0.f, .y = DAY_BAR_Y, .w = 0.f, .h = 0.35f },
-        Drawable{ barTex.get(), barTex.getFullSrcRect(), layer::UI1,
-                  SDL_Color{ 90, 200, 120, 255 } },
-        TimerBar{ .source = dayEntity });
+    dayEntity.add(DayProgress{ .target = CUSTOMERS_PER_DAY });
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
@@ -114,14 +100,13 @@ bool cafe::MainGameScene::onUpdate(float dt)
     hierarchySystem();            // children follow parents; orphan children of Leaving
     customerCleanupSystem();      // destroy all Leaving entities
     cupAlphaSystem();             // fade cup front when contents > 0
-    timerBarSystem();             // size microwave + day bars from their sources
 
     SDL_RenderClear(renderer);
     drawSystem(renderer);       // sorted by renderLayer ascending
     debugHighlightPhysics(renderer);
     SDL_RenderPresent(renderer);
 
-    if (dayClockSystem(dt))
+    if (dayEndSystem())
     {
         requestNext(SceneId::DayReport);
         return false;

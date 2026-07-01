@@ -2,8 +2,8 @@
 
 namespace cafe
 {
-/** @brief Ticks the DayClock entity; returns true when the day has ended. */
-bool dayClockSystem(float dt);
+/** @brief Returns true once served+lost customers reach the DayProgress target. */
+bool dayEndSystem();
 
 /** @brief Reads Leaving+Behavior entities and records their results into DayState. */
 void recordDayResultsSystem();
