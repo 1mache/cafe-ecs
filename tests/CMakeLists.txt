@@ -3,8 +3,10 @@ add_executable(unit_tests
     test_day_report.cpp
     test_glyph.cpp
     test_order_match.cpp
+    test_upgrade_catalog.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/DayReport.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/OrderMatch.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src/UpgradeCatalog.cpp
 )
 
 target_include_directories(unit_tests PRIVATE

@@ -114,6 +114,8 @@ target_sources(
     Menu.h
     Menu.cpp
     DayState.h
+    UpgradeCatalog.h
+    UpgradeCatalog.cpp
     DayReport.h
     DayReport.cpp
     Glyph.h
