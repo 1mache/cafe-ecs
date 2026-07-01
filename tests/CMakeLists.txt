@@ -4,6 +4,7 @@ add_executable(unit_tests
     test_glyph.cpp
     test_order_match.cpp
     test_upgrade_catalog.cpp
+    test_upgrade_state.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/DayReport.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/OrderMatch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/UpgradeCatalog.cpp

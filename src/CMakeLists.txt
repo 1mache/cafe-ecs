@@ -116,6 +116,7 @@ target_sources(
     DayState.h
     UpgradeCatalog.h
     UpgradeCatalog.cpp
+    UpgradeState.h
     DayReport.h
     DayReport.cpp
     Glyph.h
