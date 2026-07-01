@@ -8,14 +8,11 @@ namespace cafe
 {
 bagel::Entity createIceMachine(AssetManager& assets, WorldPos pos)
 {
-    // The Drawable only carries the render layer + Transform into drawSystem,
-    // which renders an IceMachine as a solid gray rectangle (placeholder art).
-    // particle.png is reused just to give Drawable a valid texture handle.
-    static constexpr auto TEX = "particle.png";
+    static constexpr auto TEX = "ice_machine.png";
     const Texture& tex = assets.getTexture(TEX);
 
-    constexpr float halfW = 1.2f; // world half-extents — tune freely
-    constexpr float halfH = 1.4f;
+    float halfW = texToWorldScale(tex.getSize().x); // world half-extents — tune freely
+    float halfH = texToWorldScale(tex.getSize().y);
 
     auto ent = bagel::Entity::create();
     ent.addAll(
