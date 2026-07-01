@@ -23,6 +23,8 @@ target_sources(
     component/DropSpace.h
     component/Falling.h
     component/SpawnButton.h
+    component/ShopButton.h
+    component/NextDayButton.h
     component/Ice.h
     component/IceMachine.h
     component/InSensorArea.h
