@@ -15,6 +15,7 @@ enum RenderLayer : int
     PROP, // draggable objects
     UI1,
     UI2,
+    UI3, // checkmarks over order icons
     COUNT // how many layers
 };
 }

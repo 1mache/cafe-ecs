@@ -10,6 +10,7 @@
 #include "IntentSystem.h"
 #include "LiquidSystem.h"
 #include "MicrowaveSystem.h"
+#include "OrderCheckmarkSystem.h"
 #include "RenderSystem.h"
 #include "SensorSystem.h"
 #include "SupplySystem.h"

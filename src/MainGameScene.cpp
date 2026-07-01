@@ -93,6 +93,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     checkBeverageSystem();        // snapshot cup contents -> CoffeeOverview
     acceptGradedBeverageSystem(); // grades cups with CheckCoffeeIntent + CoffeeOverview
     checkPastrySystem();          // grades pastries with CheckPastryIntent
+    orderCheckmarkSystem();       // reveal bubble checkmarks for served slots
     dragAndDropSystem();          // held: follow mouse; released: snap/drop
 
     machineButtonSystem();             // coffee-machine buttons -> pour state

@@ -18,6 +18,7 @@ target_sources(
     component/DayClock.h
     component/CheckCoffeeIntent.h
     component/CheckPastryIntent.h
+    component/Checkmark.h
     component/DragIntent.h
     component/DragItemType.h
     component/DropSpace.h
@@ -47,6 +48,8 @@ target_sources(
     system/LiquidSystem.cpp
     system/MicrowaveSystem.h
     system/MicrowaveSystem.cpp
+    system/OrderCheckmarkSystem.h
+    system/OrderCheckmarkSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
     system/CheckBeverageSystem.h
