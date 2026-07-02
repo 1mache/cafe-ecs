@@ -24,6 +24,12 @@ WorldPos screenToWorldPoint(SDL_FPoint screenPos, WorldPos camPos)
                     camPos.y - (screenPos.y - centy) / (PTM * s)};
 }
 
+bool isPointInsideTransform(const WorldPos& p, const Transform& t)
+{
+    return p.x > t.x - t.w && p.x < t.x + t.w &&
+           p.y > t.y - t.h && p.y < t.y + t.h;
+}
+
 SDL_FRect transformToFrect(const Transform& t, WorldPos camPos)
 {
     // Y-up world: top-left of AABB is (x - w, y + h).

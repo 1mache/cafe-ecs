@@ -15,7 +15,7 @@ target_sources(
     component/CoffeeOverview.h
     component/CleanupZone.h
     component/Behavior.h
-    component/DayClock.h
+    component/DayProgress.h
     component/CheckCoffeeIntent.h
     component/CheckPastryIntent.h
     component/Checkmark.h
@@ -24,6 +24,8 @@ target_sources(
     component/DropSpace.h
     component/Falling.h
     component/SpawnButton.h
+    component/ShopButton.h
+    component/NextDayButton.h
     component/Ice.h
     component/IceMachine.h
     component/InSensorArea.h
@@ -36,7 +38,6 @@ target_sources(
     component/OrderGrade.cpp
     component/Sensor.h
     component/Sensor.cpp
-    component/TimerBar.h
     component/Animation.h
     component/Animation.cpp
     component/Components.h
@@ -68,16 +69,18 @@ target_sources(
     system/IntentSystem.cpp
     system/SupplySystem.h
     system/SupplySystem.cpp
+    system/UpgradeSystem.h
+    system/UpgradeSystem.cpp
     system/SensorSystem.h
     system/SensorSystem.cpp
+    system/ShopSystem.h
+    system/ShopSystem.cpp
     system/DayCycleSystem.h
     system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp
     system/CoffeeMachineSystem.h
     system/CupSystem.h
     system/CupSystem.cpp
-    system/TimerBarSystem.h
-    system/TimerBarSystem.cpp
     system/AnimationSystem.h
     system/AnimationSystem.cpp
     system/Systems.h
@@ -130,6 +133,9 @@ target_sources(
     Menu.h
     Menu.cpp
     DayState.h
+    UpgradeCatalog.h
+    UpgradeCatalog.cpp
+    UpgradeState.h
     DayReport.h
     DayReport.cpp
     Glyph.h

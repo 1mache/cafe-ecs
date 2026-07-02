@@ -13,7 +13,7 @@
 namespace bagel
 {
 /**** Parameters ****/
-inline constexpr int  MaxComponents     = 32;
+inline constexpr int  MaxComponents     = 64;
 inline constexpr bool DynamicBags       = true;
 inline constexpr int  IdBagSize         = 10;
 inline constexpr int  InitialEntities   = 100;
@@ -253,7 +253,7 @@ public:
     using bit_type = mask_type;
     static constexpr bit_type bit(const int idx)
     {
-        return 1 << idx;
+        return bit_type{1} << idx;
     }
 
     void set(const bit_type b)

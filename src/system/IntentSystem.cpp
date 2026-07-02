@@ -11,12 +11,6 @@ namespace cafe
 {
 namespace
 {
-bool isPointInsideTransform(const WorldPos& p, const Transform& t)
-{
-    return p.x > t.x - t.w && p.x < t.x + t.w &&
-           p.y > t.y - t.h && p.y < t.y + t.h;
-}
-
 bool isPointInsideScreenRect(SDL_FPoint p, float x, float y, float w, float h)
 {
     return p.x >= x && p.x <= x + w &&

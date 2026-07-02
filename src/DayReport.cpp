@@ -17,10 +17,8 @@ std::vector<ReportRow> buildReportRows()
     };
 }
 
-bool tickDayClock(float& timeRemaining, float dt)
+bool dayIsOver(int handled, int target)
 {
-    if (timeRemaining <= 0.f) return true;
-    timeRemaining -= dt;
-    return timeRemaining <= 0.f;
+    return handled >= target;
 }
 } // namespace cafe

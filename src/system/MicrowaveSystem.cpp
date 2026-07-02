@@ -118,10 +118,10 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
         m.timer += dt;
 
         // Update countdown digit sprite.
-        const int digit = std::clamp(static_cast<int>(std::floor(HEAT_TIME - m.timer)), 0, 5);
+        const int digit = std::clamp(static_cast<int>(std::floor(m.heatTime - m.timer)), 0, 5);
         m.display.get<Drawable>().srcRect = numbersSheet.getFrameRect(digit);
 
-        if (m.timer >= HEAT_TIME)
+        if (m.timer >= m.heatTime)
         {
             // Destroy the number overlay and glow.
             m.display.destroy();
