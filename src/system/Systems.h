@@ -10,6 +10,8 @@
 #include "IntentSystem.h"
 #include "LiquidSystem.h"
 #include "MicrowaveSystem.h"
+#include "OrderCheckmarkSystem.h"
+#include "PastryTvSystem.h"
 #include "NapkinSystem.h"
 #include "RenderSystem.h"
 #include "SensorSystem.h"

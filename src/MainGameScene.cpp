@@ -39,6 +39,10 @@ void cafe::MainGameScene::onInit()
     // Microwave (gray placeholder square, no button): drag a pastry onto it to heat it.
     createMicrowave(assets, _physics, supply::MICROWAVE_POS);
 
+    // Pastry TV: top-left display cycling pastry types; the pastry button spawns
+    // whichever pastry it currently shows.
+    createPastryTv(assets, supply::PASTRY_TV_POS);
+
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone(_physics);
 
@@ -82,6 +86,8 @@ bool cafe::MainGameScene::onUpdate(float dt)
     intentSystem(renderer, exitRequested);
     if (exitRequested) return false;
 
+    // Rotate the pastry TV before reading it: keeps the shown pastry current.
+    pastryTvSystem(getAssetManager(), dt);
     // Click a supply button to drop a fresh cup/pastry into a free slot.
     supplyButtonSystem(getAssetManager(), _physics);
 
@@ -94,6 +100,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     checkBeverageSystem();        // snapshot cup contents -> CoffeeOverview
     acceptGradedBeverageSystem(); // grades cups with CheckCoffeeIntent + CoffeeOverview
     checkPastrySystem();          // grades pastries with CheckPastryIntent
+    orderCheckmarkSystem();       // reveal bubble checkmarks for served slots
     dragAndDropSystem();          // held: follow mouse; released: snap/drop
     napkinSystem(_physics, dt);   // napkin state -> body velocity + size ease
 

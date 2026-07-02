@@ -11,6 +11,8 @@ inline constexpr int MAX_DRINKS      = 3;
 inline constexpr int MAX_PASTRIES    = 3;
 inline constexpr int MAX_ORDER_ICONS = 5;
 
+inline constexpr float TALKING_TIME = 3.0f;
+
 /** @brief A client's order: up to MAX_DRINKS beverages and MAX_PASTRIES pastries.
  *  Invariant: hasDrink || hasPastry must be true (at least one item). */
 struct Order

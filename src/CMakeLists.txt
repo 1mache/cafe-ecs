@@ -18,6 +18,7 @@ target_sources(
     component/DayClock.h
     component/CheckCoffeeIntent.h
     component/CheckPastryIntent.h
+    component/Checkmark.h
     component/DragIntent.h
     component/DragItemType.h
     component/DropSpace.h
@@ -29,6 +30,7 @@ target_sources(
     component/Leaving.h
     component/NapkinIntent.h
     component/Pastry.h
+    component/PastryTv.h
     component/Order.h
     component/OrderGrade.h
     component/OrderGrade.cpp
@@ -48,6 +50,10 @@ target_sources(
     system/LiquidSystem.cpp
     system/MicrowaveSystem.h
     system/MicrowaveSystem.cpp
+    system/OrderCheckmarkSystem.h
+    system/OrderCheckmarkSystem.cpp
+    system/PastryTvSystem.h
+    system/PastryTvSystem.cpp
     system/NapkinSystem.h
     system/NapkinSystem.cpp
     system/CustomerSystem.h
@@ -91,6 +97,8 @@ target_sources(
     entity/CleanupZoneFactory.cpp
     entity/CustomerFactory.h
     entity/CustomerFactory.cpp
+    entity/PastryTvFactory.h
+    entity/PastryTvFactory.cpp
     entity/IceCubeFactory.h
     entity/IceCubeFactory.cpp
     entity/IceMachineFactory.h

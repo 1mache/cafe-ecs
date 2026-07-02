@@ -2,7 +2,7 @@
 #include <bagel.h>
 
 #include <array>
-#include <string>
+#include <string_view>
 #include <optional>
 
 namespace cafe
@@ -19,7 +19,7 @@ constexpr auto MAX_ANIM_FRAMES = 4;
 struct Animation
 {
     std::array<AnimationFrame, MAX_ANIM_FRAMES> frames;
-    std::string                                 spriteSheetName{}; // sprite sheet to pull frames from
+    std::string_view                            spriteSheetName{}; // sprite sheet to pull frames from
     int                                         currentFrame{0};
     int                                         frameCount{1};
     float                                       frameTimer{};
