@@ -15,6 +15,7 @@ enum RenderLayer : int
     PROP, // draggable objects
     UI1,
     UI2,
+    NAPKIN,
     COUNT // how many layers
 };
 }

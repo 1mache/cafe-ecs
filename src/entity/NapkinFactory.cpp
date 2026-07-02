@@ -31,7 +31,7 @@ bagel::Entity createNapkin(AssetManager& assets, PhysicsContext& physics)
                    .y = NAPKIN_HIDDEN_CENTER_Y,
                    .w = NAPKIN_HIDDEN_HALF_W,
                    .h = NAPKIN_HIDDEN_HALF_H },
-        Drawable{ tex.get(), src, layer::UI1 },
+        Drawable{ tex.get(), src, layer::NAPKIN },
         NapkinIntent{},
         PhysicsBody{ body });
     return ent;
