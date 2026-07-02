@@ -27,7 +27,6 @@ target_sources(
     component/ShopButton.h
     component/NextDayButton.h
     component/Ice.h
-    component/IceMachine.h
     component/InSensorArea.h
     component/Leaving.h
     component/NapkinIntent.h

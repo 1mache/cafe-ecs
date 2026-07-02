@@ -18,7 +18,6 @@
 #include "DropSpace.h"
 #include "Falling.h"
 #include "Ice.h"
-#include "IceMachine.h"
 #include "InSensorArea.h"
 #include "Ingredient.h"
 #include "ItemTypes.h"

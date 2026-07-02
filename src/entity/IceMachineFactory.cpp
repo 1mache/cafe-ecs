@@ -42,8 +42,7 @@ bagel::Entity createIceMachine(AssetManager& assets, PhysicsContext& physics, Wo
     ent.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
         Drawable{ tex.get(), tex.getFullSrcRect(), layer::STATIC_ON_BARTOP },
-        PhysicsBody{ body },
-        IceMachine{}
+        PhysicsBody{ body }
     );
 
     // the button on the machine. reusing this factory
