@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include <bagel.h>
 #include <box2d/box2d.h>
+#include <cmath>
 
 namespace cafe
 {
@@ -94,6 +95,13 @@ b2Vec2 transformToB2Pos(const Transform& t);
 b2Vec2 transformToB2Scale(const Transform& t);
 
 void transformUpdateWithB2Pos(Transform& t, b2Vec2 pos);
+
+// AABB overlap of two centered boxes. Transform.w/h are half-extents, matching DropSpace sensors.
+inline bool boxesOverlap(const Transform& a, const Transform& b)
+{
+    return std::abs(a.x - b.x) <= a.w + b.w &&
+           std::abs(a.y - b.y) <= a.h + b.h;
+}
 
 } // namespace cafe
 

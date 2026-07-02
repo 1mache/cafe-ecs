@@ -17,6 +17,60 @@ bool isPointInsideTransform(const WorldPos& p, const Transform& t)
            p.y > t.y - t.h && p.y < t.y + t.h;
 }
 
+bool isPointInsideScreenRect(SDL_FPoint p, float x, float y, float w, float h)
+{
+    return p.x >= x && p.x <= x + w &&
+           p.y >= y && p.y <= y + h;
+}
+
+void updateNapkinIntent(bagel::Entity e, const UserInput& input)
+{
+    auto& intent = e.get<NapkinIntent>();
+
+    if (intent.state == NapkinState::Hidden)
+    {
+        if (isPointInsideScreenRect(input.mousePos,
+                                    NAPKIN_HIDDEN_HITBOX_X,
+                                    NAPKIN_HIDDEN_HITBOX_Y,
+                                    NAPKIN_HIDDEN_HITBOX_W,
+                                    NAPKIN_HIDDEN_HITBOX_H))
+        {
+            intent.state = NapkinState::Toggle;
+            std::cout << "NapkinIntent: switched to Toggle (hover over hidden hitbox)\n";
+        }
+    }
+    else if (intent.state == NapkinState::Toggle)
+    {
+        if (isPointInsideScreenRect(input.mousePos,
+                                    NAPKIN_TOGGLE_HITBOX_X,
+                                    NAPKIN_TOGGLE_HITBOX_Y,
+                                    NAPKIN_TOGGLE_HITBOX_W,
+                                    NAPKIN_TOGGLE_HITBOX_H) &&
+            (input.controls & controlBit(Controls::MouseButtonDown)))
+        {
+            intent.state = NapkinState::Full;
+            std::cout << "NapkinIntent: switched to Full (click inside toggle hitbox)\n";
+        }
+        else if (!isPointInsideScreenRect(input.mousePos,
+                                          NAPKIN_TOGGLE_HITBOX_X,
+                                          NAPKIN_TOGGLE_HITBOX_Y,
+                                          NAPKIN_TOGGLE_HITBOX_W,
+                                          NAPKIN_TOGGLE_HITBOX_H))
+        {
+            intent.state = NapkinState::Hidden;
+            std::cout << "NapkinIntent: switched to Hidden (mouse left toggle hitbox)\n";
+        }
+    }
+    else if (intent.state == NapkinState::Full)
+    {
+        if (input.controls & controlBit(Controls::MouseButtonDown))
+        {
+            intent.state = NapkinState::Hidden;
+            std::cout << "NapkinIntent: switched to Hidden (click inside full hitbox)\n";
+        }
+    }
+}
+
 void updateDragIntent(bagel::Entity e, UserInput input)
 {
     const WorldPos worldMouse =
@@ -158,6 +212,9 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
         }
     }
 
+    float wx, wy;
+    SDL_GetMouseState(&wx, &wy);
+    input.mousePos = mouseWindowToRenderPoint(renderer, wx, wy);
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -165,6 +222,7 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
         static const bagel::Mask liqSpawnerMask  = bagel::MaskBuilder().set<LiquidSpawner>().build();
         static const bagel::Mask machineButton   = bagel::MaskBuilder().set<MachineButton>().build();
         static const bagel::Mask spawnButtonMask = bagel::MaskBuilder().set<SpawnButton>().set<Transform>().build();
+        static const bagel::Mask napkinIntentMask = bagel::MaskBuilder().set<NapkinIntent>().build();
 
         if (e.test(dragMask))
             updateDragIntent(e, input);
@@ -178,7 +236,8 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
         if (e.test(spawnButtonMask))
             updateSpawnButtonIntent(e, input);
 
-        //test other intent masks, inputs, and transforms
+        if (e.test(napkinIntentMask))
+            updateNapkinIntent(e, input);
     }
 }
 } // namespace cafe

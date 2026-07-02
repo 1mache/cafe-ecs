@@ -9,6 +9,8 @@
 
 namespace cafe
 {
+constexpr float IceCubeFriction = 0.05f;
+
 bagel::Entity createIceCube(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     static constexpr auto TEX = "ice.png";

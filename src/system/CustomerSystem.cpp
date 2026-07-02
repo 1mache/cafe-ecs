@@ -68,6 +68,13 @@ void deliverySystem()
 {
     static const bagel::Mask dragMask =
         bagel::MaskBuilder().set<DragIntent>().build();
+    static const bagel::Mask customerMask =
+        bagel::MaskBuilder().set<Order>().set<OrderGrade>().set<Transform>().build();
+
+    std::vector<bagel::Entity> customers;
+    for (auto c = bagel::Entity::first(); !c.eof(); c.next())
+        if (c.test(customerMask))
+            customers.push_back(c);
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -75,11 +82,39 @@ void deliverySystem()
 
         auto& intent = e.get<DragIntent>();
         if (intent.intentType != DragIntentType::released) continue;
-        if (!intent.dropSpaceEntity.has_value()) continue;
 
-        bagel::Entity target{ *intent.dropSpaceEntity };
+        // Resolve which customer (if any) the item was dropped on.
+        // Primary: the sensor-driven dropSpaceEntity. Fallback: geometric overlap.
+        // The sensor's begin-touch only fires on a held ENTER transition, so an item
+        // that started already inside the zone never gets dropSpaceEntity set; the
+        // overlap test catches that case without depending on any event.
+        bool            onCustomer = false;
+        bagel::ent_type targetId{};
+        if (intent.dropSpaceEntity.has_value())
+        {
+            bagel::Entity t{ *intent.dropSpaceEntity };
+            if (t.has<Order>() && t.has<OrderGrade>())
+            {
+                targetId    = *intent.dropSpaceEntity;
+                onCustomer  = true;
+            }
+        }
+        else if (e.has<Transform>())
+        {
+            const auto& itemT = e.get<Transform>();
+            for (auto customer : customers)
+                if (boxesOverlap(itemT, customer.get<Transform>()))
+                {
+                    targetId   = customer.entity();
+                    onCustomer = true;
+                    break;
+                }
+        }
+        if (!onCustomer) continue;
 
-        if (!target.has<Order>() || !target.has<OrderGrade>()) continue;
+        bagel::Entity target{ targetId };
+        if (!intent.dropSpaceEntity.has_value())
+            intent.dropSpaceEntity = target.entity();
 
         const auto& order = target.get<Order>();
         const auto& grade = target.get<OrderGrade>();

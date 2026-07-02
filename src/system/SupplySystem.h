@@ -31,6 +31,10 @@ inline constexpr float    ICE_BUTTON_H_PX = 8.f;
 // Both are tunable — adjust by observation so the spawn lands on the counter beside it.
 inline constexpr WorldPos MICROWAVE_POS       = {1.0f, -1.4f};
 inline constexpr WorldPos MICROWAVE_SPAWN_POS = {2.3f, -0.5f};
+
+// Pastry TV: top-left display that rotates through pastry types; the pastry
+// button spawns whichever it currently shows. Tunable — nudge by observation.
+inline constexpr WorldPos PASTRY_TV_POS = {-7.5f, 2.4f};
 } // namespace supply
 
 /** @brief Summons a cup/pastry into the first free supply slot when its button was
