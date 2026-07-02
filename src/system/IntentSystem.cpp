@@ -41,14 +41,37 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input)
     }
     else if (intent.state == NapkinState::Toggle)
     {
-        if (!isPointInsideScreenRect(input.mousePos,
-                                     NAPKIN_TOGGLE_HITBOX_X,
-                                     NAPKIN_TOGGLE_HITBOX_Y,
-                                     NAPKIN_TOGGLE_HITBOX_W,
-                                     NAPKIN_TOGGLE_HITBOX_H))
+        if (isPointInsideScreenRect(input.mousePos,
+                                    NAPKIN_TOGGLE_HITBOX_X,
+                                    NAPKIN_TOGGLE_HITBOX_Y,
+                                    NAPKIN_TOGGLE_HITBOX_W,
+                                    NAPKIN_TOGGLE_HITBOX_H) &&
+            (input.controls & controlBit(Controls::MouseButtonDown)))
+        {
+            intent.state = NapkinState::Full;
+            std::cout << "NapkinIntent: switched to Full (click inside toggle hitbox)\n";
+        }
+        else if (!isPointInsideScreenRect(input.mousePos,
+                                          NAPKIN_TOGGLE_HITBOX_X,
+                                          NAPKIN_TOGGLE_HITBOX_Y,
+                                          NAPKIN_TOGGLE_HITBOX_W,
+                                          NAPKIN_TOGGLE_HITBOX_H))
         {
             intent.state = NapkinState::Hidden;
             std::cout << "NapkinIntent: switched to Hidden (mouse left toggle hitbox)\n";
+        }
+    }
+    else if (intent.state == NapkinState::Full)
+    {
+        if (isPointInsideScreenRect(input.mousePos,
+                                    NAPKIN_FULL_HITBOX_X,
+                                    NAPKIN_FULL_HITBOX_Y,
+                                    NAPKIN_FULL_HITBOX_W,
+                                    NAPKIN_FULL_HITBOX_H) &&
+            (input.controls & controlBit(Controls::MouseButtonDown)))
+        {
+            intent.state = NapkinState::Hidden;
+            std::cout << "NapkinIntent: switched to Hidden (click inside full hitbox)\n";
         }
     }
 }

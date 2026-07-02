@@ -51,9 +51,9 @@ constexpr float NAPKIN_TOGGLE_HITBOX_Y =
 constexpr float NAPKIN_TOGGLE_HITBOX_W = worldToScreenScale(NAPKIN_TOGGLE_HALF_W);
 constexpr float NAPKIN_TOGGLE_HITBOX_H = worldToScreenScale(NAPKIN_TOGGLE_HALF_H);
 
-// Full-state layout — centered, aspect-fit inside 60% of screen.
-constexpr float NAPKIN_FULL_MAX_SCREEN_W = LOGICAL_W * 0.6f;
-constexpr float NAPKIN_FULL_MAX_SCREEN_H = LOGICAL_H * 0.6f;
+// Full-state layout — centered, aspect-fit inside 80% of screen.
+constexpr float NAPKIN_FULL_MAX_SCREEN_W = LOGICAL_W * 0.8f;
+constexpr float NAPKIN_FULL_MAX_SCREEN_H = LOGICAL_H * 0.8f;
 constexpr float NAPKIN_FULL_SCREEN_H = NAPKIN_FULL_MAX_SCREEN_H;
 constexpr float NAPKIN_FULL_SCREEN_W =
     NAPKIN_FULL_SCREEN_H * (NAPKIN_HIDDEN_TEX_W / NAPKIN_HIDDEN_TEX_H);
