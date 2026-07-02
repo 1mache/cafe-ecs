@@ -11,6 +11,7 @@
 #include "MicrowaveFactory.h"
 #include "OrderIconFactory.h"
 #include "PastryFactory.h"
+#include "PastryTvFactory.h"
 #include "SpawnButtonFactory.h"
 #include "SpeechBubbleFactory.h"
 #include <bagel.h>

@@ -29,6 +29,7 @@ target_sources(
     component/InSensorArea.h
     component/Leaving.h
     component/Pastry.h
+    component/PastryTv.h
     component/Order.h
     component/OrderGrade.h
     component/OrderGrade.cpp
@@ -50,6 +51,8 @@ target_sources(
     system/MicrowaveSystem.cpp
     system/OrderCheckmarkSystem.h
     system/OrderCheckmarkSystem.cpp
+    system/PastryTvSystem.h
+    system/PastryTvSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
     system/CheckBeverageSystem.h
@@ -89,6 +92,8 @@ target_sources(
     entity/CleanupZoneFactory.cpp
     entity/CustomerFactory.h
     entity/CustomerFactory.cpp
+    entity/PastryTvFactory.h
+    entity/PastryTvFactory.cpp
     entity/IceCubeFactory.h
     entity/IceCubeFactory.cpp
     entity/IceMachineFactory.h

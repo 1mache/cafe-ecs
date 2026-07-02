@@ -29,6 +29,7 @@
 #include "Order.h"
 #include "OrderGrade.h"
 #include "Pastry.h"
+#include "PastryTv.h"
 #include "PhysicsBody.h"
 #include "Sensor.h"
 #include "SpawnButton.h"

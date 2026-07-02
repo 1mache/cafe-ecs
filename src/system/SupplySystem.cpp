@@ -2,6 +2,7 @@
 
 #include "Components.h"
 #include "Entities.h"
+#include "PastryTvSystem.h" // currentTvPastryType
 #include "Transform.h"
 #include "Utils.h"
 
@@ -44,7 +45,7 @@ void supplyButtonSystem(AssetManager& assets, PhysicsContext& physics)
         if (sp.second == DropType::Cup)
             createCup(assets, physics, sp.first);
         else if (sp.second == DropType::Pastry)
-            createPastry(assets, physics, sp.first);
+            createPastry(assets, physics, sp.first, currentTvPastryType());
         else if (sp.second == DropType::Ice)
             createIceCube(assets, physics, sp.first);
     }
