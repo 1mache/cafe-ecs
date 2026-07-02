@@ -27,17 +27,29 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input)
 {
     auto& intent = e.get<NapkinIntent>();
 
-    if (intent.state != NapkinState::Hidden)
-        return;
-
-    if (isPointInsideScreenRect(input.mousePos,
-                                NAPKIN_HIDDEN_HITBOX_X,
-                                NAPKIN_HIDDEN_HITBOX_Y,
-                                NAPKIN_HIDDEN_HITBOX_W,
-                                NAPKIN_HIDDEN_HITBOX_H))
+    if (intent.state == NapkinState::Hidden)
     {
-        intent.state = NapkinState::Toggle;
-        std::cout << "NapkinIntent: switched to Toggle (hover over hidden hitbox)\n";
+        if (isPointInsideScreenRect(input.mousePos,
+                                    NAPKIN_HIDDEN_HITBOX_X,
+                                    NAPKIN_HIDDEN_HITBOX_Y,
+                                    NAPKIN_HIDDEN_HITBOX_W,
+                                    NAPKIN_HIDDEN_HITBOX_H))
+        {
+            intent.state = NapkinState::Toggle;
+            std::cout << "NapkinIntent: switched to Toggle (hover over hidden hitbox)\n";
+        }
+    }
+    else if (intent.state == NapkinState::Toggle)
+    {
+        if (!isPointInsideScreenRect(input.mousePos,
+                                     NAPKIN_TOGGLE_HITBOX_X,
+                                     NAPKIN_TOGGLE_HITBOX_Y,
+                                     NAPKIN_TOGGLE_HITBOX_W,
+                                     NAPKIN_TOGGLE_HITBOX_H))
+        {
+            intent.state = NapkinState::Hidden;
+            std::cout << "NapkinIntent: switched to Hidden (mouse left toggle hitbox)\n";
+        }
     }
 }
 
