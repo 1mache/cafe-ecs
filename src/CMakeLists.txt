@@ -27,6 +27,7 @@ target_sources(
     component/IceMachine.h
     component/InSensorArea.h
     component/Leaving.h
+    component/NapkinIntent.h
     component/Pastry.h
     component/Order.h
     component/OrderGrade.h

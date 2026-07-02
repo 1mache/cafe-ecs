@@ -25,6 +25,7 @@
 #include "Liquid.h"
 #include "MachineButton.h"
 #include "Microwave.h"
+#include "NapkinIntent.h"
 #include "Order.h"
 #include "OrderGrade.h"
 #include "Pastry.h"
