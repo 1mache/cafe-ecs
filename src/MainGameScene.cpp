@@ -26,15 +26,15 @@ void cafe::MainGameScene::onInit()
     createBartop(assets, _physics);
     createNapkin(assets, _physics);
 
+    // Ice machine.
+    createIceMachine(assets, _physics, supply::ICE_MACHINE_POS);
+    // Then coffee machine on top (in front). order matters
     createCoffeeMachine(assets, _physics, supply::COFFEE_MACHINE_POS);
 
     // Supply is summoned on demand: click a button to drop a fresh cup/pastry in.
     createSpawnButton(assets, _physics, supply::CUP_BUTTON_POS, DropType::Cup);
     createSpawnButton(assets, _physics, supply::PASTRY_BUTTON_POS, DropType::Pastry);
 
-    // Ice machine (gray placeholder square) with its spawn button on the machine face.
-    createIceMachine(assets, supply::ICE_MACHINE_POS);
-    createSpawnButton(assets, _physics, supply::ICE_BUTTON_POS, DropType::Ice);
 
     // Microwave (gray placeholder square, no button): drag a pastry onto it to heat it.
     createMicrowave(assets, _physics, supply::MICROWAVE_POS);
@@ -59,23 +59,12 @@ void cafe::MainGameScene::onInit()
     // --- Day cycle ---
     DayState::beginNewDay();
 
-    // Day clock + its HUD anchor Transform (the day-progress bar reads this).
-    constexpr float DAY_BAR_HALF_W = 8.0f; // world half-width => 16-unit span
-    constexpr float DAY_BAR_Y      = 4.6f; // near the top of the canvas
+    // Day-progress driver: the day ends after CUSTOMERS_PER_DAY customers (served+lost).
     auto dayEntity = bagel::Entity::create();
-    dayEntity.addAll(
-        Transform{ .x = 0.f, .y = DAY_BAR_Y, .w = DAY_BAR_HALF_W, .h = 0.1f },
-        DayClock{ .timeRemaining = DAY_LENGTH, .dayLength = DAY_LENGTH });
+    dayEntity.add(DayProgress{ .target = CUSTOMERS_PER_DAY });
 
-    // Day-progress bar: the SAME TimerBar component the microwave bar uses.
-    // timerBarSystem() sizes it each frame from the DayClock fraction.
-    const Texture& barTex = getAssetManager().getTexture("particle.png");
-    auto dayBar = bagel::Entity::create();
-    dayBar.addAll(
-        Transform{ .x = 0.f, .y = DAY_BAR_Y, .w = 0.f, .h = 0.35f },
-        Drawable{ barTex.get(), barTex.getFullSrcRect(), layer::UI1,
-                  SDL_Color{ 90, 200, 120, 255 } },
-        TimerBar{ .source = dayEntity });
+    // Apply purchased upgrades to this day's machines (level 0 = base values).
+    applyUpgradesSystem();
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
@@ -120,17 +109,16 @@ bool cafe::MainGameScene::onUpdate(float dt)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
     recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup
     reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
-    hierarchySystem();            // children follow parents; orphan children of Leaving
+    positionHierarchySystem();            // children follow parents; orphan children of Leaving
     customerCleanupSystem();      // destroy all Leaving entities
     cupAlphaSystem();             // fade cup front when contents > 0
-    timerBarSystem();             // size microwave + day bars from their sources
 
     SDL_RenderClear(renderer);
     drawSystem(renderer);       // sorted by renderLayer ascending
     debugHighlightPhysics(renderer);
     SDL_RenderPresent(renderer);
 
-    if (dayClockSystem(dt))
+    if (dayEndSystem())
     {
         requestNext(SceneId::DayReport);
         return false;

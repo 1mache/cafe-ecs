@@ -54,7 +54,7 @@ bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Ent
     const WorldPos off = BUTTON_OFFSET[static_cast<size_t>(kind)];
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Drawable{ tex.get(), srcRect, layer::PROP},
+        Drawable{ tex.get(), srcRect, layer::STATIC_OVERLAY},
         Transform{ .x = machinePos.x, .y = machinePos.y,
                    .w = texToWorldScale(BUTTON_DIMS.x),
                    .h = texToWorldScale(BUTTON_DIMS.y) },
@@ -90,8 +90,8 @@ bagel::Entity createCoffeeMachine(AssetManager& assets, PhysicsContext& physics,
         b2MakeOffsetBox(halfW, colliderHalfH, { 0.f, colliderOffsetY }, b2Rot_identity);
 
     b2ShapeDef machineShape = b2DefaultShapeDef();
-    machineShape.filter.categoryBits = filter::FURNITURE;
-    machineShape.filter.maskBits     = filter::MASK_FURNITURE;
+    machineShape.filter.categoryBits = filter::MACHINES;
+    machineShape.filter.maskBits     = filter::MASK_MACHINES;
     b2CreatePolygonShape(body, &machineShape, &collider);
 
     ent.addAll(

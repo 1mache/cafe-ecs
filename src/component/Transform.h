@@ -46,6 +46,9 @@ SDL_FPoint worldToScreenPoint(WorldPos worldPos, WorldPos camPos);
  */
 WorldPos screenToWorldPoint(SDL_FPoint screenPos, WorldPos camPos);
 
+/** @brief AABB hit-test: is world point @p p inside Transform @p t's box? */
+bool isPointInsideTransform(const WorldPos& p, const Transform& t);
+
 /** @brief Converts a world-unit length to screen pixels (PTM × SCALE_FACTOR). */
 constexpr float worldToScreenDistance(float worldDist)
 {

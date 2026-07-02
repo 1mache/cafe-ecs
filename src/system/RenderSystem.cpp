@@ -49,15 +49,16 @@ void drawSystem(SDL_Renderer* renderer)
 
         SDL_FRect dstRect = transformToFrect(t, RenderContext::getCameraPos());
 
-        // TODO: remove after sprite is added
-        // Placeholder ice machine: a solid gray square (no art asset yet).
-        if (e.has<IceMachine>())
+        // Solid colour quad: a Drawable with no texture fills its rect with tint.
+        // Generalizes the placeholder above; used by flat UI like shop buttons.
+        if (d.texture == nullptr)
         {
-            SDL_SetRenderDrawColor(renderer, 150, 150, 160, 255);
+            const SDL_Color& c = d.tint;
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
             SDL_RenderFillRect(renderer, &dstRect);
             continue;
         }
-
 
         const SDL_Color& tint = d.tint;
         const bool hasTint = tint.r != 255 || tint.g != 255 || tint.b != 255 || tint.a != 255;

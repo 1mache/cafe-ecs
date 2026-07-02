@@ -15,7 +15,6 @@ struct AnimationFrame
 };
 
 constexpr auto MAX_ANIM_FRAMES = 4;
-// constexpr auto
 struct Animation
 {
     std::array<AnimationFrame, MAX_ANIM_FRAMES> frames;

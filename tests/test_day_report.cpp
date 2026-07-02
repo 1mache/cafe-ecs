@@ -4,13 +4,12 @@
 
 using namespace cafe;
 
-TEST_CASE("tickDayClock counts down and signals day-over once it reaches zero")
+TEST_CASE("dayIsOver is true once handled reaches the target")
 {
-    float t = 1.0f;
-    REQUIRE(tickDayClock(t, 0.4f) == false);   // 0.6 left
-    REQUIRE(tickDayClock(t, 0.4f) == false);   // 0.2 left
-    REQUIRE(tickDayClock(t, 0.4f) == true);    // crosses 0
-    REQUIRE(tickDayClock(t, 0.4f) == true);    // stays over
+    REQUIRE(dayIsOver(0, 10) == false);
+    REQUIRE(dayIsOver(9, 10) == false);
+    REQUIRE(dayIsOver(10, 10) == true);   // boundary: exactly the target
+    REQUIRE(dayIsOver(11, 10) == true);
 }
 
 TEST_CASE("buildReportRows reflects the current DayState")

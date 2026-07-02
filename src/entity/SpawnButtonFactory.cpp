@@ -35,29 +35,46 @@ b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
 // PhysicsBody and no DragIntent, so it can be clicked but never dragged.
 bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, WorldPos pos, DropType item)
 {
-    const char*      texPath = "buttons.png";
-
-    const Texture& tex = assets.getTexture(texPath);
-    const float srcX = item == DropType::Cup ? 0.f : 0.f + BUTTON_DIMS.x;
-    const SDL_FRect src = { srcX, 0.f, BUTTON_DIMS.x, BUTTON_DIMS.y };
-
-    const float halfW = texToWorldScale(BUTTON_DIMS.x);
-    const float halfH = texToWorldScale(BUTTON_DIMS.y);
-
     // Cup/pastry drop in from above the screen; ice drops from the ice machine spout.
     const WorldPos spawnPos =
         (item == DropType::Ice)
-            ? WorldPos{ supply::ICE_SPAWN_X, supply::ICE_SPAWN_Y }
+            ? WorldPos{pos.x, pos.y + texToWorldScale(BUTTON_DIMS.y) + 0.5f} // ice spawns above the button
             : WorldPos{ (item == DropType::Cup) ? supply::CUP_SPAWN_X : supply::PASTRY_SPAWN_X,
                         supply::DROP_FROM_Y };
     b2ShapeId slotSensor = createSlotSensor(physics, spawnPos);
 
     auto ent = bagel::Entity::create();
-    ent.addAll(
-        Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ tex.get(), src, layer::UI1 },
+    ent.add(
         SpawnButton{ .item = item, .spawnSlotSensor = slotSensor, .spawnPos = spawnPos }
     );
+
+    // ice button is invisible
+    if (item != DropType::Ice)
+    {
+        // TODO: change based on cup vs pastry when sprites ready
+        const char*      texPath = "buttons.png";
+
+        const Texture& tex = assets.getTexture(texPath);
+        const float srcX = item == DropType::Cup ? 0.f : 0.f + BUTTON_DIMS.x;
+        const SDL_FRect src = { srcX, 0.f, BUTTON_DIMS.x, BUTTON_DIMS.y };
+
+        const float halfW = texToWorldScale(BUTTON_DIMS.x);
+        const float halfH = texToWorldScale(BUTTON_DIMS.y);
+
+        ent.addAll(
+            Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
+            Drawable{ tex.get(), src, layer::STATIC_OVERLAY }
+        );
+    }
+    else
+    {
+        ent.add(Transform{.x = pos.x,
+                          .y = pos.y,
+                          .w = texToWorldScale(supply::ICE_BUTTON_W_PX),
+                          .h = texToWorldScale(supply::ICE_BUTTON_H_PX)});
+        // ===================DEBUG========================================
+        // auto& debugTex = assets.getTexture("particle.png");// ent.add(Drawable{debugTex.get(), debugTex.getFullSrcRect(), layer::STATIC_OVERLAY });
+    }
     return ent;
 }
 } // namespace cafe
