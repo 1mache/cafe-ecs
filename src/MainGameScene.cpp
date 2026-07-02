@@ -25,15 +25,15 @@ void cafe::MainGameScene::onInit()
     createBg(assets, BG_PATH);
     createBartop(assets, _physics);
 
+    // Ice machine.
+    createIceMachine(assets, _physics, supply::ICE_MACHINE_POS);
+    // Then coffee machine on top (in front). order matters
     createCoffeeMachine(assets, _physics, supply::COFFEE_MACHINE_POS);
 
     // Supply is summoned on demand: click a button to drop a fresh cup/pastry in.
     createSpawnButton(assets, _physics, supply::CUP_BUTTON_POS, DropType::Cup);
     createSpawnButton(assets, _physics, supply::PASTRY_BUTTON_POS, DropType::Pastry);
 
-    // Ice machine (gray placeholder square) with its spawn button on the machine face.
-    createIceMachine(assets, supply::ICE_MACHINE_POS);
-    createSpawnButton(assets, _physics, supply::ICE_BUTTON_POS, DropType::Ice);
 
     // Microwave (gray placeholder square, no button): drag a pastry onto it to heat it.
     createMicrowave(assets, _physics, supply::MICROWAVE_POS);
@@ -111,7 +111,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
     recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup
     reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
-    hierarchySystem();            // children follow parents; orphan children of Leaving
+    positionHierarchySystem();            // children follow parents; orphan children of Leaving
     customerCleanupSystem();      // destroy all Leaving entities
     cupAlphaSystem();             // fade cup front when contents > 0
     timerBarSystem();             // size microwave + day bars from their sources

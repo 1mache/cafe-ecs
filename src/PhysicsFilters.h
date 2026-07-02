@@ -44,5 +44,5 @@ inline constexpr uint64_t MASK_CLEANUP          = LIQUID | ICE;
 inline constexpr uint64_t MASK_DROPSPACE_SENSOR = DRAGGABLE;
 inline constexpr uint64_t MASK_DRAGGABLE        = DROPSPACE_SENSOR | FURNITURE | DRAGGABLE | CUP_SOLID;
 inline constexpr uint64_t MASK_FURNITURE        = FURNITURE | CUP_SOLID | DRAGGABLE | ICE;
-inline constexpr uint64_t MASK_ICE              = LIQUID | CUP_SOLID | CUP_INSIDE | CLEANUP | FURNITURE;
+inline constexpr uint64_t MASK_ICE              = LIQUID | ICE | CUP_SOLID | CUP_INSIDE | CLEANUP | FURNITURE;
 } // namespace cafe::filter

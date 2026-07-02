@@ -25,7 +25,7 @@ void physicsToTransformSystem()
     }
 }
 
-void hierarchySystem()
+void positionHierarchySystem()
 {
     static const bagel::Mask childMask =
         bagel::MaskBuilder().set<ChildOf>().set<Transform>().build();

@@ -6,8 +6,7 @@
 namespace cafe
 {
 class AssetManager;
+class PhysicsContext;
 
-/** @brief Placeholder gray-square ice machine, a pure visual anchor (no
- *  collider). The spawn button placed on it drops ice cubes from the spout. */
-bagel::Entity createIceMachine(AssetManager& assets, WorldPos pos);
+bagel::Entity createIceMachine(AssetManager& assets, PhysicsContext& physics, WorldPos pos);
 } // namespace cafe
