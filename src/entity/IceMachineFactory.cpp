@@ -33,8 +33,8 @@ bagel::Entity createIceMachine(AssetManager& assets, PhysicsContext& physics, Wo
     b2BodyId body = b2CreateBody(physics.world(), &bd);
 
     b2ShapeDef machineShape = b2DefaultShapeDef();
-    machineShape.filter.categoryBits = filter::FURNITURE;
-    machineShape.filter.maskBits     = filter::MASK_FURNITURE;
+    machineShape.filter.categoryBits = filter::MACHINES;
+    machineShape.filter.maskBits     = filter::MASK_MACHINES;
     const b2Polygon collider = b2MakeOffsetBox(halfW - COLLIDER_EPSILON, halfH - COLLIDER_EPSILON,
                                                 { 0.f, 0.f }, b2Rot_identity);
     b2CreatePolygonShape(body, &machineShape, &collider);

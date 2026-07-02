@@ -16,7 +16,8 @@ enum FilterType: int
     CLEANUP_BIT,
     DROPSPACE_SENSOR_BIT,
     DRAGGABLE_BIT,
-    FURNITURE_BIT,
+    MACHINES_BIT,
+    BARTOP_BIT,
     ICE_BIT,
     count
 };
@@ -33,16 +34,18 @@ inline constexpr uint64_t CUP_LID          = bit2Filter(CUP_LID_BIT); // prevent
 inline constexpr uint64_t CLEANUP          = bit2Filter(CLEANUP_BIT); // out-of-bounds sensor
 inline constexpr uint64_t DROPSPACE_SENSOR = bit2Filter(DROPSPACE_SENSOR_BIT); // drop-zone sensor
 inline constexpr uint64_t DRAGGABLE        = bit2Filter(DRAGGABLE_BIT); // draggable visitor shape
-inline constexpr uint64_t FURNITURE        = bit2Filter(FURNITURE_BIT); // solid furniture
+inline constexpr uint64_t BARTOP           = bit2Filter(BARTOP_BIT); // bartop (table)
+inline constexpr uint64_t MACHINES         = bit2Filter(MACHINES_BIT); // ice machine, coffee machine
 inline constexpr uint64_t ICE              = bit2Filter(ICE_BIT); // ice cube: rests on furniture, caught by cup
 
 inline constexpr uint64_t MASK_LIQUID           = CUP_SOLID | ICE | CUP_INSIDE | CLEANUP;
-inline constexpr uint64_t MASK_CUP_SOLID        = LIQUID | FURNITURE | CUP_SOLID | DRAGGABLE | ICE;
+inline constexpr uint64_t MASK_CUP_SOLID        = LIQUID | MACHINES | BARTOP | CUP_SOLID | DRAGGABLE | ICE;
 inline constexpr uint64_t MASK_CUP_INSIDE       = LIQUID | ICE;
 inline constexpr uint64_t MASK_CUP_LID          = CUP_LID | CUP_SOLID;
 inline constexpr uint64_t MASK_CLEANUP          = LIQUID | ICE;
 inline constexpr uint64_t MASK_DROPSPACE_SENSOR = DRAGGABLE;
-inline constexpr uint64_t MASK_DRAGGABLE        = DROPSPACE_SENSOR | FURNITURE | DRAGGABLE | CUP_SOLID;
-inline constexpr uint64_t MASK_FURNITURE        = FURNITURE | CUP_SOLID | DRAGGABLE | ICE;
-inline constexpr uint64_t MASK_ICE              = LIQUID | ICE | CUP_SOLID | CUP_INSIDE | CLEANUP | FURNITURE;
+inline constexpr uint64_t MASK_DRAGGABLE        = DROPSPACE_SENSOR | BARTOP | MACHINES | DRAGGABLE | CUP_SOLID;
+inline constexpr uint64_t MASK_BARTOP           = CUP_SOLID | DRAGGABLE | ICE;
+inline constexpr uint64_t MASK_MACHINES         = MACHINES | CUP_SOLID | DRAGGABLE;
+inline constexpr uint64_t MASK_ICE              = LIQUID | ICE | CUP_SOLID | CUP_INSIDE | CLEANUP | BARTOP;
 } // namespace cafe::filter

@@ -51,8 +51,8 @@ bagel::Entity createBartop(AssetManager& assets, PhysicsContext& physicsContext)
 
     b2ShapeDef bartopShape = b2DefaultShapeDef();
     bartopShape.material.friction = 0.3f;
-    bartopShape.filter.categoryBits = filter::FURNITURE;
-    bartopShape.filter.maskBits     = filter::MASK_FURNITURE;
+    bartopShape.filter.categoryBits = filter::BARTOP;
+    bartopShape.filter.maskBits     = filter::MASK_BARTOP;
     b2CreatePolygonShape(bartopBodyId, &bartopShape, &topStrip);
 
     ent.addAll(
