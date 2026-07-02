@@ -48,6 +48,8 @@ target_sources(
     system/LiquidSystem.cpp
     system/MicrowaveSystem.h
     system/MicrowaveSystem.cpp
+    system/NapkinSystem.h
+    system/NapkinSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
     system/CheckBeverageSystem.h

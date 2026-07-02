@@ -5,7 +5,8 @@
 namespace cafe
 {
 class AssetManager;
+class PhysicsContext;
 
-/** @brief Static napkin sprite anchored to the bottom-center of the screen. */
-bagel::Entity createNapkin(AssetManager& assets);
+/** @brief Napkin sprite anchored to the bottom-center of the screen. */
+bagel::Entity createNapkin(AssetManager& assets, PhysicsContext& physics);
 } // namespace cafe
