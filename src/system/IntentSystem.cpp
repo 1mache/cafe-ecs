@@ -63,12 +63,7 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input)
     }
     else if (intent.state == NapkinState::Full)
     {
-        if (isPointInsideScreenRect(input.mousePos,
-                                    NAPKIN_FULL_HITBOX_X,
-                                    NAPKIN_FULL_HITBOX_Y,
-                                    NAPKIN_FULL_HITBOX_W,
-                                    NAPKIN_FULL_HITBOX_H) &&
-            (input.controls & controlBit(Controls::MouseButtonDown)))
+        if (input.controls & controlBit(Controls::MouseButtonDown))
         {
             intent.state = NapkinState::Hidden;
             std::cout << "NapkinIntent: switched to Hidden (click inside full hitbox)\n";
