@@ -90,8 +90,10 @@ void AudioContext::startSustained(std::string_view filename, float startOffsetSe
 
     // Skip startOffsetSeconds into the file. Offset is frame-aligned by construction
     // (whole frames * frame size), so playback stays sample-correct.
+    const Uint32 frameSize = SDL_AUDIO_BYTESIZE(static_cast<Uint32>(sound.spec().format))
+                            * static_cast<Uint32>(sound.spec().channels);
     Uint32 offset = static_cast<Uint32>(startOffsetSeconds * static_cast<float>(sound.spec().freq))
-                  * SDL_AUDIO_FRAMESIZE(sound.spec());
+                  * frameSize;
     if (offset > sound.size()) offset = sound.size();
 
     SDL_PutAudioStreamData(_sustainedVoice, sound.data() + offset,
