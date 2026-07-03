@@ -3,6 +3,7 @@
 #include "Entities.h"
 #include "MainGameScene.h"
 #include "Menu.h"
+#include "RenderLayers.h"
 #include <bagel.h>
 #include <cmath>
 #include <iostream>
@@ -12,6 +13,81 @@ namespace cafe
 {
 // TODO: remove after change to dynamic patience
 static constexpr float CUSTOMER_PATIENCE = 60.f; // seconds before a customer leaves unhappy
+
+namespace
+{
+// --- Grade-popup FX tuning (world units; +y is up on screen). ---
+constexpr float POPUP_TEXT_LIFE   = 1.0f;  // seconds
+constexpr float POPUP_PART_LIFE   = 0.6f;  // seconds
+constexpr float POPUP_RISE        = 3.0f;  // text upward drift (u/s)
+constexpr float POPUP_SINK        = -2.0f; // failed text downward drift (u/s)
+constexpr float PART_HALF         = 0.15f; // particle quad half-extent (~2.4px)
+constexpr float PART_SPEED        = 4.0f;  // particle burst speed (u/s)
+
+struct TierLook
+{
+    const char* text;
+    int         scale;
+    SDL_Color   color;
+    float       textVelY;   // popup text vertical drift
+    int         partCount;  // number of burst quads
+    float       partDirY;   // +1 up, -1 down bias for the burst
+    SDL_Color   partColor;
+};
+
+TierLook lookFor(GradeTier tier)
+{
+    switch (tier)
+    {
+        case GradeTier::Perfect:
+            return { "PERFECT", 1, {255, 210, 60, 255}, POPUP_RISE, 8,  1.f, {255, 230, 120, 255} };
+        case GradeTier::Good:
+            return { "GOOD",    1, {110, 220, 90, 255}, POPUP_RISE, 4,  1.f, {110, 220, 90, 255} };
+        case GradeTier::Meh:
+            return { "MEH",     1, {150, 150, 150, 255}, POPUP_RISE, 3, -1.f, {150, 150, 150, 255} };
+        case GradeTier::Failed:
+        default:
+            return { "TOO SLOW", 1, {230, 60, 50, 255}, POPUP_SINK, 5, -1.f, {40, 40, 40, 255} };
+    }
+}
+
+// Fixed-angle fan velocity for burst particle i of n (deterministic, no RNG).
+// Spread across a half-circle biased up or down by dirY.
+WorldPos burstVelocity(int i, int n, float dirY)
+{
+    // Evenly spaced angles from ~20deg to ~160deg, measured from +x, then the
+    // vertical component is signed by dirY so "up" bursts rise, "down" sink.
+    const float t     = n > 1 ? static_cast<float>(i) / static_cast<float>(n - 1) : 0.5f;
+    const float angle = 0.35f + t * 2.44f; // radians, ~20deg..160deg
+    const float vx    = PART_SPEED * std::cos(angle);
+    const float vy    = PART_SPEED * std::sin(angle) * dirY;
+    return { vx, vy };
+}
+
+void spawnGradePopup(float cx, float cy, GradeTier tier)
+{
+    const TierLook look = lookFor(tier);
+
+    // Text popup: TextLabel + Particle (drift/fade) + Lifetime.
+    auto textEnt = bagel::Entity::create();
+    textEnt.addAll(
+        Transform{ .x = cx, .y = cy },
+        TextLabel{ look.text, look.scale, TextAlign::Center, look.color },
+        Particle{ WorldPos{ 0.f, look.textVelY } },
+        Lifetime{ 0.f, POPUP_TEXT_LIFE });
+
+    // Burst quads: null-texture Drawable (drawn as a tint rect) + Particle + Lifetime.
+    for (int i = 0; i < look.partCount; ++i)
+    {
+        auto q = bagel::Entity::create();
+        q.addAll(
+            Transform{ .x = cx, .y = cy, .w = PART_HALF, .h = PART_HALF },
+            Drawable{ nullptr, SDL_FRect{}, layer::UI2, look.partColor },
+            Particle{ burstVelocity(i, look.partCount, look.partDirY) },
+            Lifetime{ 0.f, POPUP_PART_LIFE });
+    }
+}
+} // namespace
 
 
 void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
@@ -185,6 +261,33 @@ void finalizeOrderGradeSystem()
 
         behavior.rating = static_cast<int>(std::round(static_cast<float>(raw) * factor));
     }
+}
+
+void gradePopupSystem()
+{
+    static const bagel::Mask mask =
+        bagel::MaskBuilder().set<Leaving>().set<Behavior>().set<Order>()
+                            .set<OrderGrade>().set<Transform>().build();
+
+    // Snapshot first (spawning new entities mid-iteration is unsafe).
+    struct Spawn { float x, y; GradeTier tier; };
+    std::vector<Spawn> spawns;
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+
+        const Behavior&  b     = e.get<Behavior>();
+        const Order&     order = e.get<Order>();
+        const Transform& t     = e.get<Transform>();
+
+        const int       items = order.drinkCount + order.pastryCount;
+        const GradeTier tier  = gradeTier(b.rating, items, b.succeeded);
+        spawns.push_back({ t.x, t.y, tier });
+    }
+
+    for (const auto& s : spawns)
+        spawnGradePopup(s.x, s.y, s.tier);
 }
 
 void reportLeavingCustomers()
