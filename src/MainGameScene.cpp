@@ -96,7 +96,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     napkinSystem(_physics, dt);   // napkin state -> body velocity + size ease
 
     machineButtonSystem();             // coffee-machine buttons -> pour state
-    liquidSpawnerSystem(getAssetManager(), _physics, dt);    // spawn drops while pouring
+    liquidSpawnerSystem(getAssetManager(), _physics, getAudioContext(), dt);    // spawn drops while pouring
     _physics.step(dt);
     liquidVelocityClampSystem(); // TODO: remove and check effects in the end
     liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
@@ -117,6 +117,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
     SDL_RenderClear(renderer);
     drawSystem(renderer);       // sorted by renderLayer ascending
+    drawTextSystem(renderer, getAssetManager().getTexture("font.png"));
     debugHighlightPhysics(renderer);
     SDL_RenderPresent(renderer);
 

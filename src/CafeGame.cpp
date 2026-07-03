@@ -18,7 +18,7 @@ namespace cafe
 
 void CafeGame::init()
 {
-    if (!SDL_Init(SDL_INIT_VIDEO))
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
     {
         std::cerr << "Init error : " << SDL_GetError() << std::endl;
         fatalError(SDL_GetError());

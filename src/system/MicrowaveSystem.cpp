@@ -81,12 +81,37 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
         auto& intent = e.get<DragIntent>();
 
         if (intent.intentType != DragIntentType::released) continue;
-        if (!intent.dropSpaceEntity.has_value()) continue;
 
-        bagel::Entity target{ *intent.dropSpaceEntity };
-        if (!target.has<Microwave>()) continue; // dropped on some other zone — not ours
+        // Primary: the sensor-driven dropSpaceEntity. Fallback: geometric overlap.
+        // The sensor's begin-touch only fires on a held ENTER transition, so an item
+        // that started already inside the zone never gets dropSpaceEntity set; the
+        // overlap test catches that case without depending on any event.
+        bool            onMicrowave = false;
+        bagel::ent_type targetId{};
+        if (intent.dropSpaceEntity.has_value())
+        {
+            bagel::Entity t{ *intent.dropSpaceEntity };
+            if (t.has<Microwave>())
+            {
+                targetId    = *intent.dropSpaceEntity;
+                onMicrowave = true;
+            }
+        }
+        else if (e.has<Transform>())
+        {
+            const auto& itemT = e.get<Transform>();
+            for (auto mw : microwaves)
+                if (boxesOverlap(itemT, mw.get<Transform>()))
+                {
+                    targetId    = mw.entity();
+                    onMicrowave = true;
+                    break;
+                }
+        }
+        if (!onMicrowave) continue;
 
-        auto& mw = target.get<Microwave>();
+        bagel::Entity target{ targetId };
+        auto&         mw = target.get<Microwave>();
         if (mw.busy)
         {
             // Occupied: drop the target so releaseEntity lets the pastry fall normally.
