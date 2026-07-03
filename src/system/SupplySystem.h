@@ -15,8 +15,8 @@ inline constexpr float PASTRY_SPAWN_X = 2.f;  // spawn x for pastry
 inline constexpr float DROP_FROM_Y    = 6.5f; // start height, just above the screen
 
 inline constexpr WorldPos COFFEE_MACHINE_POS = {-5.5f, -1.f};
-inline constexpr WorldPos CUP_BUTTON_POS     = {-8.5f, -4.7f};
-inline constexpr WorldPos PASTRY_BUTTON_POS  = {8.5f, -4.7f};
+inline constexpr WorldPos CUP_BUTTON_POS     = {-8.3f, -4.5f};
+inline constexpr WorldPos PASTRY_BUTTON_POS  = {8.3f, -4.6f};
 
 // Ice machine: a gray placeholder square next to the coffee machine, with its
 // spawn button on the machine face. The cube drops from the machine spout
@@ -34,7 +34,7 @@ inline constexpr WorldPos MICROWAVE_SPAWN_POS = {2.3f, -0.5f};
 
 // Pastry TV: top-left display that rotates through pastry types; the pastry
 // button spawns whichever it currently shows. Tunable — nudge by observation.
-inline constexpr WorldPos PASTRY_TV_POS = {-7.5f, 2.4f};
+inline constexpr WorldPos PASTRY_TV_POS = {8.3f, -2.4f};
 } // namespace supply
 
 /** @brief Summons a cup/pastry into the first free supply slot when its button was

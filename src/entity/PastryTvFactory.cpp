@@ -31,7 +31,7 @@ void createPastryTv(AssetManager& assets, WorldPos pos)
 
     bagel::Entity::create().addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = tvHalfW, .h = tvHalfH },
-        Drawable{ tvTex.get(), tvTex.getFullSrcRect(), layer::STATIC_ON_BARTOP });
+        Drawable{ tvTex.get(), tvTex.getFullSrcRect(), layer::UI1 });
 
     // --- Pastry display: the entity the system ticks and mutates ---
     const SpriteSheet& props     = assets.getSpriteSheet(PROPS_TEX, PROPS_DATA);
@@ -41,7 +41,7 @@ void createPastryTv(AssetManager& assets, WorldPos pos)
     bagel::Entity::create().addAll(
         Transform{ .x = pos.x, .y = pos.y,
                    .w = tvHalfW * SCREEN_FRACTION, .h = tvHalfH * SCREEN_FRACTION },
-        Drawable{ propsTex.get(), props.getFrameRect(pastryFrom), layer::STATIC_OVERLAY },
+        Drawable{ propsTex.get(), props.getFrameRect(pastryFrom), layer::UI2 },
         PastryTv{});
 }
 } // namespace cafe
