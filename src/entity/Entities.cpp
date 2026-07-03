@@ -9,6 +9,12 @@ namespace cafe
 void destroyPhysicalEntity(bagel::ent_type id)
 {
     bagel::Entity e{ id };
+    // Empty mask = already destroyed. bagel's deleteEntity pushes the id onto
+    // its free-list unconditionally, so a second destroy would hand the same id
+    // to two live entities later (they'd share mask + components, and deleting
+    // one deletes both). Skipping here makes every destroy path idempotent.
+    if (e.mask().ctz() < 0)
+        return;
     if (e.has<PhysicsBody>())
         b2DestroyBody(e.get<PhysicsBody>().id);
     e.destroy();
