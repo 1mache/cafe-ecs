@@ -1,7 +1,9 @@
 #include "RenderSystem.h"
 #include "Components.h"
+#include "Glyph.h" // alignedX
 #include "PhysicsContext.h"
 #include "RenderContext.h"
+#include "Text.h"  // drawText
 #include "Transform.h"
 #include <SDL3/SDL.h>
 #include <algorithm>
@@ -83,6 +85,40 @@ void drawSystem(SDL_Renderer* renderer)
             SDL_SetTextureAlphaMod(d.texture, 255);
         }
     } 
+}
+void drawTextSystem(SDL_Renderer* renderer, const Texture& font)
+{
+    static const bagel::Mask mask =
+        bagel::MaskBuilder().set<TextLabel>().set<Transform>().build();
+
+    const WorldPos cam = RenderContext::getCameraPos();
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+
+        const auto& label = e.get<TextLabel>();
+        const auto& t     = e.get<Transform>();
+
+        const SDL_FPoint anchor = worldToScreenPoint({ t.x, t.y }, cam);
+        const float x = alignedX(label.text, label.scale, label.align, anchor.x);
+
+        const SDL_Color& tint = label.tint;
+        const bool hasTint = tint.r != 255 || tint.g != 255 || tint.b != 255 || tint.a != 255;
+        if (hasTint)
+        {
+            SDL_SetTextureColorMod(font.get(), tint.r, tint.g, tint.b);
+            SDL_SetTextureAlphaMod(font.get(), tint.a);
+        }
+
+        drawText(renderer, font, label.text, x, anchor.y, label.scale);
+
+        if (hasTint)
+        {
+            SDL_SetTextureColorMod(font.get(), 255, 255, 255);
+            SDL_SetTextureAlphaMod(font.get(), 255);
+        }
+    }
 }
 void debugHighlightPhysics(SDL_Renderer* renderer)
 {
