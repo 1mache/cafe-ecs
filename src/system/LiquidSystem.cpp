@@ -1,9 +1,11 @@
 #include "LiquidSystem.h"
 #include "AssetManager.h"
+#include "AudioContext.h"
 #include "Components.h"
 #include "Entities.h"
 #include "PhysicsContext.h"
 #include "PhysicsFilters.h"
+#include "SoundAssets.h"
 #include "Utils.h"
 
 #include <algorithm>
@@ -14,18 +16,29 @@
 
 namespace cafe
 {
-void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
+
+    constexpr float COFFEE_POUR_SOUND_DELAY = 2.2f;
+    constexpr float WATER_DROP_SOUND_DELAY = 0.15f;
+void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, AudioContext& audio, float dtSeconds)
 {
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<LiquidSpawner>().set<Transform>().build();
 
     static std::uniform_real_distribution jitter(-0.025f, 0.025f);
 
+    bool coffeePouring = false;
+    bool milkPouring   = false;
+    bool waterPouring   = false;
+
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(mask)) continue;
         auto& s = e.get<LiquidSpawner>();
         if (!s.active) continue;
+
+        if (s.kind == LiquidIngredient::Coffee) coffeePouring = true;
+        if (s.kind == LiquidIngredient::Milk)   milkPouring   = true;
+        if (s.kind == LiquidIngredient::Water)  waterPouring   = true;
 
         const auto& t = e.get<Transform>();
         s.accumulator += dtSeconds;
@@ -35,6 +48,17 @@ void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dt
             (void)createLiquidDrop(assets, physics, { t.x + s.offset.x + jitter(getRng()), t.y + s.offset.y }, s.kind);
         }
     }
+
+    // One sustained channel drives the pour sound. Coffee wins if both pour at once;
+    // it stops the moment neither pipe is active.
+    if (coffeePouring)
+        audio.startSustained(sound::COFFEE, COFFEE_POUR_SOUND_DELAY);
+    else if (milkPouring)
+        audio.startSustained(sound::MILK_STEAMER);
+    else if (waterPouring)
+        audio.startSustained(sound::WATER_DROP, WATER_DROP_SOUND_DELAY);
+    else
+        audio.stopSustained();
 }
 void liquidVelocityClampSystem()
 {

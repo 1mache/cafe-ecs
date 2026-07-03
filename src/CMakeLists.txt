@@ -156,6 +156,11 @@ target_sources(
 
     AssetManager.h
     AssetManager.cpp
+    AudioContext.h
+    AudioContext.cpp
+    SoundAssets.h
+    Sound.h
+    Sound.cpp
     Texture.h
     Texture.cpp
     SpriteSheet.h
