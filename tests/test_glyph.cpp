@@ -22,3 +22,17 @@ TEST_CASE("textWidth accounts for glyph width, tracking, and scale")
     REQUIRE(textWidth("AB", 1) == static_cast<float>(2 * GLYPH_W + 1 * GLYPH_GAP)); // 11
     REQUIRE(textWidth("AB", 2) == static_cast<float>((2 * GLYPH_W + 1 * GLYPH_GAP) * 2)); // 22
 }
+
+TEST_CASE("alignedX positions text against an anchor by alignment")
+{
+    // "AB" at scale 1 has textWidth 11 (2*GLYPH_W + 1*GLYPH_GAP)
+    REQUIRE(alignedX("AB", 1, TextAlign::Left,   100.f) == 100.f);
+    REQUIRE(alignedX("AB", 1, TextAlign::Center, 100.f) == 100.f - 11.f / 2.f);
+    REQUIRE(alignedX("AB", 1, TextAlign::Right,  100.f) == 100.f - 11.f);
+
+    // scale 2 doubles textWidth to 22
+    REQUIRE(alignedX("AB", 2, TextAlign::Right, 100.f) == 100.f - 22.f);
+
+    // empty string: textWidth is 0, so all alignments collapse to anchorX
+    REQUIRE(alignedX("", 1, TextAlign::Center, 50.f) == 50.f);
+}
