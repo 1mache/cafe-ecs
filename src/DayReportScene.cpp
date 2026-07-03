@@ -15,6 +15,7 @@
 #include "Transform.h"         // transformToFrect
 #include "UpgradeCatalog.h"
 #include "UpgradeState.h"
+#include "entity/CafeEnvironmentFactory.h" // createBg
 #include <SDL3/SDL.h>
 #include <bagel.h>
 #include <string>
@@ -24,30 +25,37 @@ namespace cafe
 namespace
 {
 constexpr auto  FONT_TEX = "font.png";
+constexpr auto  BG_TEX   = "day_report_screen.png"; // framed "TV" backdrop; content fits its black screen area
 constexpr int   SCALE    = 1;
 
-// --- Stats block (immediate-mode overlay, top of the 160x90 logical canvas) ---
-constexpr float STAT_TOP_Y   = 3.f;
+// --- Stats block (immediate-mode overlay). The backdrop's black screen area is
+// x:[5,154] y:[5,75] on the 160x90 logical canvas; these keep text inside it. ---
+constexpr float STAT_TOP_Y    = 8.f;
 constexpr float STAT_LINE_H   = 9.f;
-constexpr float STAT_MARGIN_X = 6.f;
+constexpr float STAT_MARGIN_X = 8.f;
 
-// --- Shop buttons in WORLD units (camera at origin: 1 unit = 8 px, center = 80,45) ---
-constexpr float    BTN_HALF_W   = 9.5f;   // upgrade bars: ~152 px wide (nearly full canvas)
-constexpr float    BTN_HALF_H   = 0.6f;   // ~10 px tall (one text line)
-constexpr float    NEXT_HALF_W  = 5.f;    // NEXT DAY bar: ~80 px, narrower + centered
-constexpr float    BTN_X        = 0.f;    // centered horizontally
-constexpr float    FIRST_BTN_Y  = -1.375f; // first upgrade bar (~screen y 56)
-constexpr float    BTN_GAP_Y    = 1.5f;    // world gap between stacked bars
-constexpr WorldPos NEXT_DAY_POS = { 0.f, -4.625f }; // bottom bar (~screen y 82)
+// --- Upgrade bars in WORLD units (camera at origin: 1 unit = 8 px, center = 80,45).
+// Sized/positioned to stay inside the backdrop's black screen area (see above)
+// and clear of its bottom bezel (screen y >= 76). ---
+constexpr float BTN_HALF_W  = 8.75f;   // upgrade bars: ~140 px wide, inset from the frame
+constexpr float BTN_HALF_H  = 0.5625f; // ~9 px tall (one text line + padding)
+constexpr float BTN_X       = 0.f;     // centered horizontally
+constexpr float FIRST_BTN_Y = -1.5625f; // first upgrade bar (~screen y 57.5)
+constexpr float BTN_GAP_Y   = 1.375f;   // world gap between stacked bars
+
+// The backdrop already draws a red "power" button in its bottom-right bezel
+// (screen px center ~149,84, ~9 px across); this is just its click hit-box —
+// no Drawable, so nothing is rendered over the baked-in art.
+constexpr WorldPos NEXT_DAY_HITBOX_POS  = { 8.625f, -4.875f };
+constexpr float    NEXT_DAY_HITBOX_HALF = 0.625f; // ~5 px half-size, a bit larger than the icon
 
 constexpr float LABEL_PAD      = 4.f;                                  // text inset from bar edge
 constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * 0.5f;  // vertical centring
 
-// State colours for the button fill (see AskUserQuestion: "colour by state").
+// State colours for the upgrade bar fill (see AskUserQuestion: "colour by state").
 constexpr SDL_Color COLOR_AFFORD = { 110, 190,  70, 255 }; // can buy      -> green
 constexpr SDL_Color COLOR_POOR   = {  78,  78,  86, 255 }; // too expensive-> gray
 constexpr SDL_Color COLOR_MAXED  = { 214, 172,  58, 255 }; // maxed out    -> gold
-constexpr SDL_Color COLOR_NEXT   = {  86, 138, 208, 255 }; // NEXT DAY     -> blue accent
 
 bagel::Entity makeButtonEntity(WorldPos pos, float halfW, float halfH)
 {
@@ -72,21 +80,30 @@ std::string shopStatus(UpgradeId id, int lvl)
 void DayReportScene::onInit()
 {
     getAssetManager().getTexture(FONT_TEX); // warm the cache
+    createBg(getAssetManager(), BG_TEX);     // framed backdrop, replaces the flat clear colour
 
     // Bank this day's score into the persistent wallet. onInit runs exactly once
     // per scene instance (CafeGame makes a fresh DayReportScene each day), so this
     // adds the finished day's score to money exactly once.
     UpgradeState::bankScore(DayState::score());
 
-    // One clickable bar per upgrade + a narrower next-day bar (world-space entities).
+    // One clickable bar per upgrade (world-space entities, drawn as filled bars).
     for (int i = 0; i < static_cast<int>(UpgradeId::count); ++i)
     {
         auto e = makeButtonEntity({ BTN_X, FIRST_BTN_Y - static_cast<float>(i) * BTN_GAP_Y },
                                   BTN_HALF_W, BTN_HALF_H);
         e.add(ShopButton{ .id = static_cast<UpgradeId>(i) });
     }
-    auto next = makeButtonEntity(NEXT_DAY_POS, NEXT_HALF_W, BTN_HALF_H);
-    next.add(NextDayButton{});
+
+    // Next-day trigger: a Transform-only hit-box over the backdrop's baked-in power
+    // button. No Drawable, so shopInputSystem still hit-tests it (Transform-only
+    // mask, see NextDayButton.h) but drawSystem has nothing to draw for it.
+    auto next = bagel::Entity::create();
+    next.addAll(
+        Transform{ .x = NEXT_DAY_HITBOX_POS.x, .y = NEXT_DAY_HITBOX_POS.y,
+                   .w = NEXT_DAY_HITBOX_HALF, .h = NEXT_DAY_HITBOX_HALF },
+        NextDayButton{}
+    );
 }
 
 bool DayReportScene::onUpdate(float /*dt*/)
@@ -103,36 +120,27 @@ bool DayReportScene::onUpdate(float /*dt*/)
 
     static const bagel::Mask shopMask =
         bagel::MaskBuilder().set<ShopButton>().set<Transform>().set<Drawable>().build();
-    static const bagel::Mask nextMask =
-        bagel::MaskBuilder().set<NextDayButton>().set<Transform>().set<Drawable>().build();
 
-    // Colour each button by its purchase state, then let drawSystem fill the bars.
+    // Colour each upgrade bar by its purchase state, then let drawSystem fill it.
     const int money = UpgradeState::money();
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (e.test(shopMask))
-        {
-            const ShopButton& b   = e.get<ShopButton>();
-            const int         lvl = UpgradeState::level(b.id);
-            e.get<Drawable>().tint = isMaxed(b.id, lvl) ? COLOR_MAXED
-                                   : (money >= upgradeCost(b.id, lvl) ? COLOR_AFFORD : COLOR_POOR);
-        }
-        else if (e.test(nextMask))
-        {
-            e.get<Drawable>().tint = COLOR_NEXT;
-        }
+        if (!e.test(shopMask)) continue;
+        const ShopButton& b   = e.get<ShopButton>();
+        const int         lvl = UpgradeState::level(b.id);
+        e.get<Drawable>().tint = isMaxed(b.id, lvl) ? COLOR_MAXED
+                               : (money >= upgradeCost(b.id, lvl) ? COLOR_AFFORD : COLOR_POOR);
     }
 
-    SDL_SetRenderDrawColor(renderer, 30, 20, 16, 255);
     SDL_RenderClear(renderer);
 
-    drawSystem(renderer); // fills the button bars (world-space, engine render path)
+    drawSystem(renderer); // backdrop + upgrade bars (world-space, engine render path)
 
     const Texture&  font = assets.getTexture(FONT_TEX);
     const WorldPos  cam  = RenderContext::getCameraPos();
 
     // --- Stats block: DAY/SERVED/LOST/SCORE + MONEY (skip spacers + the obsolete
-    // "CLICK TO CONTINUE" footer; the shop now has a NEXT DAY button). ---
+    // "CLICK TO CONTINUE" footer; next-day now happens via the power button). ---
     float y = STAT_TOP_Y;
     for (const auto& row : buildReportRows())
     {
@@ -154,31 +162,23 @@ bool DayReportScene::onUpdate(float /*dt*/)
                  static_cast<float>(LOGICAL_W) - STAT_MARGIN_X - textWidth(m, SCALE), y, SCALE);
     }
 
-    // --- Button labels, aligned to each bar's on-screen rect. Upgrade rows put the
-    // name at the left edge and the LV/cost status at the right edge; NEXT DAY is
-    // centred. Uses the same transformToFrect as drawSystem, so text tracks the fill. ---
+    // --- Upgrade bar labels, aligned to each bar's on-screen rect: name at the left
+    // edge, LV/cost status at the right edge. Uses the same transformToFrect as
+    // drawSystem, so text tracks the fill. (NEXT DAY has no label — it's the
+    // backdrop's power button, see the hit-box comment in onInit.) ---
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (e.test(shopMask))
-        {
-            const ShopButton& b   = e.get<ShopButton>();
-            const int         lvl = UpgradeState::level(b.id);
-            const SDL_FRect   r   = transformToFrect(e.get<Transform>(), cam);
-            const float       ty  = r.y + r.h * 0.5f + LABEL_Y_OFFSET;
+        if (!e.test(shopMask)) continue;
+        const ShopButton& b   = e.get<ShopButton>();
+        const int         lvl = UpgradeState::level(b.id);
+        const SDL_FRect   r   = transformToFrect(e.get<Transform>(), cam);
+        const float       ty  = r.y + r.h * 0.5f + LABEL_Y_OFFSET;
 
-            drawText(renderer, font, upgradeDef(b.id).name, r.x + LABEL_PAD, ty, SCALE);
+        drawText(renderer, font, upgradeDef(b.id).name, r.x + LABEL_PAD, ty, SCALE);
 
-            const std::string status = shopStatus(b.id, lvl);
-            drawText(renderer, font, status,
-                     r.x + r.w - LABEL_PAD - textWidth(status, SCALE), ty, SCALE);
-        }
-        else if (e.test(nextMask))
-        {
-            const SDL_FRect r  = transformToFrect(e.get<Transform>(), cam);
-            const float     ty = r.y + r.h * 0.5f + LABEL_Y_OFFSET;
-            const float     w  = textWidth("NEXT DAY", SCALE);
-            drawText(renderer, font, "NEXT DAY", r.x + r.w * 0.5f - w * 0.5f, ty, SCALE);
-        }
+        const std::string status = shopStatus(b.id, lvl);
+        drawText(renderer, font, status,
+                 r.x + r.w - LABEL_PAD - textWidth(status, SCALE), ty, SCALE);
     }
 
     SDL_RenderPresent(renderer);
