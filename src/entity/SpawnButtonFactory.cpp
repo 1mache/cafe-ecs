@@ -24,8 +24,8 @@ b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
     b2ShapeDef shape = b2DefaultShapeDef();
     shape.isSensor = true;
     shape.enableSensorEvents = true;
-    shape.filter.categoryBits |= filter::DROPSPACE_SENSOR; // just reuse of mask
-    shape.filter.maskBits |= filter::CUP_SOLID | filter::DRAGGABLE;
+    shape.filter.categoryBits = filter::DROPSPACE_SENSOR; // just reuse of mask
+    shape.filter.maskBits     = filter::CUP_SOLID | filter::DRAGGABLE;
     const b2Circle circle = {{0.f, 0.f}, CHECK_RADIUS};
     return b2CreateCircleShape(bodyId, &shape, &circle);
 }

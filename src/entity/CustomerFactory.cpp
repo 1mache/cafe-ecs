@@ -118,7 +118,7 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     auto customer = createCustomer(assets, physics, pos, order, patience);
 
     // Speech bubble is a child of the customer; order icons are children of the bubble.
-    auto bubble = createSpeechBubble(assets, customer, { 0.f, PERSON_DIMS.y/2.f });
+    auto bubble = createSpeechBubble(assets, customer, { 0.f, PERSON_DIMS.y/2.f  + 0.5f * (BUBBLE_DIMS.y/2.f)});
 
     // Order icons sit in a single left-aligned row of up to MAX_ORDER_ICONS slots.
     // Drinks default to Hot and pastries to Cold; a temperature icon is shown
