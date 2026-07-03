@@ -115,6 +115,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
     SDL_RenderClear(renderer);
     drawSystem(renderer);       // sorted by renderLayer ascending
+    drawTextSystem(renderer, getAssetManager().getTexture("font.png"));
     debugHighlightPhysics(renderer);
     SDL_RenderPresent(renderer);
 
