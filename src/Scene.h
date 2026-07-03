@@ -1,5 +1,6 @@
 #pragma once
 #include "AssetManager.h"
+#include "AudioContext.h"
 #include "SceneId.h"
 
 namespace cafe
@@ -15,6 +16,7 @@ public:
     void    cleanup();
 
     AssetManager& getAssetManager() { return _assetManager; }
+    AudioContext& getAudioContext() { return _audioContext; }
     SDL_Renderer* getRenderer() const { return _renderer; }
 
     virtual ~Scene() = default;
@@ -31,6 +33,7 @@ protected:
 private:
     SDL_Renderer* _renderer{};
     AssetManager  _assetManager;
+    AudioContext  _audioContext;
     SceneId       _next{ SceneId::Quit };
 };
 } // namespace cafe

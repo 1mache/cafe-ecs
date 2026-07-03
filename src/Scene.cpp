@@ -9,6 +9,7 @@ void Scene::init(SDL_Renderer* renderer)
 {
     _renderer = renderer;
     _assetManager.init(renderer);
+    _audioContext.init();
 
     onInit();
 }
@@ -62,5 +63,6 @@ void Scene::cleanup()
 {
     onCleanup();
     _assetManager.clear();
+    _audioContext.cleanup();
 }
 } // namespace cafe
