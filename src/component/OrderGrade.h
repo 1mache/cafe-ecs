@@ -40,6 +40,24 @@ bool allItemsServed(const Order& order, const OrderGrade& grade);
 /** Returns the raw sum of all per-item grades (max = order item count * MAX_ITEM_GRADE). */
 int sumItemGrades(const Order& order, const OrderGrade& grade);
 
+/** @brief Coarse quality bucket for a finished customer's order. */
+enum class GradeTier { Perfect, Good, Meh, Failed };
+
+/** @brief Tier for a finished customer: Failed on timeout (succeeded=false),
+ *  otherwise by rating as a fraction of the max possible
+ *  (itemCount * MAX_ITEM_GRADE): >=90% Perfect, >=60% Good, else Meh.
+ *  itemCount<=0 collapses to Meh (no divide-by-zero). */
+constexpr GradeTier gradeTier(int rating, int itemCount, bool succeeded)
+{
+    if (!succeeded) return GradeTier::Failed;
+    const int maxTotal = itemCount * MAX_ITEM_GRADE;
+    if (maxTotal <= 0) return GradeTier::Meh;
+    const float pct = static_cast<float>(rating) / static_cast<float>(maxTotal);
+    if (pct >= 0.9f) return GradeTier::Perfect;
+    if (pct >= 0.6f) return GradeTier::Good;
+    return GradeTier::Meh;
+}
+
 /** Returns the unserved drink slot whose recipe best matches overview ratios, or -1. */
 int matchDrinkSlotByRatio(const Order& order, const OrderGrade& grade, const CoffeeOverview& overview);
 
