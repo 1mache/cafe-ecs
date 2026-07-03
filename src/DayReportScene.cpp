@@ -5,12 +5,11 @@
 #include "DayState.h"
 #include "Entities.h"          // destroyAllGameEntities
 #include "GameConfig.h"
-#include "Glyph.h"             // textWidth, GLYPH_H
+#include "Glyph.h"             // GLYPH_H
 #include "RenderContext.h"
 #include "RenderLayers.h"
-#include "RenderSystem.h"      // drawSystem
+#include "RenderSystem.h"      // drawSystem, drawTextSystem
 #include "ShopSystem.h"
-#include "Text.h"              // drawText
 #include "Texture.h"
 #include "Transform.h"         // transformToFrect
 #include "UpgradeCatalog.h"
@@ -87,12 +86,80 @@ void DayReportScene::onInit()
     // adds the finished day's score to money exactly once.
     UpgradeState::bankScore(DayState::score());
 
-    // One clickable bar per upgrade (world-space entities, drawn as filled bars).
+    const WorldPos cam = RenderContext::getCameraPos();
+
+    // --- Stats block: DAY/SERVED/LOST/SCORE, then MONEY. Rows are static for
+    // the lifetime of this scene (DayState is frozen once the day is over), so
+    // these are created once here and never touched again in onUpdate. ---
+    float y = STAT_TOP_Y;
+    for (const auto& row : buildReportRows())
+    {
+        if (row.label.empty() || row.label == "CLICK TO CONTINUE")
+            continue;
+
+        const WorldPos labelPos = screenToWorldPoint({ STAT_MARGIN_X, y }, cam);
+        auto labelEnt = bagel::Entity::create();
+        labelEnt.addAll(
+            Transform{ .x = labelPos.x, .y = labelPos.y },
+            TextLabel{ row.label, SCALE, TextAlign::Left });
+
+        if (!row.value.empty())
+        {
+            const WorldPos valuePos = screenToWorldPoint(
+                { static_cast<float>(LOGICAL_W) - STAT_MARGIN_X, y }, cam);
+            auto valueEnt = bagel::Entity::create();
+            valueEnt.addAll(
+                Transform{ .x = valuePos.x, .y = valuePos.y },
+                TextLabel{ row.value, SCALE, TextAlign::Right });
+        }
+        y += STAT_LINE_H;
+    }
+
+    // MONEY row: label is static, value changes when the player buys an upgrade
+    // (mutated in onUpdate via the MoneyLabel tag).
+    {
+        const WorldPos labelPos = screenToWorldPoint({ STAT_MARGIN_X, y }, cam);
+        auto labelEnt = bagel::Entity::create();
+        labelEnt.addAll(
+            Transform{ .x = labelPos.x, .y = labelPos.y },
+            TextLabel{ "MONEY", SCALE, TextAlign::Left });
+
+        const WorldPos valuePos = screenToWorldPoint(
+            { static_cast<float>(LOGICAL_W) - STAT_MARGIN_X, y }, cam);
+        auto valueEnt = bagel::Entity::create();
+        valueEnt.addAll(
+            Transform{ .x = valuePos.x, .y = valuePos.y },
+            TextLabel{ std::to_string(UpgradeState::money()), SCALE, TextAlign::Right },
+            MoneyLabel{});
+    }
+
+    // One clickable bar per upgrade (world-space entities, drawn as filled bars),
+    // plus its two labels: name (static) and LV/cost status (mutated in
+    // onUpdate via the UpgradeStatusLabel tag).
     for (int i = 0; i < static_cast<int>(UpgradeId::count); ++i)
     {
-        auto e = makeButtonEntity({ BTN_X, FIRST_BTN_Y - static_cast<float>(i) * BTN_GAP_Y },
-                                  BTN_HALF_W, BTN_HALF_H);
-        e.add(ShopButton{ .id = static_cast<UpgradeId>(i) });
+        const WorldPos pos{ BTN_X, FIRST_BTN_Y - static_cast<float>(i) * BTN_GAP_Y };
+        const auto     id = static_cast<UpgradeId>(i);
+
+        auto e = makeButtonEntity(pos, BTN_HALF_W, BTN_HALF_H);
+        e.add(ShopButton{ .id = id });
+
+        const SDL_FRect r  = transformToFrect(
+            Transform{ .x = pos.x, .y = pos.y, .w = BTN_HALF_W, .h = BTN_HALF_H }, cam);
+        const float     ty = r.y + r.h * 0.5f + LABEL_Y_OFFSET;
+
+        const WorldPos namePos = screenToWorldPoint({ r.x + LABEL_PAD, ty }, cam);
+        auto nameEnt = bagel::Entity::create();
+        nameEnt.addAll(
+            Transform{ .x = namePos.x, .y = namePos.y },
+            TextLabel{ upgradeDef(id).name, SCALE, TextAlign::Left });
+
+        const WorldPos statusPos = screenToWorldPoint({ r.x + r.w - LABEL_PAD, ty }, cam);
+        auto statusEnt = bagel::Entity::create();
+        statusEnt.addAll(
+            Transform{ .x = statusPos.x, .y = statusPos.y },
+            TextLabel{ shopStatus(id, UpgradeState::level(id)), SCALE, TextAlign::Right },
+            UpgradeStatusLabel{ id });
     }
 
     // Next-day trigger: a Transform-only hit-box over the backdrop's baked-in power
@@ -120,9 +187,14 @@ bool DayReportScene::onUpdate(float /*dt*/)
 
     static const bagel::Mask shopMask =
         bagel::MaskBuilder().set<ShopButton>().set<Transform>().set<Drawable>().build();
+    static const bagel::Mask moneyLabelMask =
+        bagel::MaskBuilder().set<MoneyLabel>().set<TextLabel>().build();
+    static const bagel::Mask statusLabelMask =
+        bagel::MaskBuilder().set<UpgradeStatusLabel>().set<TextLabel>().build();
+
+    const int money = UpgradeState::money();
 
     // Colour each upgrade bar by its purchase state, then let drawSystem fill it.
-    const int money = UpgradeState::money();
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(shopMask)) continue;
@@ -132,54 +204,25 @@ bool DayReportScene::onUpdate(float /*dt*/)
                                : (money >= upgradeCost(b.id, lvl) ? COLOR_AFFORD : COLOR_POOR);
     }
 
+    // Refresh the money value label.
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(moneyLabelMask)) continue;
+        e.get<TextLabel>().text = std::to_string(money);
+    }
+
+    // Refresh each upgrade's LV/cost status label.
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(statusLabelMask)) continue;
+        const UpgradeId id = e.get<UpgradeStatusLabel>().id;
+        e.get<TextLabel>().text = shopStatus(id, UpgradeState::level(id));
+    }
+
     SDL_RenderClear(renderer);
 
     drawSystem(renderer); // backdrop + upgrade bars (world-space, engine render path)
-
-    const Texture&  font = assets.getTexture(FONT_TEX);
-    const WorldPos  cam  = RenderContext::getCameraPos();
-
-    // --- Stats block: DAY/SERVED/LOST/SCORE + MONEY (skip spacers + the obsolete
-    // "CLICK TO CONTINUE" footer; next-day now happens via the power button). ---
-    float y = STAT_TOP_Y;
-    for (const auto& row : buildReportRows())
-    {
-        if (row.label.empty() || row.label == "CLICK TO CONTINUE")
-            continue;
-        drawText(renderer, font, row.label, STAT_MARGIN_X, y, SCALE);
-        if (!row.value.empty())
-        {
-            const float vw = textWidth(row.value, SCALE);
-            drawText(renderer, font, row.value,
-                     static_cast<float>(LOGICAL_W) - STAT_MARGIN_X - vw, y, SCALE);
-        }
-        y += STAT_LINE_H;
-    }
-    drawText(renderer, font, "MONEY", STAT_MARGIN_X, y, SCALE);
-    {
-        const std::string m = std::to_string(money);
-        drawText(renderer, font, m,
-                 static_cast<float>(LOGICAL_W) - STAT_MARGIN_X - textWidth(m, SCALE), y, SCALE);
-    }
-
-    // --- Upgrade bar labels, aligned to each bar's on-screen rect: name at the left
-    // edge, LV/cost status at the right edge. Uses the same transformToFrect as
-    // drawSystem, so text tracks the fill. (NEXT DAY has no label — it's the
-    // backdrop's power button, see the hit-box comment in onInit.) ---
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(shopMask)) continue;
-        const ShopButton& b   = e.get<ShopButton>();
-        const int         lvl = UpgradeState::level(b.id);
-        const SDL_FRect   r   = transformToFrect(e.get<Transform>(), cam);
-        const float       ty  = r.y + r.h * 0.5f + LABEL_Y_OFFSET;
-
-        drawText(renderer, font, upgradeDef(b.id).name, r.x + LABEL_PAD, ty, SCALE);
-
-        const std::string status = shopStatus(b.id, lvl);
-        drawText(renderer, font, status,
-                 r.x + r.w - LABEL_PAD - textWidth(status, SCALE), ty, SCALE);
-    }
+    drawTextSystem(renderer, assets.getTexture(FONT_TEX)); // all report + label text
 
     SDL_RenderPresent(renderer);
     return true;

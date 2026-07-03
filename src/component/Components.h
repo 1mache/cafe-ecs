@@ -25,6 +25,7 @@
 #include "Liquid.h"
 #include "MachineButton.h"
 #include "Microwave.h"
+#include "MoneyLabel.h"
 #include "NextDayButton.h"
 #include "NapkinIntent.h"
 #include "Order.h"
@@ -37,4 +38,5 @@
 #include "SpawnButton.h"
 #include "TextLabel.h"
 #include "Transform.h"
+#include "UpgradeStatusLabel.h"
 #include "Animation.h"
