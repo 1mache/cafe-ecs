@@ -26,6 +26,7 @@ target_sources(
     component/SpawnButton.h
     component/ShopButton.h
     component/NextDayButton.h
+    component/TextLabel.h
     component/Ice.h
     component/InSensorArea.h
     component/Leaving.h

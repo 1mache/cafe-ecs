@@ -35,5 +35,6 @@
 #include "Sensor.h"
 #include "ShopButton.h"
 #include "SpawnButton.h"
+#include "TextLabel.h"
 #include "Transform.h"
 #include "Animation.h"
