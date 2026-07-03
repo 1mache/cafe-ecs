@@ -32,6 +32,8 @@ target_sources(
     component/Ice.h
     component/InSensorArea.h
     component/Leaving.h
+    component/Lifetime.h
+    component/Particle.h
     component/NapkinIntent.h
     component/Pastry.h
     component/PastryTv.h
@@ -55,6 +57,8 @@ target_sources(
     system/MicrowaveSystem.cpp
     system/OrderCheckmarkSystem.h
     system/OrderCheckmarkSystem.cpp
+    system/ParticleSystem.h
+    system/ParticleSystem.cpp
     system/PastryTvSystem.h
     system/PastryTvSystem.cpp
     system/NapkinSystem.h
