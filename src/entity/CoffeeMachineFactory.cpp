@@ -50,14 +50,14 @@ bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Ent
 {
     auto& tex = assets.getTexture(BUTTON_TEX);
     const auto buttonTexId = static_cast<float>(BUTTON_ON_TEX_ID[static_cast<size_t>(kind)]);
-    SDL_FRect srcRect{ .x = buttonTexId * BUTTON_DIMS.x, .y = 0, .w = BUTTON_DIMS.x, .h = BUTTON_DIMS.y };
+    SDL_FRect srcRect{ .x = buttonTexId * MACHINE_BUTTON_DIMS.x, .y = 0, .w = MACHINE_BUTTON_DIMS.x, .h = MACHINE_BUTTON_DIMS.y };
     const WorldPos off = BUTTON_OFFSET[static_cast<size_t>(kind)];
     auto ent = bagel::Entity::create();
     ent.addAll(
         Drawable{ tex.get(), srcRect, layer::STATIC_OVERLAY},
         Transform{ .x = machinePos.x, .y = machinePos.y,
-                   .w = texToWorldScale(BUTTON_DIMS.x),
-                   .h = texToWorldScale(BUTTON_DIMS.y) },
+                   .w = texToWorldScale(MACHINE_BUTTON_DIMS.x),
+                   .h = texToWorldScale(MACHINE_BUTTON_DIMS.y) },
         MachineButton{ kind},
         ChildOf(machineEnt, {off.x, off.y}, true)
     );

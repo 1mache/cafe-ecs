@@ -1,7 +1,8 @@
-#include "PastryTvSystem.h"
+#include "PastrySupplySystem.h"
 
 #include "AssetManager.h"
 #include "Components.h"
+#include "Entities.h" // createPastry
 #include "SpriteSheet.h"
 #include <bagel.h>
 
@@ -35,15 +36,30 @@ void pastryTvSystem(AssetManager& assets, float dt)
     }
 }
 
-PastryType currentTvPastryType()
+// The pastry-TV icon entity is itself the spawn button (createPastryTv builds it
+// via createSpawnButton), so PastryTv and SpawnButton live on one entity: a single
+// scan reads the shown pastry index and the click, then spawns after the loop.
+void pastrySupplySystem(AssetManager& assets, PhysicsContext& physics)
 {
-    static const bagel::Mask mask = bagel::MaskBuilder().set<PastryTv>().build();
+    static const bagel::Mask mask =
+        bagel::MaskBuilder().set<PastryTv>().set<SpawnButton>().build();
+
+    bool       shouldSpawn{};
+    WorldPos   spawnPos{};
+    PastryType type{ PastryType::count };
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(mask)) continue;
-        return static_cast<PastryType>(e.get<PastryTv>().index);
+
+        auto& b = e.get<SpawnButton>();
+        if (!consumeSpawnRequest(b)) continue;
+
+        shouldSpawn   = true;
+        spawnPos      = b.spawnPos;
+        type          = static_cast<PastryType>(e.get<PastryTv>().index);
     }
-    return PastryType::count; // no TV -> createPastry picks a random type
+
+    if (shouldSpawn) createPastry(assets, physics, spawnPos, type);
 }
 } // namespace cafe

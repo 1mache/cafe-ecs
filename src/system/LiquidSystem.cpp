@@ -143,6 +143,12 @@ void liquidSensorEventSystem(PhysicsContext& physics)
         }
         else if (sensorCat & filter::CLEANUP)
         {
+            if (visitorIsIce)
+                SDL_Log("Cleanup: destroyed entity %d (Ice)", visitorId.id);
+            else
+                SDL_Log("Cleanup: destroyed entity %d (Liquid, kind=%d)",
+                         visitorId.id, static_cast<int>(visitor.get<Liquid>().kind));
+
             toDestroy.push_back(visitorId);
         }
     }
