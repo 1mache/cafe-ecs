@@ -17,6 +17,11 @@ struct SpawnButton
     WorldPos  spawnPos{};
     bool      justPressed{};
 };
+
+/** @brief True if the button was clicked this frame AND its spawn slot is free
+ *  (nothing occupying it, so we don't spawn objects inside each other). Always
+ *  consumes the click (clears justPressed), whether or not it spawns. */
+bool consumeSpawnRequest(SpawnButton& button);
 } // namespace cafe
 
 template <> struct bagel::Storage<cafe::SpawnButton> final : NoInstance { using type = SparseStorage<cafe::SpawnButton>; };

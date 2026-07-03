@@ -3,6 +3,7 @@
 #include "AssetManager.h"
 #include "Components.h"
 #include "RenderLayers.h"
+#include "SpawnButtonFactory.h" // createSpawnButton
 #include "SpriteSheet.h"
 #include "Texture.h"
 #include "Transform.h" // texToWorldScale
@@ -21,7 +22,7 @@ constexpr float SCREEN_FRACTION = 0.55f;
 constexpr float TV_SCALE = 0.75f;
 } // namespace
 
-void createPastryTv(AssetManager& assets, WorldPos pos)
+void createPastryTv(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
 {
     // --- TV frame: static, purely decorative ---
     const Texture& tvTex = assets.getTexture(PASTRY_TV_TEX);
@@ -33,12 +34,15 @@ void createPastryTv(AssetManager& assets, WorldPos pos)
         Transform{ .x = pos.x, .y = pos.y, .w = tvHalfW, .h = tvHalfH },
         Drawable{ tvTex.get(), tvTex.getFullSrcRect(), layer::UI1 });
 
-    // --- Pastry display: the entity the system ticks and mutates ---
+    // --- Pastry display: the entity pastryTvSystem ticks and mutates. It is also
+    // the pastry spawn button, so createSpawnButton sets up SpawnButton + the spawn
+    // slot sensor; we decorate it here with the rotating pastry icon + PastryTv. ---
     const SpriteSheet& props     = assets.getSpriteSheet(PROPS_TEX, PROPS_DATA);
     const int          pastryFrom = props.getTagBounds("pastry").first;
     const Texture&     propsTex   = assets.getTexture(PROPS_TEX);
 
-    bagel::Entity::create().addAll(
+    auto icon = createSpawnButton(assets, physics, pos, DropType::Pastry);
+    icon.addAll(
         Transform{ .x = pos.x, .y = pos.y,
                    .w = tvHalfW * SCREEN_FRACTION, .h = tvHalfH * SCREEN_FRACTION },
         Drawable{ propsTex.get(), props.getFrameRect(pastryFrom), layer::UI2 },

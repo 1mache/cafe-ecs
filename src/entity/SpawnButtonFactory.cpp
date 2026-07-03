@@ -49,8 +49,7 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
         SpawnButton{ .item = item, .spawnSlotSensor = slotSensor, .spawnPos = spawnPos }
     );
 
-    // ice button is invisible
-    if (item != DropType::Ice)
+    if (item == DropType::Cup)
     {
         constexpr auto TEX_PATH   = "spawn_buttons.png";
         constexpr auto SHEET_PATH = "spawn_buttons.json";
@@ -58,10 +57,8 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
         const SpriteSheet& sheet = assets.getSpriteSheet( TEX_PATH, SHEET_PATH);
         const Texture& tex       = assets.getTexture(TEX_PATH);
 
-        constexpr int CUP_BUTTON_ID    = 0;
-        constexpr int PASTRY_BUTTON_ID = 1;
-
-        const SDL_FRect src = item == DropType::Cup ? sheet.getFrameRect(CUP_BUTTON_ID) : sheet.getFrameRect(PASTRY_BUTTON_ID);
+        constexpr int CUP_BUTTON_ID = 0;
+        const SDL_FRect src = sheet.getFrameRect(CUP_BUTTON_ID);
 
         const float halfW = texToWorldScale(sheet.spriteSize().x);
         const float halfH = texToWorldScale(sheet.spriteSize().y);
@@ -71,8 +68,9 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
             Drawable{ tex.get(), src, layer::STATIC_OVERLAY }
         );
     }
-    else
+    else if (item == DropType::Ice)
     {
+        // ice button is invisible
         ent.add(Transform{.x = pos.x,
                           .y = pos.y,
                           .w = texToWorldScale(supply::ICE_BUTTON_W_PX),
@@ -80,6 +78,8 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
         // ===================DEBUG========================================
         // auto& debugTex = assets.getTexture("particle.png");// ent.add(Drawable{debugTex.get(), debugTex.getFullSrcRect(), layer::STATIC_OVERLAY });
     }
+    // Pastry: the pastry-TV icon is the clickable button. createPastryTv adds this
+    // entity's Transform + Drawable + PastryTv, so no visual is set up here.
     return ent;
 }
 } // namespace cafe

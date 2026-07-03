@@ -16,7 +16,7 @@ inline constexpr float DROP_FROM_Y    = 6.5f; // start height, just above the sc
 
 inline constexpr WorldPos COFFEE_MACHINE_POS = {-5.5f, -1.f};
 inline constexpr WorldPos CUP_BUTTON_POS     = {-8.3f, -4.5f};
-inline constexpr WorldPos PASTRY_BUTTON_POS  = {8.3f, -4.6f};
+// (no PASTRY_BUTTON_POS: the pastry button is the TV icon, placed at PASTRY_TV_POS.)
 
 // Ice machine: a gray placeholder square next to the coffee machine, with its
 // spawn button on the machine face. The cube drops from the machine spout
@@ -37,7 +37,8 @@ inline constexpr WorldPos MICROWAVE_SPAWN_POS = {2.3f, -0.5f};
 inline constexpr WorldPos PASTRY_TV_POS = {8.3f, -2.4f};
 } // namespace supply
 
-/** @brief Summons a cup/pastry into the first free supply slot when its button was
- *  clicked this frame (SpawnButton.justPressed, set by intentSystem). */
+/** @brief Summons a cup/ice into the first free supply slot when its button was
+ *  clicked this frame (SpawnButton.justPressed, set by intentSystem). Pastry has
+ *  its own pastrySupplySystem since its button is the pastry-TV icon. */
 void supplyButtonSystem(AssetManager& assets, PhysicsContext& physics);
 } // namespace cafe
