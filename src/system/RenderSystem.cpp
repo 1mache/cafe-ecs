@@ -42,9 +42,12 @@ void sortDrawablesIfDirty(
     if (!dirtyBit)
         return;
 
+    std::cout << "[sortDrawablesIfDirty] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
+
     if (sorted.size() <= 1)
     {
         dirtyBit = false;
+        std::cout << "[drawSystem] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
         return;
     }
 
@@ -62,7 +65,10 @@ void sortDrawablesIfDirty(
     }
 
     if (isSorted)
+    {
         dirtyBit = false;
+        std::cout << "[sortDrawablesIfDirty] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
+    }
 }
 } // namespace
 
