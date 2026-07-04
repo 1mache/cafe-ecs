@@ -8,10 +8,8 @@
 #include <SDL3/SDL.h>
 #include <bagel.h>
 #include <box2d/box2d.h>
+#include <algorithm>
 #include <cmath>
-#include <iostream>
-#include <ostream>
-#include <utility>
 
 namespace cafe
 {
@@ -42,33 +40,20 @@ void sortDrawablesIfDirty(
     if (!dirtyBit)
         return;
 
-    std::cout << "[sortDrawablesIfDirty] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
-
-    if (sorted.size() <= 1)
+    // Full sort every dirty frame. A single bubble pass could not keep up with
+    // heavy add/remove churn (e.g. fast pouring spawns many LIQUID drops per
+    // frame while removeFromSortedDrawables' swap-with-last breaks the order),
+    // leaving high-layer icons mis-ordered for several frames -> visible flicker.
+    // stable_sort keeps intra-layer order steady so same-layer sprites don't swap.
+    if (sorted.size() > 1)
     {
-        dirtyBit = false;
-        std::cout << "[drawSystem] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
-        return;
+        std::stable_sort(
+            &sorted[0], &sorted[0] + sorted.size(),
+            [](const Entity& a, const Entity& b)
+            { return a.get<Drawable>().renderLayer < b.get<Drawable>().renderLayer; });
     }
 
-    bool isSorted = true;
-    for (int i = 0; i < sorted.size() - 1; ++i)
-    {
-        const auto& da = sorted[i].get<Drawable>();
-        const auto& db = sorted[i + 1].get<Drawable>();
-
-        if (da.renderLayer > db.renderLayer)
-        {
-            isSorted = false;
-            std::swap(sorted[i], sorted[i + 1]);
-        }
-    }
-
-    if (isSorted)
-    {
-        dirtyBit = false;
-        std::cout << "[sortDrawablesIfDirty] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
-    }
+    dirtyBit = false;
 }
 } // namespace
 
