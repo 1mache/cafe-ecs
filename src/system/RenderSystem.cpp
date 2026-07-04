@@ -77,10 +77,20 @@ void drawSystem(SDL_Renderer* renderer)
     static bagel::Bag<Entity, bagel::InitialEntities> sortedDrawables{};
     static bagel::Bag<bool, bagel::InitialEntities>   inSortedDrawables{};
     static bool                                       dirtyBit = false;
+    // bagel::DynamicBag is malloc-backed and never zero-initialized,
+    // so a never-written slot   holds whatever garbage was in that heap byte (0xCD in
+    // MSVC debug builds) instead of false. Explicitly zero each slot the first time
+    // its index is reached before ever reading it.
+    static bagel::id_type initializedUpTo = 0;
 
     for (auto e = Entity::first(); !e.eof(); e.next())
     {
         inSortedDrawables.ensure(e.entity().id + 1);
+        while (initializedUpTo <= e.entity().id)
+        {
+            inSortedDrawables[initializedUpTo] = false;
+            ++initializedUpTo;
+        }
         const bool hasDrawable = e.has<Drawable>();
         const bool inSorted    = inSortedDrawables[e.entity().id];
 
