@@ -24,6 +24,7 @@ target_sources(
     component/DropSpace.h
     component/Falling.h
     component/SpawnButton.h
+    component/SpawnButton.cpp
     component/ShopButton.h
     component/NextDayButton.h
     component/TextLabel.h
@@ -59,8 +60,8 @@ target_sources(
     system/OrderCheckmarkSystem.cpp
     system/ParticleSystem.h
     system/ParticleSystem.cpp
-    system/PastryTvSystem.h
-    system/PastryTvSystem.cpp
+    system/PastrySupplySystem.h
+    system/PastrySupplySystem.cpp
     system/NapkinSystem.h
     system/NapkinSystem.cpp
     system/CustomerSystem.h

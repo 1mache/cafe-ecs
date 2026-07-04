@@ -31,9 +31,9 @@ void cafe::MainGameScene::onInit()
     // Then coffee machine on top (in front). order matters
     createCoffeeMachine(assets, _physics, supply::COFFEE_MACHINE_POS);
 
-    // Supply is summoned on demand: click a button to drop a fresh cup/pastry in.
+    // Supply is summoned on demand: click a button to drop a fresh cup in.
+    // (The pastry button is the TV icon, created inside createPastryTv below.)
     createSpawnButton(assets, _physics, supply::CUP_BUTTON_POS, DropType::Cup);
-    createSpawnButton(assets, _physics, supply::PASTRY_BUTTON_POS, DropType::Pastry);
 
 
     // Microwave (gray placeholder square, no button): drag a pastry onto it to heat it.
@@ -41,7 +41,7 @@ void cafe::MainGameScene::onInit()
 
     // Pastry TV: top-left display cycling pastry types; the pastry button spawns
     // whichever pastry it currently shows.
-    createPastryTv(assets, supply::PASTRY_TV_POS);
+    createPastryTv(assets, _physics, supply::PASTRY_TV_POS);
 
     // Cleanup zone: off-screen sensor destroys spilled drops.
     createCleanupZone(_physics);
@@ -77,8 +77,10 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
     // Rotate the pastry TV before reading it: keeps the shown pastry current.
     pastryTvSystem(getAssetManager(), dt);
-    // Click a supply button to drop a fresh cup/pastry into a free slot.
+    // Click a supply button to drop a fresh cup/ice into a free slot.
     supplyButtonSystem(getAssetManager(), _physics);
+    // Pastry has its own system: its button is the TV icon, spawns the shown type.
+    pastrySupplySystem(getAssetManager(), _physics);
 
     // deliverySystem reads DragIntent.dropSpaceEntity on release before
     // dragAndDropSystem resets the intent to None.

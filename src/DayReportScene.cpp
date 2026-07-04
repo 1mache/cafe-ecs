@@ -208,7 +208,7 @@ bool DayReportScene::onUpdate(float /*dt*/)
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(moneyLabelMask)) continue;
-        e.get<TextLabel>().text = std::to_string(money);
+        e.get<TextLabel>().setText(std::to_string(money));
     }
 
     // Refresh each upgrade's LV/cost status label.
@@ -216,7 +216,7 @@ bool DayReportScene::onUpdate(float /*dt*/)
     {
         if (!e.test(statusLabelMask)) continue;
         const UpgradeId id = e.get<UpgradeStatusLabel>().id;
-        e.get<TextLabel>().text = shopStatus(id, UpgradeState::level(id));
+        e.get<TextLabel>().setText(shopStatus(id, UpgradeState::level(id)));
     }
 
     SDL_RenderClear(renderer);

@@ -106,7 +106,6 @@ WorldPos.h         # WorldPos alias / helper
 RenderContext.h    # SDL_Renderer + SDL_Window singleton
 PhysicsContext.h/cpp  # b2WorldId singleton + step
 PhysicsFilters.h   # Box2D collision category/mask constants
-Assets.h/cpp       # named texture accessors (static singleton)
 AssetManager.h/cpp # path-keyed texture cache (instance-based)
 Texture.h/cpp      # RAII SDL_Texture wrapper
 Utils.h            # assertFatal and other small utilities

@@ -14,7 +14,8 @@ namespace
 {
 b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
 {
-    constexpr float CHECK_RADIUS = texToWorldDistance(CUP_DIMS.x/2);
+    constexpr float CHECK_RADIUS = texToWorldDistance(
+        std::max(CUP_DIMS.x, PROP_DIMS.x)/2);
 
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_staticBody;
@@ -24,8 +25,8 @@ b2ShapeId createSlotSensor(PhysicsContext& physics, WorldPos worldPos)
     b2ShapeDef shape = b2DefaultShapeDef();
     shape.isSensor = true;
     shape.enableSensorEvents = true;
-    shape.filter.categoryBits |= filter::DROPSPACE_SENSOR; // just reuse of mask
-    shape.filter.maskBits |= filter::CUP_SOLID | filter::DRAGGABLE;
+    shape.filter.categoryBits = filter::DROPSPACE_SENSOR; // just reuse of mask
+    shape.filter.maskBits     = filter::CUP_SOLID | filter::DRAGGABLE;
     const b2Circle circle = {{0.f, 0.f}, CHECK_RADIUS};
     return b2CreateCircleShape(bodyId, &shape, &circle);
 }
@@ -38,7 +39,7 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
     // Cup/pastry drop in from above the screen; ice drops from the ice machine spout.
     const WorldPos spawnPos =
         (item == DropType::Ice)
-            ? WorldPos{pos.x, pos.y + texToWorldScale(BUTTON_DIMS.y) + 0.5f} // ice spawns above the button
+            ? WorldPos{pos.x, pos.y + texToWorldScale(MACHINE_BUTTON_DIMS.y) + 0.5f} // ice spawns above the button
             : WorldPos{ (item == DropType::Cup) ? supply::CUP_SPAWN_X : supply::PASTRY_SPAWN_X,
                         supply::DROP_FROM_Y };
     b2ShapeId slotSensor = createSlotSensor(physics, spawnPos);
@@ -48,26 +49,28 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
         SpawnButton{ .item = item, .spawnSlotSensor = slotSensor, .spawnPos = spawnPos }
     );
 
-    // ice button is invisible
-    if (item != DropType::Ice)
+    if (item == DropType::Cup)
     {
-        // TODO: change based on cup vs pastry when sprites ready
-        const char*      texPath = "buttons.png";
+        constexpr auto TEX_PATH   = "spawn_buttons.png";
+        constexpr auto SHEET_PATH = "spawn_buttons.json";
 
-        const Texture& tex = assets.getTexture(texPath);
-        const float srcX = item == DropType::Cup ? 0.f : 0.f + BUTTON_DIMS.x;
-        const SDL_FRect src = { srcX, 0.f, BUTTON_DIMS.x, BUTTON_DIMS.y };
+        const SpriteSheet& sheet = assets.getSpriteSheet( TEX_PATH, SHEET_PATH);
+        const Texture& tex       = assets.getTexture(TEX_PATH);
 
-        const float halfW = texToWorldScale(BUTTON_DIMS.x);
-        const float halfH = texToWorldScale(BUTTON_DIMS.y);
+        constexpr int CUP_BUTTON_ID = 0;
+        const SDL_FRect src = sheet.getFrameRect(CUP_BUTTON_ID);
+
+        const float halfW = texToWorldScale(sheet.spriteSize().x);
+        const float halfH = texToWorldScale(sheet.spriteSize().y);
 
         ent.addAll(
             Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
             Drawable{ tex.get(), src, layer::STATIC_OVERLAY }
         );
     }
-    else
+    else if (item == DropType::Ice)
     {
+        // ice button is invisible
         ent.add(Transform{.x = pos.x,
                           .y = pos.y,
                           .w = texToWorldScale(supply::ICE_BUTTON_W_PX),
@@ -75,6 +78,8 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
         // ===================DEBUG========================================
         // auto& debugTex = assets.getTexture("particle.png");// ent.add(Drawable{debugTex.get(), debugTex.getFullSrcRect(), layer::STATIC_OVERLAY });
     }
+    // Pastry: the pastry-TV icon is the clickable button. createPastryTv adds this
+    // entity's Transform + Drawable + PastryTv, so no visual is set up here.
     return ent;
 }
 } // namespace cafe
