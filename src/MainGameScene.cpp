@@ -6,6 +6,7 @@
 #include "Entities.h"
 #include "Menu.h"
 #include "PhysicsContext.h"
+#include "SoundAssets.h"
 #include "Systems.h"
 #include "Texture.h"
 
@@ -65,6 +66,8 @@ void cafe::MainGameScene::onInit()
 
     // Apply purchased upgrades to this day's machines (level 0 = base values).
     applyUpgradesSystem();
+
+    getAudioContext().playMusic(sound::MAIN_MUSIC, sound::MUSIC_VOLUME);
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
@@ -72,7 +75,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
     bool exitRequested = false;
     // Single SDL poll: turns user input into per-entity intents.
-    intentSystem(renderer, exitRequested);
+    intentSystem(renderer, exitRequested, getAudioContext());
     if (exitRequested) return false;
 
     // Rotate the pastry TV before reading it: keeps the shown pastry current.
@@ -87,7 +90,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     deliverySystem();
     // Intake/cook a pastry. Must be after deliverySystem (which reads the same
     // released DragIntent) and before dragAndDropSystem (which would snap the pat).
-    microwaveSystem(getAssetManager(), _physics, dt);
+    microwaveSystem(getAssetManager(), _physics, getAudioContext(), dt);
     checkBeverageSystem();        // snapshot cup contents -> CoffeeOverview
     acceptGradedBeverageSystem(); // grades cups with CheckCoffeeIntent + CoffeeOverview
     checkPastrySystem();          // grades pastries with CheckPastryIntent

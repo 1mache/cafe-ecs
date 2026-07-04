@@ -52,11 +52,11 @@ void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, AudioCon
     // One sustained channel drives the pour sound. Coffee wins if both pour at once;
     // it stops the moment neither pipe is active.
     if (coffeePouring)
-        audio.startSustained(sound::COFFEE, COFFEE_POUR_SOUND_DELAY);
+        audio.startSustained(sound::COFFEE, COFFEE_POUR_SOUND_DELAY, sound::POUR_VOLUME);
     else if (milkPouring)
-        audio.startSustained(sound::MILK_STEAMER);
+        audio.startSustained(sound::MILK_STEAMER, 0.f, sound::POUR_VOLUME);
     else if (waterPouring)
-        audio.startSustained(sound::WATER_DROP, WATER_DROP_SOUND_DELAY);
+        audio.startSustained(sound::WATER_DROP, WATER_DROP_SOUND_DELAY, sound::POUR_VOLUME);
     else
         audio.stopSustained();
 }
