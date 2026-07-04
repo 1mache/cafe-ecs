@@ -6,46 +6,103 @@
 #include "Text.h"  // drawText
 #include "Transform.h"
 #include <SDL3/SDL.h>
-#include <algorithm>
 #include <bagel.h>
 #include <box2d/box2d.h>
 #include <cmath>
 #include <iostream>
 #include <ostream>
-#include <vector>
+#include <utility>
 
 namespace cafe
 {
-void drawSystem(SDL_Renderer* renderer)
+namespace
 {
-    using Entity = bagel::Entity;
+using Entity = bagel::Entity;
 
-    static const bagel::Mask mask =
-        bagel::MaskBuilder().set<Drawable>().set<Transform>().build();
-
-    std::vector<Entity> drawables{};
-    for (auto e = Entity::first(); !e.eof(); e.next())
+void removeFromSortedDrawables(
+    bagel::Bag<Entity, bagel::InitialEntities>& sorted,
+    Entity e)
+{
+    const bagel::id_type id = e.entity().id;
+    for (int i = 0; i < sorted.size(); ++i)
     {
-        if (!e.test(mask))
+        if (sorted[i].entity().id != id)
             continue;
 
-        drawables.emplace_back(e);
+        sorted[i] = sorted[sorted.size() - 1];
+        sorted.pop();
+        return;
+    }
+}
+
+void sortDrawablesIfDirty(
+    bagel::Bag<Entity, bagel::InitialEntities>& sorted,
+    bool& dirtyBit)
+{
+    if (!dirtyBit)
+        return;
+
+    std::cout << "[sortDrawablesIfDirty] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
+
+    if (sorted.size() <= 1)
+    {
+        dirtyBit = false;
+        std::cout << "[drawSystem] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
+        return;
     }
 
-    // TODO: replace dummy sorting with performant storage type
-    auto layerLess = [](const Entity a, const Entity b)
+    bool isSorted = true;
+    for (int i = 0; i < sorted.size() - 1; ++i)
     {
-        const auto& da = a.get<Drawable>();
-        const auto& db = b.get<Drawable>();
+        const auto& da = sorted[i].get<Drawable>();
+        const auto& db = sorted[i + 1].get<Drawable>();
 
-        return da.renderLayer < db.renderLayer;
-    };
+        if (da.renderLayer > db.renderLayer)
+        {
+            isSorted = false;
+            std::swap(sorted[i], sorted[i + 1]);
+        }
+    }
 
-    // sort based on render layer
-    std::ranges::sort(drawables, layerLess);
-
-    for (auto e: drawables)
+    if (isSorted)
     {
+        dirtyBit = false;
+        std::cout << "[sortDrawablesIfDirty] dirtyBit -> " << (dirtyBit ? "true" : "false") << '\n';
+    }
+}
+} // namespace
+
+void drawSystem(SDL_Renderer* renderer)
+{
+    static bagel::Bag<Entity, bagel::InitialEntities> sortedDrawables{};
+    static bagel::Bag<bool, bagel::InitialEntities>   inSortedDrawables{};
+    static bool                                       dirtyBit = false;
+
+    for (auto e = Entity::first(); !e.eof(); e.next())
+    {
+        inSortedDrawables.ensure(e.entity().id + 1);
+        const bool hasDrawable = e.has<Drawable>();
+        const bool inSorted    = inSortedDrawables[e.entity().id];
+
+        if (hasDrawable && !inSorted)
+        {
+            sortedDrawables.push(e);
+            inSortedDrawables[e.entity().id] = true;
+            dirtyBit = true;
+        }
+        else if (!hasDrawable && inSorted)
+        {
+            removeFromSortedDrawables(sortedDrawables, e);
+            inSortedDrawables[e.entity().id] = false;
+            dirtyBit = true;
+        }
+    }
+
+    sortDrawablesIfDirty(sortedDrawables, dirtyBit);
+
+    for (int i = 0; i < sortedDrawables.size(); ++i)
+    {
+        const Entity e = sortedDrawables[i];
         const auto& d = e.get<Drawable>();
         const auto& t = e.get<Transform>();
 
