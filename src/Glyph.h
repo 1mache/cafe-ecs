@@ -7,7 +7,7 @@ namespace cafe
 /** @brief Glyph order in res/font.png — a single horizontal strip, one GLYPH_W x
  *  GLYPH_H cell per character, left to right, in exactly this order. */
 inline constexpr std::string_view FONT_GLYPHS =
-    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ/-";
+    " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ/-%";
 
 inline constexpr int GLYPH_W   = 5; // px per glyph cell in font.png
 inline constexpr int GLYPH_H   = 7; // px per glyph cell in font.png
