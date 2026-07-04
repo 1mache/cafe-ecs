@@ -167,6 +167,8 @@ target_sources(
     MainGameScene.cpp
     DayReportScene.h
     DayReportScene.cpp
+    StartMenuScene.h
+    StartMenuScene.cpp
 
     AssetManager.h
     AssetManager.cpp
