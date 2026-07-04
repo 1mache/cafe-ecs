@@ -10,8 +10,23 @@
 
 namespace cafe
 {
-// TODO: remove after change to dynamic patience
-static constexpr float CUSTOMER_PATIENCE = 60.f; // seconds before a customer leaves unhappy
+// Patience scales with prep effort: each item adds seconds by how long it takes
+// to make — a cold drink needs the extra cooling step, a hot pastry a microwave trip.
+static constexpr float PATIENCE_BASE        = 20.f; // seconds regardless of order size
+static constexpr float PATIENCE_HOT_DRINK   = 10.f;
+static constexpr float PATIENCE_COLD_DRINK  = 14.f;
+static constexpr float PATIENCE_COLD_PASTRY = 10.f;
+static constexpr float PATIENCE_HOT_PASTRY  = 16.f; // microwave trip
+
+constexpr float patienceFor(const Order& o)
+{
+    float p = PATIENCE_BASE;
+    for (int i = 0; i < o.drinkCount; ++i)
+        p += o.drinks[i].temp == Temperature::Cold ? PATIENCE_COLD_DRINK : PATIENCE_HOT_DRINK;
+    for (int i = 0; i < o.pastryCount; ++i)
+        p += o.pastries[i].temp == Temperature::Hot ? PATIENCE_HOT_PASTRY : PATIENCE_COLD_PASTRY;
+    return p;
+}
 
 
 void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
@@ -41,7 +56,8 @@ void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float 
         sp.cooldown -= dtSeconds;
         if (sp.cooldown <= 0.f)
         {
-            spawnCustomer(assets, physics, sp.seat, randomOrder(), CUSTOMER_PATIENCE);
+            const Order order = randomOrder();
+            spawnCustomer(assets, physics, sp.seat, order, patienceFor(order));
             sp.cooldown = sp.interval;
         }
     }
