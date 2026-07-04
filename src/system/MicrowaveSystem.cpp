@@ -1,9 +1,11 @@
 #include "MicrowaveSystem.h"
 
 #include "AssetManager.h"
+#include "AudioContext.h"
 #include "Components.h"
 #include "Entities.h"      // createPastry, destroyDeliveredItem
 #include "RenderLayers.h"
+#include "SoundAssets.h"
 #include "SupplySystem.h"  // supply::MICROWAVE_SPAWN_POS
 #include "Transform.h"     // texToWorldScale
 #include <bagel.h>
@@ -58,7 +60,7 @@ bagel::Entity createOvenNumber(AssetManager& assets, bagel::Entity oven)
 }
 } // namespace
 
-void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
+void microwaveSystem(AssetManager& assets, PhysicsContext& physics, AudioContext& audio, float dt)
 {
     static const bagel::Mask pastryMask =
         bagel::MaskBuilder().set<DragIntent>().set<Pastry>().build();
@@ -120,6 +122,10 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
         }
 
         // Free: capture the type, start heating, remove the pastry from the world.
+        // Hum runs on its own channel so it is never dropped by pool contention and
+        // is cut exactly when cooking ends (see stopMicrowave in the cook block).
+        audio.play(sound::PUT_IN_MICROWAVE);
+        audio.startMicrowave(sound::MICROWAVE, sound::MICROWAVE_VOLUME);
         mw.busy    = true;
         mw.timer   = 0.f;
         mw.cooking = e.get<Pastry>().type;
@@ -148,6 +154,9 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt)
 
         if (m.timer >= m.heatTime)
         {
+            audio.stopMicrowave();
+            audio.play(sound::MICROWAVE_END);
+
             // Destroy the number overlay and glow.
             m.display.destroy();
             m.display = bagel::Entity{ bagel::ent_type(-1) };
