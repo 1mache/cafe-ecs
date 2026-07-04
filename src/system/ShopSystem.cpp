@@ -1,7 +1,7 @@
 #include "ShopSystem.h"
 
 #include "AudioContext.h"
-#include "Components.h"      // ShopButton, NextDayButton, Transform
+#include "Components.h"      // ShopButton, MenuButton, Transform
 #include "IntentSystem.h"    // mouseWindowToRenderPoint
 #include "RenderContext.h"
 #include "SoundAssets.h"
