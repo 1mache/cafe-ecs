@@ -3,7 +3,6 @@
 #include "AssetManager.h"
 #include "Components.h"    // MenuButton, SoundToggleButton, Transform, Drawable, TextLabel
 #include "Entities.h"      // destroyAllGameEntities, createBg
-#include "GameConfig.h"    // LOGICAL_W
 #include "Glyph.h"         // GLYPH_H
 #include "MenuSystem.h"
 #include "RenderContext.h"
@@ -27,12 +26,11 @@ constexpr int  SCALE       = 1;
 // screen centre 80,45 = world 0,0, world y up); text anchors are in screen px
 // on the 160x90 logical canvas, converted with screenToWorldPoint — the same
 // split DayReportScene uses. Screen-px equivalents in the comments. ---
-constexpr float TITLE_Y = 8.f;   // screen px; title is centred on x = 80
 
 // Logo: centred above the buttons. Height derived from the art's aspect at
 // runtime (see onInit) so the sprite never distorts — tweak POS/HALF_W to taste.
-constexpr WorldPos LOGO_POS    = { 0.f, 2.375f };  // screen (80, 26)
-constexpr float    LOGO_HALF_W = 2.25f;            // 36 px wide
+constexpr WorldPos LOGO_POS    = { 0.f, 2.75f };   // screen (80, 23)
+constexpr float    LOGO_HALF_W = 3.0f;             // 48 px wide
 
 constexpr float    BTN_HALF_W  = 1.875f;           // 30 px wide
 constexpr float    BTN_HALF_H  = 0.625f;           // 10 px tall
@@ -83,16 +81,6 @@ void StartMenuScene::onInit()
     // Background: dima's full-canvas cafe backdrop (createBg scales the oversized
     // art down into the logical screen, same idiom as the day-report/game bg).
     createBg(getAssetManager(), MENU_BG_TEX);
-
-    // Title, top-centre.
-    {
-        const WorldPos pos = screenToWorldPoint(
-            { static_cast<float>(LOGICAL_W) * 0.5f, TITLE_Y }, cam);
-        auto e = bagel::Entity::create();
-        e.addAll(
-            Transform{ .x = pos.x, .y = pos.y },
-            TextLabel{ "ENTITY COFFEE SYSTEM", SCALE, TextAlign::Center });
-    }
 
     // Logo: dima's art. Full texture scaled into a box whose height matches the
     // sprite's aspect ratio, so it never stretches (tweak LOGO_POS/LOGO_HALF_W).
