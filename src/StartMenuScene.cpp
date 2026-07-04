@@ -1,13 +1,15 @@
 #include "StartMenuScene.h"
 
+#include "AssetManager.h"
 #include "Components.h"    // MenuButton, SoundToggleButton, Transform, Drawable, TextLabel
-#include "Entities.h"      // destroyAllGameEntities
+#include "Entities.h"      // destroyAllGameEntities, createBg
 #include "GameConfig.h"    // LOGICAL_W
 #include "Glyph.h"         // GLYPH_H
 #include "MenuSystem.h"
 #include "RenderContext.h"
 #include "RenderLayers.h"
 #include "RenderSystem.h"  // drawSystem, drawTextSystem
+#include "Texture.h"       // Texture::get, getFullSrcRect
 #include "Transform.h"     // screenToWorldPoint, worldToScreenPoint
 #include <SDL3/SDL.h>
 #include <bagel.h>
@@ -16,8 +18,10 @@ namespace cafe
 {
 namespace
 {
-constexpr auto FONT_TEX = "font.png";
-constexpr int  SCALE    = 1;
+constexpr auto FONT_TEX    = "font.png";
+constexpr auto MENU_BG_TEX = "bg_big.png"; // shared cafe backdrop, authored oversized (createBg scales it down)
+constexpr auto LOGO_TEX    = "logo.png";
+constexpr int  SCALE       = 1;
 
 // --- Layout. Squares are in WORLD units (camera at origin: 1 unit = 8 px,
 // screen centre 80,45 = world 0,0, world y up); text anchors are in screen px
@@ -25,9 +29,10 @@ constexpr int  SCALE    = 1;
 // split DayReportScene uses. Screen-px equivalents in the comments. ---
 constexpr float TITLE_Y = 8.f;   // screen px; title is centred on x = 80
 
-constexpr WorldPos LOGO_POS    = { 0.f, 1.625f };  // screen (80, 32)
-constexpr float    LOGO_HALF_W = 2.5f;             // 40 px wide
-constexpr float    LOGO_HALF_H = 1.25f;            // 20 px tall
+// Logo: centred above the buttons. Height derived from the art's aspect at
+// runtime (see onInit) so the sprite never distorts — tweak POS/HALF_W to taste.
+constexpr WorldPos LOGO_POS    = { 0.f, 2.375f };  // screen (80, 26)
+constexpr float    LOGO_HALF_W = 2.25f;            // 36 px wide
 
 constexpr float    BTN_HALF_W  = 1.875f;           // 30 px wide
 constexpr float    BTN_HALF_H  = 0.625f;           // 10 px tall
@@ -42,7 +47,6 @@ constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * 0.5f;
 
 // Font glyphs are white; black text keeps the labels readable on white squares.
 constexpr SDL_Color TEXT_ON_SQUARE = { 0, 0, 0, 255 };
-constexpr SDL_Color BG_TINT        = { 0, 0, 0, 255 };
 
 /** White placeholder square: null texture => drawSystem fills the rect with
  *  tint. Swap to real art later by filling texture + srcRect (the microwave
@@ -53,24 +57,6 @@ bagel::Entity makeSquare(WorldPos pos, float halfW, float halfH)
     e.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
         Drawable{ nullptr, SDL_FRect{}, layer::UI1 } // default tint: opaque white
-    );
-    return e;
-}
-
-/** Full-canvas black placeholder background — same null-texture-quad idiom as
- *  every other placeholder here, sized like createBg (CafeEnvironmentFactory)
- *  so swapping in real art later is either filling this Drawable's texture +
- *  srcRect, or replacing this call with createBg(assets, "menu_bg.png"). Drawn
- *  at layer::BG so drawSystem paints it first and it covers the whole canvas
- *  every frame — no separate clear-colour bookkeeping needed. */
-bagel::Entity makeBgPlaceholder()
-{
-    auto e = bagel::Entity::create();
-    e.addAll(
-        Transform{ .x = 0.f, .y = 0.f,
-                   .w = texToWorldScale(static_cast<float>(LOGICAL_W)),
-                   .h = texToWorldScale(static_cast<float>(LOGICAL_H)) },
-        Drawable{ nullptr, SDL_FRect{}, layer::BG, BG_TINT }
     );
     return e;
 }
@@ -94,8 +80,9 @@ void StartMenuScene::onInit()
 
     const WorldPos cam = RenderContext::getCameraPos();
 
-    // Background placeholder: plain black, covers the whole canvas.
-    makeBgPlaceholder();
+    // Background: dima's full-canvas cafe backdrop (createBg scales the oversized
+    // art down into the logical screen, same idiom as the day-report/game bg).
+    createBg(getAssetManager(), MENU_BG_TEX);
 
     // Title, top-centre.
     {
@@ -107,8 +94,17 @@ void StartMenuScene::onInit()
             TextLabel{ "ENTITY COFFEE SYSTEM", SCALE, TextAlign::Center });
     }
 
-    // Logo placeholder: plain white square, no behaviour.
-    makeSquare(LOGO_POS, LOGO_HALF_W, LOGO_HALF_H);
+    // Logo: dima's art. Full texture scaled into a box whose height matches the
+    // sprite's aspect ratio, so it never stretches (tweak LOGO_POS/LOGO_HALF_W).
+    {
+        const Texture&  logoTex = getAssetManager().getTexture(LOGO_TEX);
+        const SDL_FRect src     = logoTex.getFullSrcRect();
+        const float     halfH   = src.w > 0.f ? LOGO_HALF_W * (src.h / src.w) : LOGO_HALF_W;
+        auto e = bagel::Entity::create();
+        e.addAll(
+            Transform{ .x = LOGO_POS.x, .y = LOGO_POS.y, .w = LOGO_HALF_W, .h = halfH },
+            Drawable{ logoTex.get(), src, layer::UI1 });
+    }
 
     // START / EXIT buttons: square + tag + centred label.
     makeSquare(START_POS, BTN_HALF_W, BTN_HALF_H).add(MenuButton{ MenuAction::Start });
