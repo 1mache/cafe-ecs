@@ -27,6 +27,9 @@ target_sources(
     component/SpawnButton.cpp
     component/ShopButton.h
     component/NextDayButton.h
+    component/StartButton.h
+    component/ExitButton.h
+    component/SoundToggleButton.h
     component/TextLabel.h
     component/MoneyLabel.h
     component/UpgradeStatusLabel.h
@@ -82,6 +85,8 @@ target_sources(
     system/SensorSystem.cpp
     system/ShopSystem.h
     system/ShopSystem.cpp
+    system/MenuSystem.h
+    system/MenuSystem.cpp
     system/DayCycleSystem.h
     system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp
@@ -143,6 +148,7 @@ target_sources(
     UpgradeCatalog.h
     UpgradeCatalog.cpp
     UpgradeState.h
+    SettingsState.h
     DayReport.h
     DayReport.cpp
     Glyph.h
