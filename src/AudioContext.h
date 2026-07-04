@@ -23,16 +23,31 @@ public:
     void init();
     void cleanup();
 
-    // Lazy-load (from res/sounds/) and fire-and-forget a WAV. Dropped if all voices are busy.
-    void play(std::string_view filename);
+    // Lazy-load (from res/sounds/) and fire-and-forget a WAV at the given volume
+    // (1.0 = unchanged). Dropped if all voices are busy.
+    void play(std::string_view filename, float volume = 1.f);
 
     // Hold-to-play sounds (e.g. a steamer): startSustained on press, stopSustained on release.
     // A single dedicated channel — starting a different sound replaces the one already sustaining.
-    // startOffsetSeconds skips that far into the file (e.g. past a slow fade-in).
-    void startSustained(std::string_view filename, float startOffsetSeconds = 0.f);
+    // startOffsetSeconds skips that far into the file (e.g. past a slow fade-in); volume 1.0 = unchanged.
+    void startSustained(std::string_view filename, float startOffsetSeconds = 0.f, float volume = 1.f);
     void stopSustained();
 
-    // Master output gain (1.0 = unchanged).
+    // Background music on its own looping channel (separate from the sustained pour channel).
+    // playMusic starts/replaces the loop; updateMusic() must be pumped each frame to keep it
+    // seamless; stopMusic() silences it.
+    void playMusic(std::string_view filename, float volume = 1.f);
+    void stopMusic();
+    void updateMusic();
+
+    // Microwave hum on its own dedicated channel, so the long (~cook-length) sound never
+    // competes for a pooled voice and can be cut precisely when cooking ends.
+    // startMicrowave plays once; stopMicrowave() silences it. One channel — a second cook
+    // ponytail: restarts the same voice; give it a per-microwave channel if two overlap audibly.
+    void startMicrowave(std::string_view filename, float volume = 1.f);
+    void stopMicrowave();
+
+    // Master output volume (1.0 = unchanged); compounds with per-call volume.
     void setVolume(float gain);
 private:
     const Sound& getSound(std::string_view filename);
@@ -44,6 +59,9 @@ private:
     std::array<SDL_AudioStream*, VOICES>   _voices{};
     SDL_AudioStream*                       _sustainedVoice{};
     std::string                            _sustainedName{}; // empty = nothing sustaining
+    SDL_AudioStream*                       _musicVoice{};
+    std::string                            _musicName{};     // empty = no music playing
+    SDL_AudioStream*                       _microwaveVoice{};
     std::unordered_map<std::string, Sound> _sounds{};
 };
 } // namespace cafe

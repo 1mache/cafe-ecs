@@ -1,15 +1,17 @@
 #include "ShopSystem.h"
 
-#include "Components.h"      // ShopButton, MenuButton, Transform
+#include "AudioContext.h"
+#include "Components.h"      // ShopButton, NextDayButton, Transform
 #include "IntentSystem.h"    // mouseWindowToRenderPoint
 #include "RenderContext.h"
+#include "SoundAssets.h"
 #include "Transform.h"       // isPointInsideTransform, screenToWorldPoint
 #include "UpgradeState.h"
 #include <bagel.h>
 
 namespace cafe
 {
-void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit)
+void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit, AudioContext& audio)
 {
     static const bagel::Mask shopMask =
         bagel::MaskBuilder().set<ShopButton>().set<Transform>().build();
@@ -48,14 +50,20 @@ void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit)
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (e.test(shopMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
+        {
             e.get<ShopButton>().justPressed = true;
+            audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
+        }
         else if (e.test(nextMask) && e.get<MenuButton>().action == MenuAction::NextDay &&
                  isPointInsideTransform(worldMouse, e.get<Transform>()))
+        {
             outNextDay = true;
+            audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
+        }
     }
 }
 
-void shopPurchaseSystem()
+void shopPurchaseSystem(AudioContext& audio)
 {
     static const bagel::Mask shopMask = bagel::MaskBuilder().set<ShopButton>().build();
 
@@ -65,7 +73,8 @@ void shopPurchaseSystem()
         auto& b = e.get<ShopButton>();
         if (!b.justPressed) continue;
         b.justPressed = false;
-        UpgradeState::tryBuy(b.id);   // no-op if unaffordable or maxed
+        if (UpgradeState::tryBuy(b.id))   // no-op + false if unaffordable or maxed
+            audio.play(sound::BUY_UPGRADE);
     }
 }
 } // namespace cafe

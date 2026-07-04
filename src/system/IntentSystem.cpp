@@ -1,6 +1,8 @@
 #include "IntentSystem.h"
+#include "AudioContext.h"
 #include "Components.h"
 #include "RenderContext.h"
+#include "SoundAssets.h"
 #include "Transform.h"
 #include "UserInput.h"
 
@@ -65,7 +67,7 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input)
     }
 }
 
-void updateDragIntent(bagel::Entity e, UserInput input)
+void updateDragIntent(bagel::Entity e, UserInput input, AudioContext& audio)
 {
     const WorldPos worldMouse =
         screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
@@ -80,6 +82,7 @@ void updateDragIntent(bagel::Entity e, UserInput input)
     {
         intent.intentType = DragIntentType::held;
         intent.mousePos   = input.mousePos;
+        audio.play(sound::GRAB, sound::GRAB_VOLUME);
     }
     else if ((input.controls & controlBit(Controls::MouseButtonUp)) &&
              intent.intentType == DragIntentType::held)
@@ -120,7 +123,7 @@ void updatePipePourIntent(bagel::Entity e, UserInput& input)
         if (sc == myKey) spawnerActive = false;
 }
 
-void updateMachineButtonIntent(bagel::Entity e, UserInput& input)
+void updateMachineButtonIntent(bagel::Entity e, UserInput& input, AudioContext& audio)
 {
     auto& button = e.get<MachineButton>();
     const WorldPos worldMouse =
@@ -130,6 +133,7 @@ void updateMachineButtonIntent(bagel::Entity e, UserInput& input)
         isPointInsideTransform(worldMouse, e.get<Transform>()))
     {
         button.pressed = true;
+        audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
     }
     else if (input.controls & controlBit(Controls::MouseButtonUp))
     {
@@ -138,7 +142,7 @@ void updateMachineButtonIntent(bagel::Entity e, UserInput& input)
 }
 
 // Flags a supply button as clicked this frame; supplyButtonSystem spawns + clears it.
-void updateSpawnButtonIntent(bagel::Entity e, UserInput& input)
+void updateSpawnButtonIntent(bagel::Entity e, UserInput& input, AudioContext& audio)
 {
     const WorldPos worldMouse =
         screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
@@ -147,11 +151,12 @@ void updateSpawnButtonIntent(bagel::Entity e, UserInput& input)
         isPointInsideTransform(worldMouse, e.get<Transform>()))
     {
         e.get<SpawnButton>().justPressed = true;
+        audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
     }
 }
 
 }
-void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
+void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& audio)
 {
     constexpr int RESERVED_POLL_KEY_EVENTS = 10;
     UserInput input{};
@@ -219,16 +224,16 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled)
         static const bagel::Mask napkinIntentMask = bagel::MaskBuilder().set<NapkinIntent>().build();
 
         if (e.test(dragMask))
-            updateDragIntent(e, input);
+            updateDragIntent(e, input, audio);
 
         if (e.test(liqSpawnerMask))
             updatePipePourIntent(e, input);
 
         if (e.test(machineButton))
-            updateMachineButtonIntent(e, input);
+            updateMachineButtonIntent(e, input, audio);
 
         if (e.test(spawnButtonMask))
-            updateSpawnButtonIntent(e, input);
+            updateSpawnButtonIntent(e, input, audio);
 
         if (e.test(napkinIntentMask))
             updateNapkinIntent(e, input);
