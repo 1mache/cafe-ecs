@@ -96,7 +96,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     checkPastrySystem();          // grades pastries with CheckPastryIntent
     orderCheckmarkSystem();       // reveal bubble checkmarks for served slots
     dragAndDropSystem();          // held: follow mouse; released: snap/drop
-    napkinSystem(_physics, dt);   // napkin state -> body velocity + size ease
+    napkinSystem(getAssetManager(), _physics, dt);   // napkin state -> body velocity + size ease
 
     machineButtonSystem();             // coffee-machine buttons -> pour state
     liquidSpawnerSystem(getAssetManager(), _physics, getAudioContext(), dt);    // spawn drops while pouring

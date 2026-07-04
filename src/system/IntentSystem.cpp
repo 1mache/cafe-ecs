@@ -44,8 +44,8 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input)
                                     NAPKIN_TOGGLE_HITBOX_H) &&
             (input.controls & controlBit(Controls::MouseButtonDown)))
         {
-            intent.state = NapkinState::Full;
-            std::cout << "NapkinIntent: switched to Full (click inside toggle hitbox)\n";
+            intent.state = NapkinState::FullBlank;
+            std::cout << "NapkinIntent: switched to FullBlank (click inside toggle hitbox)\n";
         }
         else if (!isPointInsideScreenRect(input.mousePos,
                                           NAPKIN_TOGGLE_HITBOX_X,
@@ -57,7 +57,7 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input)
             std::cout << "NapkinIntent: switched to Hidden (mouse left toggle hitbox)\n";
         }
     }
-    else if (intent.state == NapkinState::Full)
+    else if (intent.state == NapkinState::FullBlank || intent.state == NapkinState::Full)
     {
         if (input.controls & controlBit(Controls::MouseButtonDown))
         {

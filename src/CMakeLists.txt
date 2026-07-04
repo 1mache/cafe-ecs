@@ -19,6 +19,7 @@ target_sources(
     component/CheckCoffeeIntent.h
     component/CheckPastryIntent.h
     component/Checkmark.h
+    component/CheatSheetIcon.h
     component/DragIntent.h
     component/DragItemType.h
     component/DropSpace.h
