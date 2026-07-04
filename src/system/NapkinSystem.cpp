@@ -3,6 +3,7 @@
 #include "AssetManager.h"
 #include "Components.h"
 #include "ItemTypes.h"
+#include "Menu.h"
 #include "OrderIconFactory.h"
 #include "PhysicsContext.h"
 #include "SpriteSheet.h"
@@ -11,6 +12,7 @@
 #include <box2d/box2d.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <vector>
 
 namespace cafe
@@ -134,27 +136,80 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
     static constexpr auto PROPS_TEX         = "props.png";
     static constexpr auto PROPS_SPRITE_DATA = "props.json";
 
-    const SpriteSheet& props    = assets.getSpriteSheet(PROPS_TEX, PROPS_SPRITE_DATA);
+    const SpriteSheet& props      = assets.getSpriteSheet(PROPS_TEX, PROPS_SPRITE_DATA);
     const int          coffeeFrom = props.getTagBounds("coffee").first;
+    const int          menuFrom   = props.getTagBounds("menu").first;
 
     constexpr float MARGIN = 0.05f * NAPKIN_FULL_SCREEN_W;
-    constexpr float GAP    = 0.02f * NAPKIN_FULL_SCREEN_H;
-    const int       n      = static_cast<int>(DrinkType::count);
-    const float iconSize =
-        (NAPKIN_FULL_SCREEN_H - 2.f * MARGIN - static_cast<float>(n - 1) * GAP)
-        / static_cast<float>(n);
 
-    const float x = -NAPKIN_FULL_SCREEN_W * 0.5f + MARGIN + iconSize * 0.5f;
+    constexpr int nDrinks      = static_cast<int>(DrinkType::count);
+    constexpr int nIngredients = 3;
+    constexpr int nCols        = 1 + nIngredients;
+    constexpr int nRows        = 1 + nDrinks;
 
-    for (int i = 0; i < n; ++i)
+    const float contentW = NAPKIN_FULL_SCREEN_W - 2.f * MARGIN;
+    const float contentH = NAPKIN_FULL_SCREEN_H - 2.f * MARGIN;
+    const float cellW    = contentW / static_cast<float>(nCols);
+    const float cellH    = contentH / static_cast<float>(nRows);
+    const float iconSize = std::min(cellW, cellH) * 0.85f;
+
+    const float originX = -NAPKIN_FULL_SCREEN_W * 0.5f + MARGIN;
+    const float originY = -NAPKIN_FULL_SCREEN_H * 0.5f + MARGIN;
+
+    auto cellCenter = [&](int col, int row) -> SDL_FPoint
     {
-        const float y = -NAPKIN_FULL_SCREEN_H * 0.5f + MARGIN + iconSize * 0.5f
-                      + static_cast<float>(i) * (iconSize + GAP);
-        const int frame = coffeeFrom + i;
+        return {
+            originX + (static_cast<float>(col) + 0.5f) * cellW,
+            originY + (static_cast<float>(row) + 0.5f) * cellH,
+        };
+    };
 
-        auto icon = createOrderIcon(assets, frame, iconSize, iconSize, napkin, { x, y });
+    constexpr LiquidIngredient topRowIngredients[] = {
+        LiquidIngredient::Coffee,
+        LiquidIngredient::Milk,
+        LiquidIngredient::Water,
+    };
+
+    for (int j = 0; j < nIngredients; ++j)
+    {
+        const SDL_FPoint pos   = cellCenter(j + 1, 0);
+        const int        frame = menuFrom + j;
+
+        auto icon = createOrderIcon(assets, frame, iconSize, iconSize, napkin, pos);
         icon.get<Drawable>().renderLayer = layer::UI4;
         icon.add(CheatSheetIcon{});
+    }
+
+    for (int i = 0; i < nDrinks; ++i)
+    {
+        const SDL_FPoint pos   = cellCenter(0, i + 1);
+        const int        frame = coffeeFrom + i;
+
+        auto icon = createOrderIcon(assets, frame, iconSize, iconSize, napkin, pos);
+        icon.get<Drawable>().renderLayer = layer::UI4;
+        icon.add(CheatSheetIcon{});
+    }
+
+    for (int i = 0; i < nDrinks; ++i)
+    {
+        const DrinkRecipe& recipe = recipeFor(static_cast<DrinkType>(i));
+
+        for (int j = 0; j < nIngredients; ++j)
+        {
+            const LiquidIngredient ing = topRowIngredients[j];
+            const int pct = static_cast<int>(
+                std::lround(recipe.ratio[static_cast<size_t>(ing)] * 100.f));
+
+            char buf[8];
+            std::snprintf(buf, sizeof(buf), "%d%%", pct);
+
+            const SDL_FPoint pos = cellCenter(j + 1, i + 1);
+            bagel::Entity::create().addAll(
+                Transform{},
+                TextLabel{ buf, 1, TextAlign::Center },
+                ChildOf{ napkin, pos },
+                CheatSheetIcon{});
+        }
     }
 
     napkin.get<NapkinIntent>().state = NapkinState::Full;

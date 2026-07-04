@@ -4,7 +4,7 @@
 
 namespace cafe
 {
-/** @brief Tag on drink icons shown on the full napkin cheat sheet. */
+/** @brief Tag on cheat sheet children (icons + ratio labels) on the full napkin. */
 struct CheatSheetIcon {};
 } // namespace cafe
 
