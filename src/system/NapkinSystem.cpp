@@ -2,6 +2,7 @@
 
 #include "AssetManager.h"
 #include "Components.h"
+#include "Glyph.h"
 #include "ItemTypes.h"
 #include "Menu.h"
 #include "OrderIconFactory.h"
@@ -140,29 +141,45 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
     const int          coffeeFrom = props.getTagBounds("coffee").first;
     const int          menuFrom   = props.getTagBounds("menu").first;
 
-    constexpr float MARGIN = 0.05f * NAPKIN_FULL_SCREEN_W;
+    constexpr float MARGIN     = 0.05f * NAPKIN_FULL_SCREEN_W;
+    constexpr float MARGIN_TOP = 0.07f * NAPKIN_FULL_SCREEN_H;
 
     constexpr int nDrinks      = static_cast<int>(DrinkType::count);
     constexpr int nIngredients = 3;
-    constexpr int nCols        = 1 + nIngredients;
     constexpr int nRows        = 1 + nDrinks;
 
-    const float contentW = NAPKIN_FULL_SCREEN_W - 2.f * MARGIN;
-    const float contentH = NAPKIN_FULL_SCREEN_H - 2.f * MARGIN;
-    const float cellW    = contentW / static_cast<float>(nCols);
-    const float cellH    = contentH / static_cast<float>(nRows);
-    const float iconSize = std::min(cellW, cellH) * 0.85f;
+    const float contentW  = NAPKIN_FULL_SCREEN_W - 2.f * MARGIN;
+    const float contentH  = NAPKIN_FULL_SCREEN_H - MARGIN - MARGIN_TOP;
+    const float drinkColW = contentW * 0.24f;
+    const float pctColW   = (contentW - drinkColW) / static_cast<float>(nIngredients);
+    const float cellH     = contentH / static_cast<float>(nRows);
+    const float iconSize  = std::min(std::min(drinkColW, pctColW), cellH) * 0.62f;
 
     const float originX = -NAPKIN_FULL_SCREEN_W * 0.5f + MARGIN;
-    const float originY = -NAPKIN_FULL_SCREEN_H * 0.5f + MARGIN;
+    const float originY = -NAPKIN_FULL_SCREEN_H * 0.5f + MARGIN_TOP;
+
+    auto colCenterX = [&](int col) -> float
+    {
+        if (col == 0)
+            return originX + drinkColW * 0.5f;
+        const int pctCol = col - 1;
+        return originX + drinkColW + (static_cast<float>(pctCol) + 0.5f) * pctColW;
+    };
+
+    auto rowCenterY = [&](int row) -> float
+    {
+        return originY + (static_cast<float>(row) + 0.5f) * cellH;
+    };
 
     auto cellCenter = [&](int col, int row) -> SDL_FPoint
     {
-        return {
-            originX + (static_cast<float>(col) + 0.5f) * cellW,
-            originY + (static_cast<float>(row) + 0.5f) * cellH,
-        };
+        return { colCenterX(col), rowCenterY(row) };
     };
+
+    constexpr int   TEXT_SCALE = 1;
+    // ChildOf local +Y is up; drawText anchors at glyph top - nudge up half a glyph
+    // to vertically center in the cell (screen-space scenes use the opposite sign).
+    constexpr float TEXT_Y_OFFSET = static_cast<float>(GLYPH_H * TEXT_SCALE) * 0.5f;
 
     constexpr LiquidIngredient topRowIngredients[] = {
         LiquidIngredient::Coffee,
@@ -172,7 +189,7 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
 
     for (int j = 0; j < nIngredients; ++j)
     {
-        const SDL_FPoint pos   = cellCenter(j + 1, 0);
+        const SDL_FPoint pos   = cellCenter(j + 1, nDrinks);
         const int        frame = menuFrom + j;
 
         auto icon = createOrderIcon(assets, frame, iconSize, iconSize, napkin, pos);
@@ -182,7 +199,7 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
 
     for (int i = 0; i < nDrinks; ++i)
     {
-        const SDL_FPoint pos   = cellCenter(0, i + 1);
+        const SDL_FPoint pos   = cellCenter(0, i);
         const int        frame = coffeeFrom + i;
 
         auto icon = createOrderIcon(assets, frame, iconSize, iconSize, napkin, pos);
@@ -201,12 +218,13 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
                 std::lround(recipe.ratio[static_cast<size_t>(ing)] * 100.f));
 
             char buf[8];
-            std::snprintf(buf, sizeof(buf), "%d%%", pct);
+            std::snprintf(buf, sizeof(buf), "%dx", pct);
 
-            const SDL_FPoint pos = cellCenter(j + 1, i + 1);
+            const SDL_FPoint center = cellCenter(j + 1, i);
+            const SDL_FPoint pos    = { center.x, center.y + TEXT_Y_OFFSET };
             bagel::Entity::create().addAll(
                 Transform{},
-                TextLabel{ buf, 1, TextAlign::Center },
+                TextLabel{ buf, TEXT_SCALE, TextAlign::Center },
                 ChildOf{ napkin, pos },
                 CheatSheetIcon{});
         }

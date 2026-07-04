@@ -13,6 +13,7 @@ TEST_CASE("glyphIndex maps characters to font-strip columns")
     REQUIRE(glyphIndex('Z') == 36);
     REQUIRE(glyphIndex('/') == 37);
     REQUIRE(glyphIndex('-') == 38);
+    REQUIRE(glyphIndex('%') == 39);
     REQUIRE(glyphIndex('?') == -1);   // unknown glyph
 }
 
