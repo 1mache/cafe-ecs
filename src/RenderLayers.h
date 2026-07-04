@@ -17,6 +17,7 @@ enum RenderLayer : int
     UI2,
     UI3, // checkmarks over order icons
     NAPKIN,
+    UI4,
     COUNT // how many layers
 };
 }

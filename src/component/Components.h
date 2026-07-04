@@ -5,6 +5,7 @@
 #include "CheckCoffeeIntent.h"
 #include "CheckPastryIntent.h"
 #include "Checkmark.h"
+#include "CheatSheetIcon.h"
 #include "ChildOf.h"
 #include "CleanupZone.h"
 #include "CoffeeOverview.h"

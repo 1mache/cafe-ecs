@@ -9,6 +9,7 @@ enum class NapkinState
 {
     Hidden,
     Toggle,
+    FullBlank,
     Full
 };
 

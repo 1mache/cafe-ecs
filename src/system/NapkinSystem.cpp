@@ -1,12 +1,17 @@
 #include "NapkinSystem.h"
 
+#include "AssetManager.h"
 #include "Components.h"
+#include "ItemTypes.h"
+#include "OrderIconFactory.h"
 #include "PhysicsContext.h"
+#include "SpriteSheet.h"
 
 #include <bagel.h>
 #include <box2d/box2d.h>
 #include <algorithm>
 #include <cmath>
+#include <vector>
 
 namespace cafe
 {
@@ -46,6 +51,7 @@ NapkinLayout layoutForState(NapkinState state)
             .halfW   = NAPKIN_TOGGLE_HALF_W,
             .halfH   = NAPKIN_TOGGLE_HALF_H,
         };
+    case NapkinState::FullBlank:
     case NapkinState::Full:
         return NapkinLayout{
             .centerX = NAPKIN_FULL_CENTER_X,
@@ -98,11 +104,8 @@ void easeSize(Transform& t, float targetHalfW, float targetHalfH, float dt)
         t.h += dh * lerpFactor;
 }
 
-bool isNapkinFullAtLayout(const Transform& t, const NapkinIntent& intent)
+bool isNapkinFullAtLayout(const Transform& t)
 {
-    if (intent.state != NapkinState::Full)
-        return false;
-
     const NapkinLayout full = layoutForState(NapkinState::Full);
 
     const float dx = t.x - full.centerX;
@@ -118,9 +121,56 @@ bool isNapkinFullAtLayout(const Transform& t, const NapkinIntent& intent)
 
     return true;
 }
+
+void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
+{
+    static constexpr auto PROPS_TEX         = "props.png";
+    static constexpr auto PROPS_SPRITE_DATA = "props.json";
+
+    const SpriteSheet& props    = assets.getSpriteSheet(PROPS_TEX, PROPS_SPRITE_DATA);
+    const int          coffeeFrom = props.getTagBounds("coffee").first;
+
+    constexpr float MARGIN = 0.05f * NAPKIN_FULL_SCREEN_W;
+    constexpr float GAP    = 0.02f * NAPKIN_FULL_SCREEN_H;
+    const int       n      = static_cast<int>(DrinkType::count);
+    const float iconSize =
+        (NAPKIN_FULL_SCREEN_H - 2.f * MARGIN - static_cast<float>(n - 1) * GAP)
+        / static_cast<float>(n);
+
+    const float x = -NAPKIN_FULL_SCREEN_W * 0.5f + MARGIN + iconSize * 0.5f;
+
+    for (int i = 0; i < n; ++i)
+    {
+        const float y = -NAPKIN_FULL_SCREEN_H * 0.5f + MARGIN + iconSize * 0.5f
+                      + static_cast<float>(i) * (iconSize + GAP);
+        const int frame = coffeeFrom + i;
+
+        auto icon = createOrderIcon(assets, frame, iconSize, iconSize, napkin, { x, y });
+        icon.get<Drawable>().renderLayer = layer::UI4;
+        icon.add(CheatSheetIcon{});
+    }
+
+    napkin.get<NapkinIntent>().state = NapkinState::Full;
+}
+
+void clearCheatSheet()
+{
+    static const bagel::Mask mask =
+        bagel::MaskBuilder().set<CheatSheetIcon>().build();
+
+    std::vector<bagel::ent_type> toDestroy;
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(mask)) continue;
+        toDestroy.push_back(e.entity());
+    }
+
+    for (const bagel::ent_type id : toDestroy)
+        bagel::Entity(id).destroy();
+}
 } // namespace
 
-void napkinSystem(PhysicsContext& /*physics*/, float dt)
+void napkinSystem(AssetManager& assets, PhysicsContext& /*physics*/, float dt)
 {
     static const bagel::Mask mask = bagel::MaskBuilder()
                                         .set<NapkinIntent>()
@@ -132,7 +182,8 @@ void napkinSystem(PhysicsContext& /*physics*/, float dt)
     {
         if (!e.test(mask)) continue;
 
-        const NapkinLayout target = layoutForState(e.get<NapkinIntent>().state);
+        auto& intent = e.get<NapkinIntent>();
+        const NapkinLayout target = layoutForState(intent.state);
         auto&                  t  = e.get<Transform>();
 
         easeSize(t, target.halfW, target.halfH, dt);
@@ -141,6 +192,11 @@ void napkinSystem(PhysicsContext& /*physics*/, float dt)
         if (!b2Body_IsValid(body)) continue;
 
         chaseTarget(body, target.centerX, target.centerY);
+
+        if (!isNapkinFullAtLayout(t))
+            clearCheatSheet();
+        else if (intent.state == NapkinState::FullBlank)
+            createCheatSheet(assets, e);
     }
 }
 } // namespace cafe
