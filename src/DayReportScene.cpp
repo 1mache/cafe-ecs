@@ -1,6 +1,6 @@
 #include "DayReportScene.h"
 
-#include "Components.h"        // ShopButton, NextDayButton, Transform, Drawable
+#include "Components.h"        // ShopButton, MenuButton, Transform, Drawable
 #include "DayReport.h"
 #include "DayState.h"
 #include "Entities.h"          // destroyAllGameEntities
@@ -164,12 +164,12 @@ void DayReportScene::onInit()
 
     // Next-day trigger: a Transform-only hit-box over the backdrop's baked-in power
     // button. No Drawable, so shopInputSystem still hit-tests it (Transform-only
-    // mask, see NextDayButton.h) but drawSystem has nothing to draw for it.
+    // mask, see MenuButton.h) but drawSystem has nothing to draw for it.
     auto next = bagel::Entity::create();
     next.addAll(
         Transform{ .x = NEXT_DAY_HITBOX_POS.x, .y = NEXT_DAY_HITBOX_POS.y,
                    .w = NEXT_DAY_HITBOX_HALF, .h = NEXT_DAY_HITBOX_HALF },
-        NextDayButton{}
+        MenuButton{ MenuAction::NextDay }
     );
 }
 
@@ -208,7 +208,7 @@ bool DayReportScene::onUpdate(float /*dt*/)
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(moneyLabelMask)) continue;
-        e.get<TextLabel>().text = std::to_string(money);
+        e.get<TextLabel>().setText(std::to_string(money));
     }
 
     // Refresh each upgrade's LV/cost status label.
@@ -216,7 +216,7 @@ bool DayReportScene::onUpdate(float /*dt*/)
     {
         if (!e.test(statusLabelMask)) continue;
         const UpgradeId id = e.get<UpgradeStatusLabel>().id;
-        e.get<TextLabel>().text = shopStatus(id, UpgradeState::level(id));
+        e.get<TextLabel>().setText(shopStatus(id, UpgradeState::level(id)));
     }
 
     SDL_RenderClear(renderer);

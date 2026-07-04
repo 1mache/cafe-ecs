@@ -106,10 +106,13 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
     customerSpawnerSystem(getAssetManager(), _physics, dt); // keep one customer at the seat
     animationSystem(getAssetManager(), dt);
+    particleSystem(dt);           // drift + fade active FX particles
+    lifetimeSystem(dt);           // reap expired FX entities
     behaviorSystem(dt);           // tick patience; adds Leaving on timeout
     orderSystem();                // all items served -> add Leaving (success)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
     recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup
+    gradePopupSystem();           // spawn graded text + particle burst at the customer
     reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
     positionHierarchySystem();            // children follow parents; orphan children of Leaving
     customerCleanupSystem();      // destroy all Leaving entities

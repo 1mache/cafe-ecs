@@ -11,5 +11,5 @@ struct MoneyLabel {};
 
 template <> struct bagel::Storage<cafe::MoneyLabel> final : bagel::NoInstance
 {
-    using type = bagel::SparseStorage<cafe::MoneyLabel>;
+    using type = bagel::TaggedStorage<cafe::MoneyLabel>;
 };

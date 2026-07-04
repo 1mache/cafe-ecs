@@ -4,7 +4,9 @@ add_executable(unit_tests
     test_destroy_idempotent.cpp
     test_entity_reuse.cpp
     test_glyph.cpp
+    test_grade_tier.cpp
     test_order_match.cpp
+    test_settings_state.cpp
     test_upgrade_catalog.cpp
     test_upgrade_state.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../src/DayReport.cpp

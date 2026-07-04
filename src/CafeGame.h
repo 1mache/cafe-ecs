@@ -19,6 +19,6 @@ private:
 
     SDL_Renderer* _renderer{};
     SDL_Window*   _window{};
-    SceneId       _next{ SceneId::MainGame };
+    SceneId       _next{ SceneId::StartMenu };
 };
 } // namespace cafe

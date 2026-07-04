@@ -8,10 +8,8 @@
 #include <SDL3/SDL.h>
 #include <bagel.h>
 #include <box2d/box2d.h>
+#include <algorithm>
 #include <cmath>
-#include <iostream>
-#include <ostream>
-#include <utility>
 
 namespace cafe
 {
@@ -42,27 +40,20 @@ void sortDrawablesIfDirty(
     if (!dirtyBit)
         return;
 
-    if (sorted.size() <= 1)
+    // Full sort every dirty frame. A single bubble pass could not keep up with
+    // heavy add/remove churn (e.g. fast pouring spawns many LIQUID drops per
+    // frame while removeFromSortedDrawables' swap-with-last breaks the order),
+    // leaving high-layer icons mis-ordered for several frames -> visible flicker.
+    // stable_sort keeps intra-layer order steady so same-layer sprites don't swap.
+    if (sorted.size() > 1)
     {
-        dirtyBit = false;
-        return;
+        std::stable_sort(
+            &sorted[0], &sorted[0] + sorted.size(),
+            [](const Entity& a, const Entity& b)
+            { return a.get<Drawable>().renderLayer < b.get<Drawable>().renderLayer; });
     }
 
-    bool isSorted = true;
-    for (int i = 0; i < sorted.size() - 1; ++i)
-    {
-        const auto& da = sorted[i].get<Drawable>();
-        const auto& db = sorted[i + 1].get<Drawable>();
-
-        if (da.renderLayer > db.renderLayer)
-        {
-            isSorted = false;
-            std::swap(sorted[i], sorted[i + 1]);
-        }
-    }
-
-    if (isSorted)
-        dirtyBit = false;
+    dirtyBit = false;
 }
 } // namespace
 
@@ -71,10 +62,20 @@ void drawSystem(SDL_Renderer* renderer)
     static bagel::Bag<Entity, bagel::InitialEntities> sortedDrawables{};
     static bagel::Bag<bool, bagel::InitialEntities>   inSortedDrawables{};
     static bool                                       dirtyBit = false;
+    // bagel::DynamicBag is malloc-backed and never zero-initialized,
+    // so a never-written slot   holds whatever garbage was in that heap byte (0xCD in
+    // MSVC debug builds) instead of false. Explicitly zero each slot the first time
+    // its index is reached before ever reading it.
+    static bagel::id_type initializedUpTo = 0;
 
     for (auto e = Entity::first(); !e.eof(); e.next())
     {
         inSortedDrawables.ensure(e.entity().id + 1);
+        while (initializedUpTo <= e.entity().id)
+        {
+            inSortedDrawables[initializedUpTo] = false;
+            ++initializedUpTo;
+        }
         const bool hasDrawable = e.has<Drawable>();
         const bool inSorted    = inSortedDrawables[e.entity().id];
 
