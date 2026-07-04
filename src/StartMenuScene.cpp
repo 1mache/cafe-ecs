@@ -1,6 +1,6 @@
 #include "StartMenuScene.h"
 
-#include "Components.h"    // StartButton, ExitButton, SoundToggleButton, Transform, Drawable, TextLabel
+#include "Components.h"    // MenuButton, SoundToggleButton, Transform, Drawable, TextLabel
 #include "Entities.h"      // destroyAllGameEntities
 #include "GameConfig.h"    // LOGICAL_W
 #include "Glyph.h"         // GLYPH_H
@@ -111,10 +111,10 @@ void StartMenuScene::onInit()
     makeSquare(LOGO_POS, LOGO_HALF_W, LOGO_HALF_H);
 
     // START / EXIT buttons: square + tag + centred label.
-    makeSquare(START_POS, BTN_HALF_W, BTN_HALF_H).add(StartButton{});
+    makeSquare(START_POS, BTN_HALF_W, BTN_HALF_H).add(MenuButton{ MenuAction::Start });
     addCenteredLabel(START_POS, "START", cam);
 
-    makeSquare(EXIT_POS, BTN_HALF_W, BTN_HALF_H).add(ExitButton{});
+    makeSquare(EXIT_POS, BTN_HALF_W, BTN_HALF_H).add(MenuButton{ MenuAction::Exit });
     addCenteredLabel(EXIT_POS, "EXIT", cam);
 
     // Sound toggle: no label (per the sketch); soundToggleSystem paints its

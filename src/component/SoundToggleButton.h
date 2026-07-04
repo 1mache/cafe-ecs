@@ -7,7 +7,7 @@ namespace cafe
 /** @brief The menu's mute square. `justPressed` is set by menuInputSystem and
  *  consumed by soundToggleSystem (mirrors ShopButton): toggling mutates
  *  SettingsState and the square's tint, so it needs the press/consume split
- *  instead of ending the scene like StartButton/ExitButton. */
+ *  instead of ending the scene like a MenuButton. */
 struct SoundToggleButton
 {
     bool justPressed{};

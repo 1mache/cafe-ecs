@@ -26,9 +26,7 @@ target_sources(
     component/SpawnButton.h
     component/SpawnButton.cpp
     component/ShopButton.h
-    component/NextDayButton.h
-    component/StartButton.h
-    component/ExitButton.h
+    component/MenuButton.h
     component/SoundToggleButton.h
     component/TextLabel.h
     component/MoneyLabel.h

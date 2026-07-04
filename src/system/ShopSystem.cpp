@@ -1,6 +1,6 @@
 #include "ShopSystem.h"
 
-#include "Components.h"      // ShopButton, NextDayButton, Transform
+#include "Components.h"      // ShopButton, MenuButton, Transform
 #include "IntentSystem.h"    // mouseWindowToRenderPoint
 #include "RenderContext.h"
 #include "Transform.h"       // isPointInsideTransform, screenToWorldPoint
@@ -14,7 +14,7 @@ void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit)
     static const bagel::Mask shopMask =
         bagel::MaskBuilder().set<ShopButton>().set<Transform>().build();
     static const bagel::Mask nextMask =
-        bagel::MaskBuilder().set<NextDayButton>().set<Transform>().build();
+        bagel::MaskBuilder().set<MenuButton>().set<Transform>().build();
 
     bool       clicked = false;
     SDL_FPoint clickPos{};
@@ -49,7 +49,8 @@ void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit)
     {
         if (e.test(shopMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
             e.get<ShopButton>().justPressed = true;
-        else if (e.test(nextMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
+        else if (e.test(nextMask) && e.get<MenuButton>().action == MenuAction::NextDay &&
+                 isPointInsideTransform(worldMouse, e.get<Transform>()))
             outNextDay = true;
     }
 }

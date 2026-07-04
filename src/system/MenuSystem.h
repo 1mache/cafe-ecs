@@ -6,9 +6,9 @@
 namespace cafe
 {
 /** @brief Single SDL poll for the start menu (parallels shopInputSystem).
- *  Converts the mouse to world space and hit-tests every StartButton /
- *  ExitButton / SoundToggleButton Transform. Start/Exit hits set the
- *  out-params; a sound-toggle hit sets SoundToggleButton.justPressed.
+ *  Converts the mouse to world space and hit-tests every MenuButton /
+ *  SoundToggleButton Transform. A MenuButton hit sets outStart/outExit by its
+ *  MenuAction; a sound-toggle hit sets SoundToggleButton.justPressed.
  *  Sets outExit on window close. Mouse only — the menu has no key bindings. */
 void menuInputSystem(SDL_Renderer* renderer, bool& outStart, bool& outExit);
 

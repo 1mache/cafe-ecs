@@ -1,6 +1,6 @@
 #include "MenuSystem.h"
 
-#include "Components.h"      // StartButton, ExitButton, SoundToggleButton, Transform, Drawable
+#include "Components.h"      // MenuButton, SoundToggleButton, Transform, Drawable
 #include "IntentSystem.h"    // mouseWindowToRenderPoint
 #include "RenderContext.h"
 #include "SettingsState.h"
@@ -19,10 +19,8 @@ constexpr SDL_Color COLOR_MUTED     = {  78,  78,  86, 255 };
 
 void menuInputSystem(SDL_Renderer* renderer, bool& outStart, bool& outExit)
 {
-    static const bagel::Mask startMask =
-        bagel::MaskBuilder().set<StartButton>().set<Transform>().build();
-    static const bagel::Mask exitMask =
-        bagel::MaskBuilder().set<ExitButton>().set<Transform>().build();
+    static const bagel::Mask menuMask =
+        bagel::MaskBuilder().set<MenuButton>().set<Transform>().build();
     static const bagel::Mask soundMask =
         bagel::MaskBuilder().set<SoundToggleButton>().set<Transform>().build();
 
@@ -52,10 +50,15 @@ void menuInputSystem(SDL_Renderer* renderer, bool& outStart, bool& outExit)
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (e.test(startMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
-            outStart = true;
-        else if (e.test(exitMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
-            outExit = true;
+        if (e.test(menuMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
+        {
+            switch (e.get<MenuButton>().action)
+            {
+            case MenuAction::Start: outStart = true; break;
+            case MenuAction::Exit:  outExit  = true; break;
+            default: break; // NextDay is not raised in the start menu
+            }
+        }
         else if (e.test(soundMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
             e.get<SoundToggleButton>().justPressed = true;
     }
