@@ -17,6 +17,8 @@ static constexpr auto TEX_BARTOP = "counter.png";
 bagel::Entity createBg(AssetManager& assets, std::string_view bgPath)
 {
     auto& bgTex = assets.getTexture(bgPath);
+    // Full texture (bg_big.png is authored bigger than logical size) scaled down
+    // into the logical-screen-sized dst rect below — same idiom as order icons.
     const auto bgSrcRect = bgTex.getFullSrcRect();
 
     auto bgEnt = bagel::Entity::create();
