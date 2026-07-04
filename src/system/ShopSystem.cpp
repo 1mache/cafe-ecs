@@ -16,7 +16,7 @@ void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit, Au
     static const bagel::Mask shopMask =
         bagel::MaskBuilder().set<ShopButton>().set<Transform>().build();
     static const bagel::Mask nextMask =
-        bagel::MaskBuilder().set<NextDayButton>().set<Transform>().build();
+        bagel::MaskBuilder().set<MenuButton>().set<Transform>().build();
 
     bool       clicked = false;
     SDL_FPoint clickPos{};
@@ -54,7 +54,8 @@ void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit, Au
             e.get<ShopButton>().justPressed = true;
             audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
         }
-        else if (e.test(nextMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
+        else if (e.test(nextMask) && e.get<MenuButton>().action == MenuAction::NextDay &&
+                 isPointInsideTransform(worldMouse, e.get<Transform>()))
         {
             outNextDay = true;
             audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);

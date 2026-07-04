@@ -11,6 +11,10 @@ void behaviorSystem(float dtSeconds);
 void deliverySystem();
 void orderSystem();
 void finalizeOrderGradeSystem();
+/** @brief Spawn a graded text popup + particle burst at each leaving
+ *  customer's position. Run after finalizeOrderGradeSystem (needs the final
+ *  Behavior.rating) and before customerCleanupSystem (which destroys them). */
+void gradePopupSystem();
 void reportLeavingCustomers();
 void customerCleanupSystem();
 } // namespace cafe

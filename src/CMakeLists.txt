@@ -26,13 +26,16 @@ target_sources(
     component/SpawnButton.h
     component/SpawnButton.cpp
     component/ShopButton.h
-    component/NextDayButton.h
+    component/MenuButton.h
+    component/SoundToggleButton.h
     component/TextLabel.h
     component/MoneyLabel.h
     component/UpgradeStatusLabel.h
     component/Ice.h
     component/InSensorArea.h
     component/Leaving.h
+    component/Lifetime.h
+    component/Particle.h
     component/NapkinIntent.h
     component/Pastry.h
     component/PastryTv.h
@@ -56,6 +59,8 @@ target_sources(
     system/MicrowaveSystem.cpp
     system/OrderCheckmarkSystem.h
     system/OrderCheckmarkSystem.cpp
+    system/ParticleSystem.h
+    system/ParticleSystem.cpp
     system/PastrySupplySystem.h
     system/PastrySupplySystem.cpp
     system/NapkinSystem.h
@@ -78,6 +83,8 @@ target_sources(
     system/SensorSystem.cpp
     system/ShopSystem.h
     system/ShopSystem.cpp
+    system/MenuSystem.h
+    system/MenuSystem.cpp
     system/DayCycleSystem.h
     system/DayCycleSystem.cpp
     system/CoffeeMachineSystem.cpp
@@ -139,6 +146,7 @@ target_sources(
     UpgradeCatalog.h
     UpgradeCatalog.cpp
     UpgradeState.h
+    SettingsState.h
     DayReport.h
     DayReport.cpp
     Glyph.h
@@ -157,6 +165,8 @@ target_sources(
     MainGameScene.cpp
     DayReportScene.h
     DayReportScene.cpp
+    StartMenuScene.h
+    StartMenuScene.cpp
 
     AssetManager.h
     AssetManager.cpp

@@ -1,6 +1,6 @@
 #include "DayReportScene.h"
 
-#include "Components.h"        // ShopButton, NextDayButton, Transform, Drawable
+#include "Components.h"        // ShopButton, MenuButton, Transform, Drawable
 #include "DayReport.h"
 #include "DayState.h"
 #include "Entities.h"          // destroyAllGameEntities
@@ -165,12 +165,12 @@ void DayReportScene::onInit()
 
     // Next-day trigger: a Transform-only hit-box over the backdrop's baked-in power
     // button. No Drawable, so shopInputSystem still hit-tests it (Transform-only
-    // mask, see NextDayButton.h) but drawSystem has nothing to draw for it.
+    // mask, see MenuButton.h) but drawSystem has nothing to draw for it.
     auto next = bagel::Entity::create();
     next.addAll(
         Transform{ .x = NEXT_DAY_HITBOX_POS.x, .y = NEXT_DAY_HITBOX_POS.y,
                    .w = NEXT_DAY_HITBOX_HALF, .h = NEXT_DAY_HITBOX_HALF },
-        NextDayButton{}
+        MenuButton{ MenuAction::NextDay }
     );
 
     getAudioContext().playMusic(sound::MAIN_MUSIC_2, sound::MUSIC_VOLUME);

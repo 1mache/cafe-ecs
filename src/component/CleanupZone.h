@@ -8,4 +8,4 @@ namespace cafe
 struct CleanupZone {};
 } // namespace cafe
 
-template <> struct bagel::Storage<cafe::CleanupZone> final : NoInstance { using type = SparseStorage<cafe::CleanupZone>; };
+template <> struct bagel::Storage<cafe::CleanupZone> final : NoInstance { using type = TaggedStorage<cafe::CleanupZone>; };

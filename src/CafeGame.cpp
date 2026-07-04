@@ -5,6 +5,7 @@
 #include "GameConfig.h"
 #include "DayReportScene.h"
 #include "MainGameScene.h"
+#include "StartMenuScene.h"
 #include "PhysicsContext.h"
 #include "RenderContext.h"
 #include "SpriteDims.h"
@@ -79,6 +80,8 @@ std::unique_ptr<Scene> CafeGame::makeScene(SceneId id)
 {
     switch (id)
     {
+    case SceneId::StartMenu:
+        return std::make_unique<StartMenuScene>();
     case SceneId::DayReport:
         return std::make_unique<DayReportScene>();
     case SceneId::MainGame:

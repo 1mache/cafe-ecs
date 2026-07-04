@@ -11,6 +11,7 @@
 #include "LiquidSystem.h"
 #include "MicrowaveSystem.h"
 #include "OrderCheckmarkSystem.h"
+#include "ParticleSystem.h"
 #include "PastrySupplySystem.h"
 #include "NapkinSystem.h"
 #include "RenderSystem.h"

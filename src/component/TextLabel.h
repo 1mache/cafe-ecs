@@ -13,7 +13,7 @@ namespace cafe
 {
 /** @brief Text drawn at the entity's own Transform position (world units,
  *  center x/y — w/h/rot unused, same convention as Transform-only hitbox
- *  entities like NextDayButton). Drawn by drawTextSystem.
+ *  entities like a MenuButton hitbox). Drawn by drawTextSystem.
  *
  *  Text lives in a fixed inline buffer (no heap): BufSize includes the
  *  terminating '\0', so at most MaxLen visible chars — longer text is
