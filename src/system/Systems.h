@@ -19,5 +19,6 @@
 #include "ShopSystem.h"
 #include "SupplySystem.h"
 #include "TransformSystem.h"
+#include "TweenSystem.h"
 #include "UpgradeSystem.h"
 #include "AnimationSystem.h"

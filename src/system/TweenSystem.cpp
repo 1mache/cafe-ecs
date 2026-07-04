@@ -17,7 +17,7 @@ void tweenSystem(float dt)
         auto& tween     = ent.get<Tween>();
 
         // if ended.
-        if (tween.elapsedTime >= tween.duration)
+        if (getTweenProgress(tween) >= 1.0f)
             ent.del<Tween>(); // remove the component
 
         // else ease into target transform

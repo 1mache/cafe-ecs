@@ -6,11 +6,11 @@
 #include "ItemTypes.h"
 #include "Menu.h"
 #include "OrderIconFactory.h"
-#include "PhysicsContext.h"
 #include "SpriteSheet.h"
+#include "Transform.h"
+#include "Tween.h"
 
 #include <bagel.h>
-#include <box2d/box2d.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -20,14 +20,9 @@ namespace cafe
 {
 namespace
 {
-constexpr float MAX_FOLLOW_SPEED         = 40.f;
-constexpr float FOLLOW_SPEED_GAIN        = 32.f;
-constexpr float POSITION_ARRIVE_THRESHOLD  = 0.01f;
-constexpr float POSITION_ARRIVE_THRESHOLD_SQ =
-    POSITION_ARRIVE_THRESHOLD * POSITION_ARRIVE_THRESHOLD;
-constexpr float SIZE_LERP_RATE           = 10.f;
-constexpr float SIZE_SNAP_EPSILON        = 0.001f;
 constexpr float FULL_LAYOUT_PROXIMITY    = 0.876f;
+// duration of every napkin Hidden/Toggle/Full leg, tune by feel
+constexpr float NAPKIN_TWEEN_DURATION    = 0.5f;
 
 struct NapkinLayout
 {
@@ -67,45 +62,18 @@ NapkinLayout layoutForState(NapkinState state)
     return layoutForState(NapkinState::Hidden);
 }
 
-float speedByDist(float dist)
+Transform transformForState(NapkinState s)
 {
-    return std::min(dist * FOLLOW_SPEED_GAIN, MAX_FOLLOW_SPEED);
+    const NapkinLayout l = layoutForState(s);
+    return Transform{ .x = l.centerX, .y = l.centerY, .w = l.halfW, .h = l.halfH };
 }
 
-void chaseTarget(b2BodyId body, float targetX, float targetY)
+// exact compare is safe: animating branch compares two constexpr-derived targets;
+// resting branch relies on the Exponential ease landing exactly on 1.0 at t=1 (see
+// Tween::easeProgress), so a completed tween leaves Transform bit-exact == target.
+bool sameTarget(const Transform& a, const Transform& b)
 {
-    b2Body_SetGravityScale(body, 0.f);
-
-    const b2Vec2 current = b2Body_GetPosition(body);
-    const b2Vec2 delta   = b2Sub({ targetX, targetY }, current);
-
-    if (b2LengthSquared(delta) <= POSITION_ARRIVE_THRESHOLD_SQ)
-    {
-        b2Body_SetLinearVelocity(body, { 0.f, 0.f });
-        return;
-    }
-
-    const float  dist  = b2Length(delta);
-    const float  speed = speedByDist(dist);
-    const b2Vec2 dir   = b2Normalize(delta);
-    b2Body_SetLinearVelocity(body, b2MulSV(speed, dir));
-}
-
-void easeSize(Transform& t, float targetHalfW, float targetHalfH, float dt)
-{
-    const float lerpFactor = std::min(1.f, SIZE_LERP_RATE * dt);
-
-    const float dw = targetHalfW - t.w;
-    if (std::fabs(dw) <= SIZE_SNAP_EPSILON)
-        t.w = targetHalfW;
-    else
-        t.w += dw * lerpFactor;
-
-    const float dh = targetHalfH - t.h;
-    if (std::fabs(dh) <= SIZE_SNAP_EPSILON)
-        t.h = targetHalfH;
-    else
-        t.h += dh * lerpFactor;
+    return a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h;
 }
 
 bool isNapkinFullAtLayout(const Transform& t)
@@ -250,28 +218,35 @@ void clearCheatSheet()
 }
 } // namespace
 
-void napkinSystem(AssetManager& assets, PhysicsContext& /*physics*/, float dt)
+void napkinSystem(AssetManager& assets, float /*dt*/)
 {
     static const bagel::Mask mask = bagel::MaskBuilder()
                                         .set<NapkinIntent>()
                                         .set<Transform>()
-                                        .set<PhysicsBody>()
                                         .build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(mask)) continue;
 
-        auto& intent = e.get<NapkinIntent>();
-        const NapkinLayout target = layoutForState(intent.state);
-        auto&                  t  = e.get<Transform>();
+        auto&           intent  = e.get<NapkinIntent>();
+        auto&           t       = e.get<Transform>();
+        const Transform desired = transformForState(intent.state);
 
-        easeSize(t, target.halfW, target.halfH, dt);
+        // already heading there? (in-flight tween's target, or resting transform)
+        const bool onTarget = e.has<Tween>()
+            ? sameTarget(e.get<Tween>().target, desired)
+            : sameTarget(t, desired);
 
-        const b2BodyId body = e.get<PhysicsBody>().id;
-        if (!b2Body_IsValid(body)) continue;
-
-        chaseTarget(body, target.centerX, target.centerY);
+        if (!onTarget) // state changed: (re)start/retarget from current transform
+        {
+            const Tween tw{ .original = t, .target = desired,
+                             .kind = Tween::Exponential, .duration = NAPKIN_TWEEN_DURATION };
+            if (e.has<Tween>())
+                e.get<Tween>() = tw;
+            else
+                e.add(tw);
+        }
 
         if (!isNapkinFullAtLayout(t))
             clearCheatSheet();

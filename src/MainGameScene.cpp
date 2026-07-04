@@ -25,7 +25,7 @@ void cafe::MainGameScene::onInit()
 
     createBg(assets, BG_PATH);
     createBartop(assets, _physics);
-    createNapkin(assets, _physics);
+    createNapkin(assets);
 
     // Ice machine.
     createIceMachine(assets, _physics, supply::ICE_MACHINE_POS);
@@ -96,7 +96,8 @@ bool cafe::MainGameScene::onUpdate(float dt)
     checkPastrySystem();          // grades pastries with CheckPastryIntent
     orderCheckmarkSystem();       // reveal bubble checkmarks for served slots
     dragAndDropSystem();          // held: follow mouse; released: snap/drop
-    napkinSystem(getAssetManager(), _physics, dt);   // napkin state -> body velocity + size ease
+    napkinSystem(getAssetManager(), dt);  // napkin state -> (re)start/retarget Tween
+    tweenSystem(dt);                      // advance all in-flight Tweens (napkin, etc.)
 
     machineButtonSystem();             // coffee-machine buttons -> pour state
     liquidSpawnerSystem(getAssetManager(), _physics, getAudioContext(), dt);    // spawn drops while pouring

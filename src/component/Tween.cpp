@@ -19,6 +19,7 @@ float easeProgress(Tween::Kind kind, float t)
     {
     case Tween::Exponential:
         // smooth ease-out: fast start, asymptotic settle, no overshoot
+        if (t >= 1.f) return 1.f; // land exactly on target (exp2 never hits 1 itself)
         return 1.f - std::exp2(-EXP_SHARPNESS * t);
     case Tween::Spring:
         // easeOutElastic: overshoots target then wobbles in (bouncy)
