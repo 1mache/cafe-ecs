@@ -97,6 +97,27 @@ void easeSize(Transform& t, float targetHalfW, float targetHalfH, float dt)
     else
         t.h += dh * lerpFactor;
 }
+
+bool isNapkinFullAtLayout(const Transform& t, const NapkinIntent& intent)
+{
+    if (intent.state != NapkinState::Full)
+        return false;
+
+    const NapkinLayout full = layoutForState(NapkinState::Full);
+
+    const float dx = t.x - full.centerX;
+    const float dy = t.y - full.centerY;
+    if ((dx * dx + dy * dy) > POSITION_ARRIVE_THRESHOLD_SQ)
+        return false;
+
+    if (std::fabs(t.w - full.halfW) > SIZE_SNAP_EPSILON)
+        return false;
+
+    if (std::fabs(t.h - full.halfH) > SIZE_SNAP_EPSILON)
+        return false;
+
+    return true;
+}
 } // namespace
 
 void napkinSystem(PhysicsContext& /*physics*/, float dt)
