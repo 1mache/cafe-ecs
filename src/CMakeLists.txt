@@ -47,6 +47,8 @@ target_sources(
     component/Sensor.cpp
     component/Animation.h
     component/Animation.cpp
+    component/Tween.h
+    component/Tween.cpp
     component/Components.h
 
     # systems
