@@ -24,6 +24,7 @@ constexpr float POSITION_ARRIVE_THRESHOLD_SQ =
     POSITION_ARRIVE_THRESHOLD * POSITION_ARRIVE_THRESHOLD;
 constexpr float SIZE_LERP_RATE           = 10.f;
 constexpr float SIZE_SNAP_EPSILON        = 0.001f;
+constexpr float FULL_LAYOUT_PROXIMITY    = 0.876f;
 
 struct NapkinLayout
 {
@@ -108,15 +109,21 @@ bool isNapkinFullAtLayout(const Transform& t)
 {
     const NapkinLayout full = layoutForState(NapkinState::Full);
 
-    const float dx = t.x - full.centerX;
-    const float dy = t.y - full.centerY;
-    if ((dx * dx + dy * dy) > POSITION_ARRIVE_THRESHOLD_SQ)
+    const float posTolX  = (1.f - FULL_LAYOUT_PROXIMITY) * full.halfW;
+    const float posTolY  = (1.f - FULL_LAYOUT_PROXIMITY) * full.halfH;
+    const float sizeTolW = (1.f - FULL_LAYOUT_PROXIMITY) * full.halfW;
+    const float sizeTolH = (1.f - FULL_LAYOUT_PROXIMITY) * full.halfH;
+
+    if (std::fabs(t.x - full.centerX) > posTolX)
         return false;
 
-    if (std::fabs(t.w - full.halfW) > SIZE_SNAP_EPSILON)
+    if (std::fabs(t.y - full.centerY) > posTolY)
         return false;
 
-    if (std::fabs(t.h - full.halfH) > SIZE_SNAP_EPSILON)
+    if (std::fabs(t.w - full.halfW) > sizeTolW)
+        return false;
+
+    if (std::fabs(t.h - full.halfH) > sizeTolH)
         return false;
 
     return true;
