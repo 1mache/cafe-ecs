@@ -1,6 +1,7 @@
 #include "Scene.h"
 
 #include "GameConfig.h"
+#include "SettingsState.h"
 
 namespace cafe
 {
@@ -10,6 +11,10 @@ void Scene::init(SDL_Renderer* renderer)
     _renderer = renderer;
     _assetManager.init(renderer);
     _audioContext.init();
+
+    // Each scene owns a fresh AudioContext, so the persistent mute flag must be
+    // re-applied on every scene start.
+    _audioContext.setVolume(SettingsState::muted() ? 0.f : 1.f);
 
     onInit();
 }
