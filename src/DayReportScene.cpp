@@ -10,6 +10,7 @@
 #include "RenderLayers.h"
 #include "RenderSystem.h"      // drawSystem, drawTextSystem
 #include "ShopSystem.h"
+#include "SoundAssets.h"
 #include "Texture.h"
 #include "Transform.h"         // transformToFrect
 #include "UpgradeCatalog.h"
@@ -171,6 +172,8 @@ void DayReportScene::onInit()
                    .w = NEXT_DAY_HITBOX_HALF, .h = NEXT_DAY_HITBOX_HALF },
         NextDayButton{}
     );
+
+    getAudioContext().playMusic(sound::MAIN_MUSIC_2, sound::MUSIC_VOLUME);
 }
 
 bool DayReportScene::onUpdate(float /*dt*/)
@@ -179,8 +182,8 @@ bool DayReportScene::onUpdate(float /*dt*/)
     auto&         assets   = getAssetManager();
 
     bool nextDay = false, exitRequested = false;
-    shopInputSystem(renderer, nextDay, exitRequested);
-    shopPurchaseSystem();
+    shopInputSystem(renderer, nextDay, exitRequested, getAudioContext());
+    shopPurchaseSystem(getAudioContext());
 
     if (exitRequested) { requestNext(SceneId::Quit);     return false; }
     if (nextDay)       { requestNext(SceneId::MainGame); return false; }

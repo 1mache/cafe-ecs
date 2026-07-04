@@ -4,6 +4,7 @@ namespace cafe
 {
 class AssetManager;
 class PhysicsContext;
+class AudioContext;
 
 /** @brief Microwave mechanic. Must run AFTER deliverySystem() and BEFORE
  *  dragAndDropSystem(), so it consumes a released pat's DragIntent before the
@@ -14,6 +15,6 @@ class PhysicsContext;
  *  boxesOverlap against microwave transforms.
  *  Cook: each busy microwave ticks dt; at heatTime it spits out the same
  *  PastryType with temperature = HEATED_TEMPERATURE. */
-void microwaveSystem(AssetManager& assets, PhysicsContext& physics, float dt);
+void microwaveSystem(AssetManager& assets, PhysicsContext& physics, AudioContext& audio, float dt);
 
 } // namespace cafe

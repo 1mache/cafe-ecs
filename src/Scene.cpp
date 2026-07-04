@@ -33,6 +33,7 @@ SceneId Scene::run()
 
         // actual game stuff
         isRunning = onUpdate(dt);
+        _audioContext.updateMusic(); // keep background music looping seamlessly
 
         // ============= FRAME EQUALIZER ============
 

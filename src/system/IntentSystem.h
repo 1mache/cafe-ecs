@@ -3,7 +3,9 @@
 
 namespace cafe
 {
-void intentSystem(SDL_Renderer* renderer, bool& outExitCalled);
+class AudioContext;
+
+void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& audio);
 
 inline SDL_FPoint mouseWindowToRenderPoint(SDL_Renderer* renderer,
                                            float         windowX,
