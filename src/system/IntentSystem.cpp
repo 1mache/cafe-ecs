@@ -5,6 +5,7 @@
 #include "RenderContext.h"
 #include "SoundAssets.h"
 #include "Transform.h"
+#include "UpgradeState.h"
 #include "UserInput.h"
 
 #include <bagel.h>
@@ -112,16 +113,22 @@ constexpr SDL_Scancode scancodeForIngredient(LiquidIngredient kind)
     }
 }
 
-// Sets the pour state of the pipe whose key matches sc (no-op for other keys).
-void updatePipePourIntent(bagel::Entity e, UserInput& input)
+// Pours via the keyboard by driving the matching Machine button's `pressed`
+// flag — the same persistent flag the mouse uses — so keyboard and mouse pour
+// coexist and a held key survives across frames (SDL key events are edge-only).
+// Locked until the KeyboardPour upgrade is owned.
+void updateKeyboardPourIntent(bagel::Entity e, UserInput& input)
 {
-    const SDL_Scancode myKey = scancodeForIngredient(e.get<LiquidSpawner>().kind);
-    bool& spawnerActive = e.get<LiquidSpawner>().active;
+    if (UpgradeState::level(UpgradeId::KeyboardPour) < 1) return;
 
+    Button& b = e.get<Button>();
+    if (b.kind != ButtonKind::Machine) return;
+
+    const SDL_Scancode myKey = scancodeForIngredient(b.liquid);
     for (SDL_Scancode sc : input.keyDowns)
-        if (sc == myKey) spawnerActive = true;
+        if (sc == myKey) b.pressed = true;
     for (SDL_Scancode sc : input.keyUps)
-        if (sc == myKey) spawnerActive = false;
+        if (sc == myKey) b.pressed = false;
 }
 
 }
@@ -196,15 +203,15 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& aud
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        static const bagel::Mask dragMask        = bagel::MaskBuilder().set<DragIntent>().set<Transform>().build();
-        static const bagel::Mask liqSpawnerMask  = bagel::MaskBuilder().set<LiquidSpawner>().build();
+        static const bagel::Mask dragMask         = bagel::MaskBuilder().set<DragIntent>().set<Transform>().build();
+        static const bagel::Mask buttonMask       = bagel::MaskBuilder().set<Button>().build();
         static const bagel::Mask napkinIntentMask = bagel::MaskBuilder().set<NapkinIntent>().build();
 
         if (e.test(dragMask))
             updateDragIntent(e, input, audio);
 
-        if (e.test(liqSpawnerMask))
-            updatePipePourIntent(e, input);
+        if (e.test(buttonMask))
+            updateKeyboardPourIntent(e, input);
 
         if (e.test(napkinIntentMask))
             updateNapkinIntent(e, input);
