@@ -12,7 +12,8 @@ namespace cafe::sound
     constexpr auto PUT_IN_MICROWAVE = "put_in_microwave.wav";
     constexpr auto MICROWAVE       = "microwave.wav";
     constexpr auto MICROWAVE_END   = "microwave_end.wav";
-    constexpr auto INTRO_MUSIC     = "intro_music.wav";
+    constexpr auto PAPER           = "paper.wav";
+    constexpr auto INTRO_MUSIC     = "intro_music.wav";   // declared; wired later
     constexpr auto MAIN_MUSIC      = "main_music.wav";
     constexpr auto MAIN_MUSIC_2    = "main_music2.wav";
     constexpr auto MAIN_MUSIC_3    = "main_music3.wav";
@@ -26,5 +27,7 @@ namespace cafe::sound
     constexpr float POUR_VOLUME      = 1.0f;
     constexpr float BUTTON_VOLUME    = 0.8f;
     constexpr float GRAB_VOLUME      = 0.9f;
+    constexpr float UPGRADE_VOLUME   = 0.4f;
     constexpr float MICROWAVE_VOLUME = 1.0f;
+    constexpr float PAPER_VOLUME     = 0.8f;
 } // namespace cafe::sound

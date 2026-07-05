@@ -25,7 +25,7 @@ float easeProgress(Tween::Kind kind, float t)
         // easeOutElastic: overshoots target then wobbles in (bouncy)
         if (t <= 0.f) return 0.f;
         if (t >= 1.f) return 1.f;
-        return std::pow(2.f, -10.f * t) * std::sin((t * 10.f - 0.75f) * ELASTIC_C) + 1.f;
+        return std::pow(2.f, -12.f * t) * std::sin((t * 8.f - 0.75f) * ELASTIC_C) + 1.f;
     case Tween::Smooth:
     default:
         // linear

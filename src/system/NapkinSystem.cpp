@@ -20,7 +20,7 @@ namespace cafe
 {
 namespace
 {
-constexpr float FULL_LAYOUT_PROXIMITY    = 0.876f;
+constexpr float FULL_LAYOUT_PROXIMITY    = 0.3f;
 // duration of every napkin Hidden/Toggle/Full leg, tune by feel
 constexpr float NAPKIN_TWEEN_DURATION    = 0.5f;
 
@@ -74,30 +74,6 @@ Transform transformForState(NapkinState s)
 bool sameTarget(const Transform& a, const Transform& b)
 {
     return a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h;
-}
-
-bool isNapkinFullAtLayout(const Transform& t)
-{
-    const NapkinLayout full = layoutForState(NapkinState::Full);
-
-    const float posTolX  = (1.f - FULL_LAYOUT_PROXIMITY) * full.halfW;
-    const float posTolY  = (1.f - FULL_LAYOUT_PROXIMITY) * full.halfH;
-    const float sizeTolW = (1.f - FULL_LAYOUT_PROXIMITY) * full.halfW;
-    const float sizeTolH = (1.f - FULL_LAYOUT_PROXIMITY) * full.halfH;
-
-    if (std::fabs(t.x - full.centerX) > posTolX)
-        return false;
-
-    if (std::fabs(t.y - full.centerY) > posTolY)
-        return false;
-
-    if (std::fabs(t.w - full.halfW) > sizeTolW)
-        return false;
-
-    if (std::fabs(t.h - full.halfH) > sizeTolH)
-        return false;
-
-    return true;
 }
 
 void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
@@ -220,6 +196,7 @@ void napkinSystem(AssetManager& assets, float /*dt*/)
                                         .set<NapkinIntent>()
                                         .set<Transform>()
                                         .build();
+    static const Transform fullXform = transformForState(NapkinState::Full);
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -237,14 +214,24 @@ void napkinSystem(AssetManager& assets, float /*dt*/)
         if (!onTarget) // state changed: (re)start/retarget from current transform
         {
             const Tween tw{ .original = t, .target = desired,
-                             .kind = Tween::Exponential, .duration = NAPKIN_TWEEN_DURATION };
+                             .kind = Tween::Spring, .duration = NAPKIN_TWEEN_DURATION };
             if (e.has<Tween>())
                 e.get<Tween>() = tw;
             else
                 e.add(tw);
         }
 
-        if (!isNapkinFullAtLayout(t))
+        // heading to (or resting at) full layout, far enough along to reveal/hide the cheat
+        // sheet. Uses the tween's linear progress, not the eased transform: Spring's
+        // easeOutElastic overshoots and wobbles past the target, so a transform-distance check
+        // crosses the threshold multiple times instead of once, clearing the sheet right after
+        // it was created.
+        const bool atFullLayout = e.has<Tween>()
+            ? sameTarget(e.get<Tween>().target, fullXform)
+                  && getTweenProgress(e.get<Tween>()) >= FULL_LAYOUT_PROXIMITY
+            : sameTarget(t, fullXform);
+
+        if (!atFullLayout)
             clearCheatSheet();
         else if (intent.state == NapkinState::FullBlank)
             createCheatSheet(assets, e);
