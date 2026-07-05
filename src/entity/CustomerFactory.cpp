@@ -25,12 +25,17 @@ constexpr auto TEX          = "customers.png";
 constexpr auto SPRITE_DATA  = "customers.json";
 
 
-// from the spritesheet takes a random customer sprite
+// from the spritesheet takes a random customer sprite.
+// Each customer occupies FRAMES_PER_CUSTOMER consecutive frames (mouth shut/open),
+// so the customer count comes from the frame count -- NOT the tag count. The sheet's
+// frameTags include overlapping group tags (male/female) and live in an unordered map,
+// so tag index has no 1:1 relation to frames; multiplying it by 2 could overshoot the
+// last frame and fatal in getFrameRect.
 int getRandomCustomerId(const SpriteSheet& spriteSheet)
 {
     constexpr int FRAMES_PER_CUSTOMER = 2;
-    int nTags = static_cast<int>(std::ranges::size(spriteSheet.tags()));
-    auto dist = std::uniform_int_distribution(0,  nTags - 1);
+    int nCustomers = spriteSheet.frameCount() / FRAMES_PER_CUSTOMER;
+    auto dist = std::uniform_int_distribution(0, nCustomers - 1);
 
     return dist(getRng()) * FRAMES_PER_CUSTOMER;
 }
