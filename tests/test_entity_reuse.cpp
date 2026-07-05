@@ -1,25 +1,33 @@
 #include <catch2/catch_test_macros.hpp>
 #include <bagel.h>
 
-// Root-cause reproduction for the "cup/pastry/customer vanish mid-game" bug.
+// Root-cause reproduction for the "cup/pastry/customer vanish mid-game" bug,
+// and a regression test for destroySystem's fix.
 //
 // bagel entity ids are bare, REUSED indices with NO generation counter
 // (bagel.h: `struct ent_type { id_type id; };`, and createEntity() pops a freed
 // index straight off the freelist). So any stored entity reference
 // (ChildOf.parent, Liquid.holdingContainer, CheckCoffeeIntent.customer, ...)
 // becomes a dangling index the moment its target is destroyed, and silently
-// retargets to whatever new entity reuses that index. destroyDeliveredItem()
-// (Entities.cpp) then destroys victims purely by `storedRef.id == target.id`,
-// so a reused index can cascade a destroy into unrelated entities.
+// retargets to whatever new entity reuses that index.
 //
-// These tests pin that mechanism deterministically, with no timing luck. They
-// use tiny local stand-in components so the test needs only bagel.h (the real
-// components drag in box2d/SDL, which unit_tests does not link).
+// destroySystem (DestroySystem.cpp) avoids this by never destroying anything
+// while it's still discovering dependents: it tags a Destroy marker, closes
+// over ChildOf/holdingContainer references by checking whether the CURRENT
+// owner at that index has the tag, and only calls the real destroy once the
+// whole closure is computed. So an id can never be freed and reused mid-pass,
+// and a stale reference to an unrelated (non-tagged) entity that happens to
+// now occupy a reused index is correctly ignored.
+//
+// These tests pin both properties deterministically, with no timing luck.
+// They use tiny local stand-in components so the test needs only bagel.h (the
+// real components drag in box2d/SDL, which unit_tests does not link).
 
 namespace reuse_test
 {
-struct Customer {};   // stands in for a real customer entity
-struct Cup {};        // stands in for a real cup entity
+struct Customer {};  // stands in for a real customer entity
+struct Cup {};       // stands in for a real cup entity
+struct Destroy {};   // stands in for cafe::Destroy
 // Mirrors ChildOf.parent / Liquid.holdingContainer: a component that stores a
 // raw entity index across frames.
 struct Ref { bagel::ent_type target{ bagel::ent_type{ -1 } }; };
@@ -27,9 +35,39 @@ struct Ref { bagel::ent_type target{ bagel::ent_type{ -1 } }; };
 
 template <> struct bagel::Storage<reuse_test::Customer> final : NoInstance { using type = TaggedStorage<reuse_test::Customer>; };
 template <> struct bagel::Storage<reuse_test::Cup>      final : NoInstance { using type = TaggedStorage<reuse_test::Cup>; };
+template <> struct bagel::Storage<reuse_test::Destroy>  final : NoInstance { using type = TaggedStorage<reuse_test::Destroy>; };
 template <> struct bagel::Storage<reuse_test::Ref>      final : NoInstance { using type = SparseStorage<reuse_test::Ref>; };
 
 using namespace reuse_test;
+
+namespace
+{
+// Mirrors destroySystem's closure: tag anything whose Ref.target currently
+// has Destroy, looping to a fixpoint. Never destroys anything itself.
+void closeOverRefs()
+{
+    static const bagel::Mask refMask     = bagel::MaskBuilder().set<Ref>().build();
+    static const bagel::Mask destroyMask = bagel::MaskBuilder().set<Destroy>().build();
+
+    bool changed = true;
+    while (changed)
+    {
+        changed = false;
+        for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+        {
+            if (e.test(destroyMask)) continue;
+            if (!e.test(refMask)) continue;
+
+            const auto target = e.get<Ref>().target;
+            if (target.id < 0) continue;
+            if (!bagel::Entity{ target }.has<Destroy>()) continue;
+
+            e.addAll(Destroy{});
+            changed = true;
+        }
+    }
+}
+} // namespace
 
 TEST_CASE("bagel hands a destroyed entity's index straight back (no generation)")
 {
@@ -53,42 +91,37 @@ TEST_CASE("bagel hands a destroyed entity's index straight back (no generation)"
     b.destroy();
 }
 
-TEST_CASE("destroy-by-index sweep hits an unrelated entity after index reuse")
+TEST_CASE("destroySystem closure tags a real dependent, ignores a stale ref to a reused index")
 {
-    // Mirrors destroyDeliveredItem (Entities.cpp): for a cup it collects every
-    // entity whose stored reference `.id == cup.id`. Here a child stores a
-    // reference to a customer; the customer leaves; a fresh cup reuses the freed
-    // index; the cup's destroy sweep now matches the child that never belonged
-    // to it -> the mass-deletion smoking gun.
-
-    auto customer = bagel::Entity::create();
-    customer.add(Customer{});
-    const int customerId = customer.entity().id;
+    // Real dependent: child.Ref points at a parent tagged Destroy this frame.
+    auto parent = bagel::Entity::create();
+    parent.add(Destroy{});
 
     auto child = bagel::Entity::create();
-    child.add(Ref{ .target = bagel::ent_type{ customerId } });
+    child.add(Ref{ .target = parent.entity() });
 
-    customer.destroy();                       // frees customerId
+    // Stale dependent: some OTHER, unrelated entity from a past "frame" was
+    // destroyed and its index got reused by a fresh entity that is NOT tagged
+    // Destroy. A leftover Ref to that old index must not falsely cascade.
+    auto longGone = bagel::Entity::create();
+    const int reusedId = longGone.entity().id;
+    longGone.destroy();
 
-    auto cup = bagel::Entity::create();       // reuses customerId (LIFO)
-    cup.add(Cup{});
-    const int cupId = cup.entity().id;
-    REQUIRE(cupId == customerId);
+    auto freshOwner = bagel::Entity::create(); // reuses reusedId (LIFO)
+    REQUIRE(freshOwner.entity().id == reusedId);
+    freshOwner.add(Cup{});                      // alive, unrelated, not tagged Destroy
 
-    // The exact predicate destroyDeliveredItem uses to collect victims.
-    static const bagel::Mask refMask = bagel::MaskBuilder().set<Ref>().build();
-    bool childWouldBeDestroyed = false;
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(refMask)) continue;
-        if (e.get<Ref>().target.id == cupId)
-            childWouldBeDestroyed = true;
-    }
+    auto staleChild = bagel::Entity::create();
+    staleChild.add(Ref{ .target = bagel::ent_type{ reusedId } });
 
-    // BUG: the child never belonged to this cup, yet it matches by index and
-    // would be swept into the cup's destroy.
-    REQUIRE(childWouldBeDestroyed);
+    closeOverRefs();
 
+    REQUIRE(child.has<Destroy>());              // real dependent: cascaded
+    REQUIRE_FALSE(staleChild.has<Destroy>());    // stale ref: correctly ignored
+    REQUIRE(freshOwner.has<Cup>());              // untouched by the closure
+
+    parent.destroy();
     child.destroy();
-    cup.destroy();
+    freshOwner.destroy();
+    staleChild.destroy();
 }

@@ -118,8 +118,9 @@ bool cafe::MainGameScene::onUpdate(float dt)
     recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup
     gradePopupSystem();           // spawn graded text + particle burst at the customer
     reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
-    positionHierarchySystem();            // children follow parents; orphan children of Leaving
-    customerCleanupSystem();      // destroy all Leaving entities
+    positionHierarchySystem();            // children follow parents
+    customerCleanupSystem();      // tag Leaving entities Destroy
+    destroySystem();              // closure + destroy everything tagged Destroy this frame
     cupAlphaSystem();             // fade cup front when contents > 0
 
     SDL_RenderClear(renderer);

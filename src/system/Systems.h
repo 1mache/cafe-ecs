@@ -6,6 +6,7 @@
 #include "CoffeeMachineSystem.h"
 #include "CustomerSystem.h"
 #include "DayCycleSystem.h"
+#include "DestroySystem.h"
 #include "DragAndDropSystem.h"
 #include "IntentSystem.h"
 #include "LiquidSystem.h"

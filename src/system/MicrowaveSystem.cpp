@@ -3,7 +3,7 @@
 #include "AssetManager.h"
 #include "AudioContext.h"
 #include "Components.h"
-#include "Entities.h"      // createPastry, destroyDeliveredItem
+#include "Entities.h"      // createPastry
 #include "RenderLayers.h"
 #include "SoundAssets.h"
 #include "SupplySystem.h"  // supply::MICROWAVE_SPAWN_POS
@@ -74,8 +74,6 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, AudioContext
             microwaves.push_back(e);
 
     // --- Intake: a released pastry dropped onto a microwave ---
-    // Defer destruction until after iteration (structural change), like deliverySystem.
-    std::optional<bagel::ent_type> absorbed;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(pastryMask)) continue;
@@ -134,10 +132,8 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, AudioContext
         target.get<Drawable>().srcRect =
             assets.getSpriteSheet(OVEN_SPRITE_DATA).getFrameRect(OVEN_COOKING_SPRITE_ID);
         intent.dropSpaceEntity = std::nullopt;
-        absorbed = e.entity();
+        e.addAll(Destroy{}); // destroySystem cascades to any children
     }
-    if (absorbed)
-        destroyDeliveredItem(*absorbed);
 
     // --- Cook + update number + spit-out ---
     const SpriteSheet& numbersSheet = assets.getSpriteSheet(OVEN_NUMBERS_DATA);
@@ -157,10 +153,10 @@ void microwaveSystem(AssetManager& assets, PhysicsContext& physics, AudioContext
             audio.stopMicrowave();
             audio.play(sound::MICROWAVE_END);
 
-            // Destroy the number overlay and glow.
-            m.display.destroy();
+            // Tag the number overlay and glow for destroySystem (end of frame).
+            m.display.addAll(Destroy{});
             m.display = bagel::Entity{ bagel::ent_type(-1) };
-            m.glow.destroy();
+            m.glow.addAll(Destroy{});
             m.glow = bagel::Entity{ bagel::ent_type(-1) };
 
             // Restore idle oven sprite.

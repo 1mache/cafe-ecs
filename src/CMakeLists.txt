@@ -16,6 +16,7 @@ target_sources(
     component/CleanupZone.h
     component/Behavior.h
     component/DayProgress.h
+    component/Destroy.h
     component/CheckCoffeeIntent.h
     component/CheckPastryIntent.h
     component/Checkmark.h
@@ -92,6 +93,8 @@ target_sources(
     system/MenuSystem.cpp
     system/DayCycleSystem.h
     system/DayCycleSystem.cpp
+    system/DestroySystem.h
+    system/DestroySystem.cpp
     system/CoffeeMachineSystem.cpp
     system/CoffeeMachineSystem.h
     system/CupSystem.h

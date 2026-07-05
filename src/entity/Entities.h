@@ -21,13 +21,7 @@ namespace cafe
 {
 /** @brief Destroys an entity that has a PhysicsBody.
  *  Entity::destroy() alone leaks the b2Body — always use this helper. */
-void destroyPhysicalEntity(bagel::ent_type id);
-
-/** @brief Destroys a delivered item immediately.
- *  If the item is a Cup, also destroys its liquid drops, ice cubes, and child
- *  sprites so no orphaned particles or bodies remain.
- *  For any other item type (e.g. pastry), destroys only the item itself. */
-void destroyDeliveredItem(bagel::ent_type id);
+void destroyPhysicalEntity(bagel::ent_type ent);
 
 /** @brief Destroys every live entity (and its physics body, if it has one).
  *  Tears down the whole ECS for a scene switch. Collects all entity ids first,

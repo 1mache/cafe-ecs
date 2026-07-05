@@ -12,6 +12,7 @@
 #include "Cup.h"
 #include "CustomerSpawner.h"
 #include "DayProgress.h"
+#include "Destroy.h"
 #include "DragIntent.h"
 #include "DragItemType.h"
 #include "Drawable.h"

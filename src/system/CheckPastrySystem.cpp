@@ -1,14 +1,11 @@
 #include "CheckPastrySystem.h"
 #include "Components.h"
 #include "Entities.h"
-#include <vector>
 
 namespace cafe
 {
 void checkPastrySystem()
 {
-    std::vector<bagel::ent_type> toDestroy;
-
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<Pastry>().set<CheckPastryIntent>().build();
 
@@ -23,7 +20,7 @@ void checkPastrySystem()
         if (!customer.has<Order>() || !customer.has<OrderGrade>())
         {
             e.del<CheckPastryIntent>();
-            toDestroy.push_back(e.entity());
+            e.addAll(Destroy{});
             continue;
         }
 
@@ -47,11 +44,7 @@ void checkPastrySystem()
         markPastryServed(grade, slot);
 
         e.del<CheckPastryIntent>();
-        toDestroy.push_back(e.entity());
+        e.addAll(Destroy{});
     }
-
-    // Destroy accepted (or orphaned) pastries after the iteration is complete.
-    for (auto id : toDestroy)
-        destroyDeliveredItem(id);
 }
 } // namespace cafe

@@ -8,11 +8,9 @@
 #include "SoundAssets.h"
 #include "Utils.h"
 
-#include <algorithm>
 #include <bagel.h>
 #include <box2d/box2d.h>
 #include <cstdint>
-#include <vector>
 
 namespace cafe
 {
@@ -84,12 +82,6 @@ void liquidSensorEventSystem(PhysicsContext& physics)
     // so PhysicsContext gathers every sub-step's events across the frame.
     const auto beginEvents = physics.sensorBeginEvents();
 
-    // A drop can show up in more than one begin-event per step (e.g. it enters
-    // CUP_INSIDE while also brushing CLEANUP, or overlaps two cups). Collect
-    // the drops to destroy, dedupe, then destroy once per id.
-    std::vector<bagel::ent_type> toDestroy;
-    toDestroy.reserve(beginEvents.size());
-
     static const bagel::Mask liquidMask = bagel::MaskBuilder().set<Liquid>().build();
     static const bagel::Mask cupMask    = bagel::MaskBuilder().set<Cup>().build();
     static const bagel::Mask iceMask    = bagel::MaskBuilder().set<Ice>().build();
@@ -143,25 +135,11 @@ void liquidSensorEventSystem(PhysicsContext& physics)
         }
         else if (sensorCat & filter::CLEANUP)
         {
-            if (visitorIsIce)
-                SDL_Log("Cleanup: destroyed entity %d (Ice)", visitorId.id);
-            else
-                SDL_Log("Cleanup: destroyed entity %d (Liquid, kind=%d)",
-                         visitorId.id, static_cast<int>(visitor.get<Liquid>().kind));
-
-            toDestroy.push_back(visitorId);
+            // A drop can show up in more than one begin-event this frame (e.g.
+            // brushing CLEANUP twice); Destroy is a tag, so re-tagging is a
+            // no-op. destroySystem (end of frame) does the actual destroy + logs it.
+            visitor.addAll(Destroy{});
         }
     }
-
-    // sort + unique + erase = standard dedupe practice
-    std::sort(toDestroy.begin(), toDestroy.end(),
-              [](bagel::ent_type a, bagel::ent_type b) { return a.id < b.id; });
-    toDestroy.erase(
-        std::unique(toDestroy.begin(), toDestroy.end(),
-                    [](bagel::ent_type a, bagel::ent_type b) { return a.id == b.id; }),
-        toDestroy.end());
-
-    for (auto id : toDestroy)
-        destroyPhysicalEntity(id);
 }
 } // namespace cafe

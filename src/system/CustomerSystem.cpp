@@ -331,7 +331,7 @@ void customerCleanupSystem()
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(leavingMask)) continue;
-        destroyPhysicalEntity(e.entity());
+        e.addAll(Destroy{}); // destroySystem (end of frame) cascades to children (bubble, order icons)
     }
 }
 

@@ -206,15 +206,11 @@ void clearCheatSheet()
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<CheatSheetIcon>().build();
 
-    std::vector<bagel::ent_type> toDestroy;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(mask)) continue;
-        toDestroy.push_back(e.entity());
+        e.addAll(Destroy{});
     }
-
-    for (const bagel::ent_type id : toDestroy)
-        bagel::Entity(id).destroy();
 }
 } // namespace
 
