@@ -58,7 +58,8 @@ constexpr GradeTier gradeTier(int rating, int itemCount, bool succeeded)
     return GradeTier::Meh;
 }
 
-/** Returns the unserved drink slot whose recipe best matches overview ratios, or -1. */
+/** Returns the unserved drink slot whose recipe best matches overview ratios, or -1.
+ *  Among equal ratio matches, prefers the slot whose ordered temperature matches the cup. */
 int matchDrinkSlotByRatio(const Order& order, const OrderGrade& grade, const CoffeeOverview& overview);
 
 /** Returns the unserved pastry slot matching type/temp, or the last type-only match, or -1. */
