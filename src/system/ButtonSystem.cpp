@@ -68,7 +68,7 @@ void buttonDispatchSystem(AssetManager& assets, PhysicsContext* physics, AudioCo
         case ButtonKind::Shop:
             b.pressed = false;
             if (UpgradeState::tryBuy(b.upgradeId)) // no-op + false if unaffordable or maxed
-                audio.play(sound::BUY_UPGRADE);
+                audio.play(sound::BUY_UPGRADE, sound::UPGRADE_VOLUME);
             break;
 
         case ButtonKind::Sound:

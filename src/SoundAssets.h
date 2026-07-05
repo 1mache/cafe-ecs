@@ -21,5 +21,6 @@ namespace cafe::sound
     constexpr float POUR_VOLUME      = 1.0f;
     constexpr float BUTTON_VOLUME    = 0.8f;
     constexpr float GRAB_VOLUME      = 0.9f;
+    constexpr float UPGRADE_VOLUME   = 0.4f;
     constexpr float MICROWAVE_VOLUME = 1.0f;
 } // namespace cafe::sound
