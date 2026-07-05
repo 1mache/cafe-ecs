@@ -6,7 +6,7 @@
 #include "Entities.h"      // createPastry
 #include "RenderLayers.h"
 #include "SoundAssets.h"
-#include "SupplySystem.h"  // supply::MICROWAVE_SPAWN_POS
+#include "Supply.h"        // supply::MICROWAVE_SPAWN_POS
 #include "Transform.h"     // texToWorldScale
 #include <bagel.h>
 #include <algorithm>       // std::clamp

@@ -1,5 +1,6 @@
 #include "IntentSystem.h"
 #include "AudioContext.h"
+#include "ButtonSystem.h"   // updateButtonsFromMouse
 #include "Components.h"
 #include "RenderContext.h"
 #include "SoundAssets.h"
@@ -123,38 +124,6 @@ void updatePipePourIntent(bagel::Entity e, UserInput& input)
         if (sc == myKey) spawnerActive = false;
 }
 
-void updateMachineButtonIntent(bagel::Entity e, UserInput& input, AudioContext& audio)
-{
-    auto& button = e.get<MachineButton>();
-    const WorldPos worldMouse =
-        screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
-
-    if (input.controls & controlBit(Controls::MouseButtonDown) &&
-        isPointInsideTransform(worldMouse, e.get<Transform>()))
-    {
-        button.pressed = true;
-        audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
-    }
-    else if (input.controls & controlBit(Controls::MouseButtonUp))
-    {
-        button.pressed = false;
-    }
-}
-
-// Flags a supply button as clicked this frame; supplyButtonSystem spawns + clears it.
-void updateSpawnButtonIntent(bagel::Entity e, UserInput& input, AudioContext& audio)
-{
-    const WorldPos worldMouse =
-        screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
-
-    if (input.controls & controlBit(Controls::MouseButtonDown) &&
-        isPointInsideTransform(worldMouse, e.get<Transform>()))
-    {
-        e.get<SpawnButton>().justPressed = true;
-        audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
-    }
-}
-
 }
 void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& audio)
 {
@@ -215,12 +184,20 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& aud
     SDL_GetMouseState(&wx, &wy);
     input.mousePos = mouseWindowToRenderPoint(renderer, wx, wy);
 
+    // Single shared hit-test for every Button entity (Machine kind is the only
+    // held one here; Spawn/Menu/Shop/Sound don't live in this scene's mask but
+    // updateButtonsFromMouse handles them uniformly regardless).
+    const WorldPos worldMouse =
+        screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
+    updateButtonsFromMouse(worldMouse,
+                           input.controls & controlBit(Controls::MouseButtonDown),
+                           input.controls & controlBit(Controls::MouseButtonUp),
+                           audio);
+
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         static const bagel::Mask dragMask        = bagel::MaskBuilder().set<DragIntent>().set<Transform>().build();
         static const bagel::Mask liqSpawnerMask  = bagel::MaskBuilder().set<LiquidSpawner>().build();
-        static const bagel::Mask machineButton   = bagel::MaskBuilder().set<MachineButton>().build();
-        static const bagel::Mask spawnButtonMask = bagel::MaskBuilder().set<SpawnButton>().set<Transform>().build();
         static const bagel::Mask napkinIntentMask = bagel::MaskBuilder().set<NapkinIntent>().build();
 
         if (e.test(dragMask))
@@ -228,12 +205,6 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& aud
 
         if (e.test(liqSpawnerMask))
             updatePipePourIntent(e, input);
-
-        if (e.test(machineButton))
-            updateMachineButtonIntent(e, input, audio);
-
-        if (e.test(spawnButtonMask))
-            updateSpawnButtonIntent(e, input, audio);
 
         if (e.test(napkinIntentMask))
             updateNapkinIntent(e, input);

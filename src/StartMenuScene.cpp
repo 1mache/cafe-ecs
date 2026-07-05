@@ -1,7 +1,8 @@
 #include "StartMenuScene.h"
 
 #include "AssetManager.h"
-#include "Components.h"    // MenuButton, SoundToggleButton, Transform, Drawable, TextLabel
+#include "ButtonSystem.h"  // buttonDispatchSystem
+#include "Components.h"    // Button, Transform, Drawable, TextLabel
 #include "Entities.h"      // destroyAllGameEntities, createBg
 #include "Glyph.h"         // GLYPH_H
 #include "MenuSystem.h"
@@ -95,24 +96,43 @@ void StartMenuScene::onInit()
     }
 
     // START / EXIT buttons: square + tag + centred label.
-    makeSquare(START_POS, BTN_HALF_W, BTN_HALF_H).add(MenuButton{ MenuAction::Start });
+    makeSquare(START_POS, BTN_HALF_W, BTN_HALF_H).add(Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::Start });
     addCenteredLabel(START_POS, "START", cam);
 
-    makeSquare(EXIT_POS, BTN_HALF_W, BTN_HALF_H).add(MenuButton{ MenuAction::Exit });
+    makeSquare(EXIT_POS, BTN_HALF_W, BTN_HALF_H).add(Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::Exit });
     addCenteredLabel(EXIT_POS, "EXIT", cam);
 
     // Sound toggle: no label (per the sketch); soundToggleSystem paints its
     // on/off tint every frame, including the first.
-    makeSquare(SOUND_POS, SOUND_HALF, SOUND_HALF).add(SoundToggleButton{});
+    makeSquare(SOUND_POS, SOUND_HALF, SOUND_HALF).add(Button{ .kind = ButtonKind::Sound });
 }
 
 bool StartMenuScene::onUpdate(float /*dt*/)
 {
     SDL_Renderer* renderer = getRenderer();
 
-    bool start = false, exit = false;
-    menuInputSystem(renderer, start, exit);
-    soundToggleSystem(getAudioContext());
+    bool exit = false;
+    menuInputSystem(renderer, exit, getAudioContext());
+
+    // Thin per-scene Menu read: map Button{kind==Menu}.menuAction -> start/exit.
+    bool start = false;
+    static const bagel::Mask menuMask = bagel::MaskBuilder().set<Button>().build();
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(menuMask)) continue;
+        auto& b = e.get<Button>();
+        if (b.kind != ButtonKind::Menu || !b.pressed) continue;
+        b.pressed = false;
+        switch (b.menuAction)
+        {
+        case MenuAction::Start: start = true; break;
+        case MenuAction::Exit:  exit  = true; break;
+        default: break; // NextDay is not raised in the start menu
+        }
+    }
+
+    soundToggleSystem();
+    buttonDispatchSystem(getAssetManager(), nullptr, getAudioContext()); // no PhysicsContext here: no Spawn buttons in this scene
 
     if (exit)  { requestNext(SceneId::Quit);     return false; }
     if (start) { requestNext(SceneId::MainGame); return false; }

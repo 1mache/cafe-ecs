@@ -33,32 +33,32 @@ constexpr WorldPos BUTTON_OFFSET[INGREDIENT_COUNT] = {
     {  1.08f, 1.2f },  // Milk
 };
 
-bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, LiquidIngredient kind)
+bagel::Entity createPipe(WorldPos machinePos, bagel::Entity& machineEnt, LiquidIngredient liqKind)
 {
-    const WorldPos off = PIPE_OFFSET[static_cast<size_t>(kind)];
+    const WorldPos off = PIPE_OFFSET[static_cast<size_t>(liqKind)];
     auto ent = bagel::Entity::create();
     ent.addAll(
         Transform{ .x = machinePos.x, .y = machinePos.y, .w = 0.f, .h = 0.f },
-        LiquidSpawner{ .kind = kind, .interval = 0.05f, .accumulator = 0.f,
+        LiquidSpawner{ .kind = liqKind, .interval = 0.05f, .accumulator = 0.f,
                        .active = false, .offset = {} },
         ChildOf(machineEnt, {off.x, off.y}, true)
     );
     return ent;
 }
 
-bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Entity& machineEnt, LiquidIngredient kind)
+bagel::Entity createButton(AssetManager& assets ,WorldPos machinePos, bagel::Entity& machineEnt, LiquidIngredient liqKind)
 {
     auto& tex = assets.getTexture(BUTTON_TEX);
-    const auto buttonTexId = static_cast<float>(BUTTON_ON_TEX_ID[static_cast<size_t>(kind)]);
+    const auto buttonTexId = static_cast<float>(BUTTON_ON_TEX_ID[static_cast<size_t>(liqKind)]);
     SDL_FRect srcRect{ .x = buttonTexId * MACHINE_BUTTON_DIMS.x, .y = 0, .w = MACHINE_BUTTON_DIMS.x, .h = MACHINE_BUTTON_DIMS.y };
-    const WorldPos off = BUTTON_OFFSET[static_cast<size_t>(kind)];
+    const WorldPos off = BUTTON_OFFSET[static_cast<size_t>(liqKind)];
     auto ent = bagel::Entity::create();
     ent.addAll(
         Drawable{ tex.get(), srcRect, layer::STATIC_OVERLAY},
         Transform{ .x = machinePos.x, .y = machinePos.y,
                    .w = texToWorldScale(MACHINE_BUTTON_DIMS.x),
                    .h = texToWorldScale(MACHINE_BUTTON_DIMS.y) },
-        MachineButton{ kind},
+        Button{ .kind = ButtonKind::Machine, .liquid = liqKind },
         ChildOf(machineEnt, {off.x, off.y}, true)
     );
     return ent;

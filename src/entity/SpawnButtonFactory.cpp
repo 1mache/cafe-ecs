@@ -4,7 +4,7 @@
 #include "PhysicsContext.h"
 #include "RenderLayers.h"
 #include "SpriteDims.h"
-#include "SupplySystem.h"
+#include "Supply.h"
 #include "Texture.h"
 #include "AssetManager.h"
 
@@ -46,7 +46,7 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
 
     auto ent = bagel::Entity::create();
     ent.add(
-        SpawnButton{ .item = item, .spawnSlotSensor = slotSensor, .spawnPos = spawnPos }
+        Button{ .kind = ButtonKind::Spawn, .dropType = item, .spawnSlotSensor = slotSensor, .spawnPos = spawnPos }
     );
 
     if (item == DropType::Cup)

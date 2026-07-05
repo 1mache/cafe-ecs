@@ -7,6 +7,7 @@
 #include "Menu.h"
 #include "PhysicsContext.h"
 #include "SoundAssets.h"
+#include "Supply.h"
 #include "Systems.h"
 #include "Texture.h"
 
@@ -80,8 +81,9 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
     // Rotate the pastry TV before reading it: keeps the shown pastry current.
     pastryTvSystem(getAssetManager(), dt);
-    // Click a supply button to drop a fresh cup/ice into a free slot.
-    supplyButtonSystem(getAssetManager(), _physics);
+    // Consume every pressed Button that isn't Menu/Machine: buys (Shop, none here),
+    // toggles mute (Sound, none here), and drops a fresh cup/ice into a free slot (Spawn).
+    buttonDispatchSystem(getAssetManager(), &_physics, getAudioContext());
     // Pastry has its own system: its button is the TV icon, spawns the shown type.
     pastrySupplySystem(getAssetManager(), _physics);
 

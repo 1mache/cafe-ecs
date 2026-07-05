@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Behavior.h"
+#include "Button.h"
 #include "CheckCoffeeIntent.h"
 #include "CheckPastryIntent.h"
 #include "Checkmark.h"
@@ -25,8 +26,6 @@
 #include "Leaving.h"
 #include "Lifetime.h"
 #include "Liquid.h"
-#include "MachineButton.h"
-#include "MenuButton.h"
 #include "Microwave.h"
 #include "MoneyLabel.h"
 #include "NapkinIntent.h"
@@ -37,9 +36,6 @@
 #include "Particle.h"
 #include "PhysicsBody.h"
 #include "Sensor.h"
-#include "ShopButton.h"
-#include "SoundToggleButton.h"
-#include "SpawnButton.h"
 #include "TextLabel.h"
 #include "Transform.h"
 #include "UpgradeStatusLabel.h"

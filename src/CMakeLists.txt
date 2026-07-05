@@ -25,11 +25,8 @@ target_sources(
     component/DragItemType.h
     component/DropSpace.h
     component/Falling.h
-    component/SpawnButton.h
-    component/SpawnButton.cpp
-    component/ShopButton.h
-    component/MenuButton.h
-    component/SoundToggleButton.h
+    component/Button.h
+    component/Button.cpp
     component/TextLabel.h
     component/MoneyLabel.h
     component/UpgradeStatusLabel.h
@@ -81,8 +78,8 @@ target_sources(
     system/DragAndDropSystem.cpp
     system/IntentSystem.h
     system/IntentSystem.cpp
-    system/SupplySystem.h
-    system/SupplySystem.cpp
+    system/ButtonSystem.h
+    system/ButtonSystem.cpp
     system/UpgradeSystem.h
     system/UpgradeSystem.cpp
     system/SensorSystem.h
@@ -166,6 +163,7 @@ target_sources(
     PhysicsContext.cpp
 
     WorldPos.h
+    Supply.h
 
     Scene.h
     Scene.cpp

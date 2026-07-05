@@ -4,9 +4,6 @@
 
 namespace cafe
 {
-class AssetManager;
-class PhysicsContext;
-
 // --- Supply layout (tune positions in-editor; world units, negative y = down) ---
 namespace supply
 {
@@ -36,9 +33,4 @@ inline constexpr WorldPos MICROWAVE_SPAWN_POS = {2.3f, -0.5f};
 // button spawns whichever it currently shows. Tunable — nudge by observation.
 inline constexpr WorldPos PASTRY_TV_POS = {8.3f, -2.4f};
 } // namespace supply
-
-/** @brief Summons a cup/ice into the first free supply slot when its button was
- *  clicked this frame (SpawnButton.justPressed, set by intentSystem). Pastry has
- *  its own pastrySupplySystem since its button is the pastry-TV icon. */
-void supplyButtonSystem(AssetManager& assets, PhysicsContext& physics);
 } // namespace cafe

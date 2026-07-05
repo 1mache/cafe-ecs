@@ -6,14 +6,10 @@ namespace cafe
 {
 class AudioContext;
 
-/** @brief Single SDL poll for the shop screen (parallels intentSystem). Converts
- *  the mouse to world space and hit-tests every ShopButton / MenuButton
- *  Transform. Sets ShopButton.justPressed on a hit; sets outNextDay when a
- *  MenuAction::NextDay button (or Enter/Space) is pressed; sets outExit on
- *  window close. Plays a click on any button hit. */
+/** @brief Single SDL poll for the shop screen (parallels menuInputSystem).
+ *  Converts a mouse-down to world space and calls updateButtonsFromMouse over
+ *  every Button entity. Sets outNextDay on Enter/Space (the Shop/Menu Button
+ *  hits themselves are read by DayReportScene afterward via Button.pressed).
+ *  Sets outExit on window close. */
 void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit, AudioContext& audio);
-
-/** @brief Consume pressed ShopButtons: buy the upgrade (tryBuy no-ops if
- *  unaffordable or maxed) and clear the flag. Plays a sound only on a real purchase. */
-void shopPurchaseSystem(AudioContext& audio);
 } // namespace cafe

@@ -7,7 +7,7 @@ namespace cafe
 {
 void machineButtonSystem()
 {
-    static const bagel::Mask buttonMask  = bagel::MaskBuilder().set<MachineButton>().build();
+    static const bagel::Mask buttonMask  = bagel::MaskBuilder().set<Button>().build();
     static const bagel::Mask spawnerMask = bagel::MaskBuilder().set<LiquidSpawner>().build();
 
     std::array<bool, static_cast<std::size_t>(LiquidIngredient::count)> currentlyPressed = {};
@@ -16,8 +16,9 @@ void machineButtonSystem()
     {
         if (!btn.test(buttonMask)) continue;
 
-        const auto& button = btn.get<MachineButton>();
-        currentlyPressed[static_cast<size_t>(button.kind)] = button.pressed;
+        const auto& button = btn.get<Button>();
+        if (button.kind != ButtonKind::Machine) continue;
+        currentlyPressed[static_cast<size_t>(button.liquid)] = button.pressed;
     }
 
     for (auto sp = bagel::Entity::first(); !sp.eof(); sp.next())

@@ -1,13 +1,13 @@
-#include "SpawnButton.h"
+#include "Button.h"
 
 #include <box2d/box2d.h>
 
 namespace cafe
 {
-bool consumeSpawnRequest(SpawnButton& button)
+bool consumeSpawnRequest(Button& button)
 {
-    if (!button.justPressed) return false;
-    button.justPressed = false;
+    if (!button.pressed) return false;
+    button.pressed = false;
 
     // slot occupied by another object -> ignore this spawn request
     b2ShapeId overlaps[1];
