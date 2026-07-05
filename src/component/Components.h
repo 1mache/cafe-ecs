@@ -33,6 +33,7 @@
 #include "OrderGrade.h"
 #include "Pastry.h"
 #include "PastryTv.h"
+#include "PatienceDial.h"
 #include "Particle.h"
 #include "PhysicsBody.h"
 #include "Sensor.h"

@@ -115,6 +115,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     particleSystem(dt);           // drift + fade active FX particles
     lifetimeSystem(dt);           // reap expired FX entities
     behaviorSystem(dt);           // tick patience; adds Leaving on timeout
+    patienceDialSystem(getAssetManager()); // bubble dial frame <- remaining patience
     orderSystem();                // all items served -> add Leaving (success)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
     recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup

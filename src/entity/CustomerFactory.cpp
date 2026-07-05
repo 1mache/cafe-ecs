@@ -132,6 +132,16 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     const int pastryFrom = props.getTagBounds("pastry").first;
     const int checkFrame = props.getTagBounds("status").first; // green checkmark
 
+    // Patience dial: badge on the bubble's top-left corner, drained by patienceDialSystem.
+    constexpr float      DIAL_SIZE   = 10.f; // px, ~order-icon size
+    constexpr SDL_FPoint DIAL_OFFSET = { -BUBBLE_DIMS.x / 2.f, BUBBLE_DIMS.y / 2.f - 4.f };
+    const int patienceFrom = props.getTagBounds("patience").first;
+    bagel::Entity::create().addAll(
+        Transform{ .w = texToWorldScale(DIAL_SIZE), .h = texToWorldScale(DIAL_SIZE) },
+        Drawable{ propsTex.get(), props.getFrameRect(patienceFrom), layer::UI3 },
+        ChildOf{ bubble, DIAL_OFFSET },
+        PatienceDial{});
+
     // Each icon carries its frame and, for a main item icon, the order slot it
     // represents (drinkSlot/pastrySlot < 0 for temperature icons). The slot lets
     // us drop a hidden checkmark on top, revealed once that slot is served.

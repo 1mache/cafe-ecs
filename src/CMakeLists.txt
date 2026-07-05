@@ -38,6 +38,7 @@ target_sources(
     component/NapkinIntent.h
     component/Pastry.h
     component/PastryTv.h
+    component/PatienceDial.h
     component/Order.h
     component/OrderGrade.h
     component/OrderGrade.cpp

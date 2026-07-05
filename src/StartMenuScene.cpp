@@ -9,6 +9,7 @@
 #include "RenderContext.h"
 #include "RenderLayers.h"
 #include "RenderSystem.h"  // drawSystem, drawTextSystem
+#include "SoundAssets.h"
 #include "Texture.h"       // Texture::get, getFullSrcRect
 #include "Transform.h"     // screenToWorldPoint, worldToScreenPoint
 #include <SDL3/SDL.h>
@@ -105,6 +106,8 @@ void StartMenuScene::onInit()
     // Sound toggle: no label (per the sketch); soundToggleSystem paints its
     // on/off tint every frame, including the first.
     makeSquare(SOUND_POS, SOUND_HALF, SOUND_HALF).add(Button{ .kind = ButtonKind::Sound });
+
+    getAudioContext().playMusic(sound::INTRO_MUSIC, sound::MUSIC_VOLUME);
 }
 
 bool StartMenuScene::onUpdate(float /*dt*/)
