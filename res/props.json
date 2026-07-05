@@ -241,6 +241,15 @@
     "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 16 },
     "sourceSize": { "w": 16, "h": 16 },
     "duration": 100
+   },
+   {
+    "filename": "props_27.aseprite",
+    "frame": { "x": 48, "y": 64, "w": 16, "h": 16 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 16, "h": 16 },
+    "sourceSize": { "w": 16, "h": 16 },
+    "duration": 100
    }
  ],
  "meta": {
@@ -255,8 +264,8 @@
    { "name": "coffee", "from": 5, "to": 9, "direction": "forward", "color": "#000000ff" },
    { "name": "temp", "from": 10, "to": 11, "direction": "forward", "color": "#000000ff" },
    { "name": "status", "from": 12, "to": 14, "direction": "forward", "color": "#000000ff" },
-   { "name": "menu", "from": 15, "to": 17, "direction": "forward", "color": "#000000ff" },
-   { "name": "patience", "from": 18, "to": 26, "direction": "forward", "color": "#000000ff" }
+   { "name": "menu", "from": 15, "to": 18, "direction": "forward", "color": "#000000ff" },
+   { "name": "patience", "from": 19, "to": 27, "direction": "forward", "color": "#000000ff" }
   ],
   "slices": [
   ]
