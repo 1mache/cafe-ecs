@@ -20,7 +20,7 @@ bool isPointInsideScreenRect(SDL_FPoint p, float x, float y, float w, float h)
            p.y >= y && p.y <= y + h;
 }
 
-void updateNapkinIntent(bagel::Entity e, const UserInput& input)
+void updateNapkinIntent(bagel::Entity e, const UserInput& input, AudioContext& audio)
 {
     auto& intent = e.get<NapkinIntent>();
 
@@ -46,6 +46,7 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input)
             (input.controls & controlBit(Controls::MouseButtonDown)))
         {
             intent.state = NapkinState::FullBlank;
+            audio.play(sound::PAPER, sound::PAPER_VOLUME);
             std::cout << "NapkinIntent: switched to FullBlank (click inside toggle hitbox)\n";
         }
         else if (!isPointInsideScreenRect(input.mousePos,
@@ -63,6 +64,7 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input)
         if (input.controls & controlBit(Controls::MouseButtonDown))
         {
             intent.state = NapkinState::Hidden;
+            audio.play(sound::PAPER, sound::PAPER_VOLUME);
             std::cout << "NapkinIntent: switched to Hidden (click inside full hitbox)\n";
         }
     }
@@ -207,7 +209,7 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& aud
             updatePipePourIntent(e, input);
 
         if (e.test(napkinIntentMask))
-            updateNapkinIntent(e, input);
+            updateNapkinIntent(e, input, audio);
     }
 }
 } // namespace cafe
