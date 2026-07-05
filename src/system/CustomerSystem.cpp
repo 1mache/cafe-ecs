@@ -1,6 +1,8 @@
 #include "CustomerSystem.h"
 #include "AssetManager.h"
 #include "Components.h"
+#include "CustomerFactory.h"
+#include "DayState.h"
 #include "Entities.h"
 #include "MainGameScene.h"
 #include "Menu.h"
@@ -8,6 +10,7 @@
 #include "SpriteSheet.h"
 #include <algorithm>
 #include <bagel.h>
+#include <box2d/box2d.h>
 #include <cmath>
 #include <iostream>
 #include <vector>
@@ -108,14 +111,15 @@ void spawnGradePopup(float cx, float cy, GradeTier tier)
 } // namespace
 
 
-void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float dtSeconds)
+void customerSpawnerSystem(AssetManager& assets, float dtSeconds)
 {
     static const bagel::Mask spawnerMask =
         bagel::MaskBuilder().set<CustomerSpawner>().build();
     static const bagel::Mask customerMask =
         bagel::MaskBuilder().set<Order>().set<Behavior>().build();
 
-    // The seat is "occupied" while any customer exists.
+    // The seat is "occupied" while any customer exists (through its whole
+    // walk-out, since Order+Behavior aren't stripped until destroy).
     int customers = 0;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
         if (e.test(customerMask)) ++customers;
@@ -136,7 +140,7 @@ void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float 
         if (sp.cooldown <= 0.f)
         {
             const Order order = randomOrder();
-            spawnCustomer(assets, physics, sp.seat, order, patienceFor(order));
+            createCustomer(assets, sp.seat, order, patienceFor(order));
             sp.cooldown = sp.interval;
         }
     }
@@ -145,11 +149,17 @@ void customerSpawnerSystem(AssetManager& assets, PhysicsContext& physics, float 
 void behaviorSystem(float dtSeconds)
 {
     static const bagel::Mask behaviorMask =
-        bagel::MaskBuilder().set<Behavior>().build();
+        bagel::MaskBuilder().set<Behavior>().set<Customer>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(behaviorMask)) continue;
+
+        // Patience only runs while seated (Ordering/Mad) — paused during the
+        // walk-in/walk-out legs.
+        const auto state = e.get<Customer>().state;
+        if (state != CustomerState::Ordering && state != CustomerState::Mad)
+            continue;
 
         auto& behavior = e.get<Behavior>();
         behavior.patience -= dtSeconds;
@@ -246,6 +256,7 @@ void deliverySystem()
             if (firstUnservedDrink(order, grade) < 0 || e.has<CheckCoffeeIntent>())
             {
                 rejectItem(e);
+                makeCustomerMad(target);
                 intent.dropSpaceEntity = std::nullopt;
                 continue;
             }
@@ -257,6 +268,7 @@ void deliverySystem()
             if (firstUnservedPastry(order, grade) < 0 || e.has<CheckPastryIntent>())
             {
                 rejectItem(e);
+                makeCustomerMad(target);
                 intent.dropSpaceEntity = std::nullopt;
                 continue;
             }
@@ -336,32 +348,116 @@ void gradePopupSystem()
         spawnGradePopup(s.x, s.y, s.tier);
 }
 
-void reportLeavingCustomers()
+void makeCustomerMad(bagel::Entity customer)
 {
-    static const bagel::Mask leavingMask =
-        bagel::MaskBuilder().set<Leaving>().set<Behavior>().build();
+    if (!customer.has<Customer>()) return;
+    auto& c = customer.get<Customer>();
+    if (c.state != CustomerState::Ordering) return;
+
+    c.state    = CustomerState::Mad;
+    c.madTimer = CUSTOMER_MAD_TIME;
+}
+
+void calmCustomer(bagel::Entity customer)
+{
+    if (!customer.has<Customer>()) return;
+    auto& c = customer.get<Customer>();
+    if (c.state != CustomerState::Mad) return;
+
+    c.state = CustomerState::Ordering; // sprite reset next customerStateSystem tick
+}
+
+void customerStateSystem(AssetManager& assets, PhysicsContext& physics, float dt)
+{
+    static const bagel::Mask mask = bagel::MaskBuilder().set<Customer>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        if (!e.test(leavingMask)) continue;
+        if (!e.test(mask)) continue;
 
-        const auto& behavior = e.get<Behavior>();
-        if (behavior.succeeded)
-            std::cout << "[Order] Customer left SUCCESSFUL — rating: " << behavior.rating << "\n";
-        else
-            std::cout << "[Order] Customer left FAILED (patience ran out) — rating: " << behavior.rating << "\n";
+        auto& customer = e.get<Customer>();
+
+        // Departure edge: fires exactly once, the frame Leaving first appears
+        // on a still-arriving/seated/mad customer.
+        if (e.has<Leaving>() && customer.state != CustomerState::Departing)
+        {
+            const auto& behavior = e.get<Behavior>();
+
+            if (e.has<PhysicsBody>())
+            {
+                b2DestroyBody(e.get<PhysicsBody>().id);
+                e.del<PhysicsBody>();
+            }
+            if (e.has<DropSpace>())  e.del<DropSpace>();
+            if (e.has<OrderGrade>()) e.del<OrderGrade>();
+
+            if (customer.bubble.entity().id >= 0)
+                customer.bubble.addAll(Destroy{});
+
+            const Transform& t = e.get<Transform>();
+            e.add(Tween{ .original = t,
+                         .target   = Transform{ .x = CUSTOMER_EXIT.x, .y = CUSTOMER_EXIT.y, .w = t.w, .h = t.h },
+                         .kind     = Tween::Smooth, .duration = CUSTOMER_WALK_OUT_DURATION });
+
+            DayState::record(behavior.succeeded, behavior.rating);
+            if (behavior.succeeded)
+                std::cout << "[Order] Customer left SUCCESSFUL — rating: " << behavior.rating << "\n";
+            else
+                std::cout << "[Order] Customer left FAILED (patience ran out) — rating: " << behavior.rating << "\n";
+
+            customer.state = CustomerState::Departing;
+            continue;
+        }
+
+        switch (customer.state)
+        {
+        case CustomerState::Arriving:
+            if (!e.has<Tween>()) // walk-in finished
+            {
+                customer.bubble = attachOrderBubble(assets, e);
+                e.add(createTalkingAnimation(customer.spriteBase));
+                makeCustomerDeliverable(physics, e);
+                customer.state = CustomerState::Ordering;
+            }
+            break;
+
+        case CustomerState::Mad:
+            if (!customer.showingMad)
+            {
+                if (e.has<Animation>()) e.del<Animation>(); // stop talking (may have already self-ended)
+                setCustomerFrame(assets, e, customer.spriteBase + 2);
+                customer.showingMad = true;
+            }
+            customer.madTimer -= dt;
+            if (customer.madTimer <= 0.f)
+                customer.state = CustomerState::Ordering;
+            break;
+
+        case CustomerState::Ordering:
+            if (customer.showingMad) // just calmed (timeout or a correct item)
+            {
+                setCustomerFrame(assets, e, customer.spriteBase);
+                customer.showingMad = false;
+            }
+            break;
+
+        case CustomerState::Departing:
+            break;
+        }
     }
 }
 
 void customerCleanupSystem()
 {
     static const bagel::Mask leavingMask =
-        bagel::MaskBuilder().set<Leaving>().build();
+        bagel::MaskBuilder().set<Leaving>().set<Customer>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(leavingMask)) continue;
-        e.addAll(Destroy{}); // destroySystem (end of frame) cascades to children (bubble, order icons)
+        // Destroy only once the walk-out Tween has actually finished.
+        if (e.get<Customer>().state != CustomerState::Departing || e.has<Tween>()) continue;
+        e.addAll(Destroy{}); // destroySystem (end of frame) cascades to children (bubble already gone)
     }
 }
 

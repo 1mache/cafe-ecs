@@ -1,5 +1,6 @@
 #include "CheckPastrySystem.h"
 #include "Components.h"
+#include "CustomerSystem.h"
 #include "Entities.h"
 
 namespace cafe
@@ -35,6 +36,7 @@ void checkPastrySystem()
                 e.get<DragIntent>().dropSpaceEntity = std::nullopt;
             e.del<CheckPastryIntent>();
             rejectItem(e);
+            makeCustomerMad(customer);
             continue;
         }
 
@@ -42,6 +44,7 @@ void checkPastrySystem()
         const bool isHot   = pastry.temperature == Temperature::Hot;
         grade.pastryGrades[slot] = (wantHot == isHot) ? MAX_ITEM_GRADE : PARTIAL_ITEM_GRADE;
         markPastryServed(grade, slot);
+        calmCustomer(customer);
 
         e.del<CheckPastryIntent>();
         e.addAll(Destroy{});

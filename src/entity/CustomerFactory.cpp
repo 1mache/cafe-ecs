@@ -26,21 +26,22 @@ constexpr auto SPRITE_DATA  = "customers.json";
 
 
 // from the spritesheet takes a random customer sprite.
-// Each customer occupies FRAMES_PER_CUSTOMER consecutive frames (mouth shut/open),
+// Each customer occupies FRAMES_PER_CUSTOMER consecutive frames (mouth shut/open/mad),
 // so the customer count comes from the frame count -- NOT the tag count. The sheet's
 // frameTags include overlapping group tags (male/female) and live in an unordered map,
-// so tag index has no 1:1 relation to frames; multiplying it by 2 could overshoot the
+// so tag index has no 1:1 relation to frames; multiplying it by 3 could overshoot the
 // last frame and fatal in getFrameRect.
 int getRandomCustomerId(const SpriteSheet& spriteSheet)
 {
-    constexpr int FRAMES_PER_CUSTOMER = 2;
+    constexpr int FRAMES_PER_CUSTOMER = 3;
     int nCustomers = spriteSheet.frameCount() / FRAMES_PER_CUSTOMER;
     auto dist = std::uniform_int_distribution(0, nCustomers - 1);
 
     return dist(getRng()) * FRAMES_PER_CUSTOMER;
 }
+}
 
-constexpr Animation createTalkingAnimation(int customerId)
+Animation createTalkingAnimation(int customerId)
 {
     AnimationFrame frameMouthShut
     {
@@ -63,7 +64,6 @@ constexpr Animation createTalkingAnimation(int customerId)
         true,
         false
     };
-}
 }
 
 // Attaches a static DropSpace sensor + OrderGrade to an existing client entity so
@@ -95,8 +95,7 @@ void makeCustomerDeliverable(PhysicsContext& physics, bagel::Entity client)
     );
 }
 
-bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
-                           WorldPos pos, Order order, float patience)
+bagel::Entity createCustomer(AssetManager& assets, WorldPos seat, Order order, float patience)
 {
     assert((order.hasDrink || order.hasPastry) && "createClient: order must have at least one item");
 
@@ -104,23 +103,36 @@ bagel::Entity createCustomer(AssetManager& assets, PhysicsContext& physics,
     const SpriteSheet& spriteSheet = assets.getSpriteSheet(TEX, SPRITE_DATA);
     const int customerId = getRandomCustomerId(spriteSheet);
     auto [w, h] = PERSON_DIMS;
+    const float worldW = texToWorldScale(w);
+    const float worldH = texToWorldScale(h);
+
+    const Transform entranceT{ .x = CUSTOMER_ENTRANCE.x, .y = CUSTOMER_ENTRANCE.y, .w = worldW, .h = worldH };
+    const Transform seatT{ .x = seat.x, .y = seat.y, .w = worldW, .h = worldH };
+
+    // No Animation/sensor/OrderGrade yet: customerStateSystem attaches the bubble,
+    // talking anim, and drop-space sensor once this walk-in Tween finishes.
     auto ent = bagel::Entity::create();
     ent.addAll(
-        Transform{.x = pos.x, .y = pos.y, .w = texToWorldScale(w), .h = texToWorldScale(h)},
+        entranceT,
         Drawable{tex.get(), spriteSheet.getFrameRect(customerId), layer::CUSTOMER},
-        createTalkingAnimation(customerId),
         order,
-        Behavior{.patience = patience, .maxPatience = patience});
-
-    makeCustomerDeliverable(physics, ent);
+        Behavior{.patience = patience, .maxPatience = patience},
+        Customer{ .state = CustomerState::Arriving, .spriteBase = customerId },
+        Tween{ .original = entranceT, .target = seatT,
+               .kind = Tween::Smooth, .duration = CUSTOMER_WALK_IN_DURATION });
 
     return ent;
 }
 
-bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
-                            WorldPos pos, Order order, float patience)
+void setCustomerFrame(AssetManager& assets, bagel::Entity customer, int frameIndex)
 {
-    auto customer = createCustomer(assets, physics, pos, order, patience);
+    const SpriteSheet& spriteSheet = assets.getSpriteSheet(TEX, SPRITE_DATA);
+    customer.get<Drawable>().srcRect = spriteSheet.getFrameRect(frameIndex);
+}
+
+bagel::Entity attachOrderBubble(AssetManager& assets, bagel::Entity customer)
+{
+    const Order& order = customer.get<Order>();
 
     // Speech bubble is a child of the customer; order icons are children of the bubble.
     auto bubble = createSpeechBubble(assets, customer, { 0.f, PERSON_DIMS.y/2.f  + 0.5f * (BUBBLE_DIMS.y/2.f)});
@@ -194,7 +206,7 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
             Checkmark{isDrink, slot});
     }
 
-    return customer;
+    return bubble;
 }
 
 } // namespace cafe

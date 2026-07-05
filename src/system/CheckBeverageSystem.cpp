@@ -1,5 +1,6 @@
 #include "CheckBeverageSystem.h"
 #include "Components.h"
+#include "CustomerSystem.h"
 #include "Menu.h"
 #include "OrderMatch.h"
 #include <cmath>
@@ -110,6 +111,7 @@ void acceptGradedBeverageSystem()
         {
             e.del<CheckCoffeeIntent>();
             e.addAll(Destroy{});
+            makeCustomerMad(customer);
             continue;
         }
 
@@ -154,6 +156,7 @@ void acceptGradedBeverageSystem()
         //**end score log
 
         markDrinkServed(grade, slot);
+        calmCustomer(customer);
 
         e.del<CheckCoffeeIntent>();
         e.addAll(Destroy{});
