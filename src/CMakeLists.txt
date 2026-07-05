@@ -11,6 +11,7 @@ target_sources(
     component/Liquid.h
     component/PhysicsBody.h
     component/Cup.h
+    component/Customer.h
     component/LiquidSpawner.h
     component/CoffeeOverview.h
     component/CleanupZone.h

@@ -11,6 +11,7 @@
 #include "CoffeeOverview.h"
 #include "LiquidSpawner.h"
 #include "Cup.h"
+#include "Customer.h"
 #include "CustomerSpawner.h"
 #include "DayProgress.h"
 #include "Destroy.h"

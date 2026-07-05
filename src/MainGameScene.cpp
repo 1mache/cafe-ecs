@@ -51,8 +51,9 @@ void cafe::MainGameScene::onInit()
     // --- Customer cycle ---
     // One spawner entity drives the loop: it keeps a single customer at the seat,
     // spawning the next (with a fresh random order) SPAWN_INTERVAL s after it leaves.
-    // cooldown = 0 so the first customer appears on the first frame. The customer's
-    // speech bubble + order-icon grid are built per-spawn in spawnCustomer().
+    // cooldown = 0 so the first customer appears on the first frame. Each customer
+    // walks in from CUSTOMER_ENTRANCE to `seat`; the bubble + order-icon grid are
+    // built on arrival by customerStateSystem (see attachOrderBubble).
     auto spawner = bagel::Entity::create();
     spawner.add(CustomerSpawner{ .seat     = { 5.9f, 0.f },
                          .interval = SPAWN_INTERVAL,
@@ -115,19 +116,20 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
     physicsToTransformSystem();    // physics position -> Transform
 
-    customerSpawnerSystem(getAssetManager(), _physics, dt); // keep one customer at the seat
+    customerSpawnerSystem(getAssetManager(), dt); // spawn at entrance + Tween to seat
     animationSystem(getAssetManager(), dt);
     particleSystem(dt);           // drift + fade active FX particles
     lifetimeSystem(dt);           // reap expired FX entities
-    behaviorSystem(dt);           // tick patience; adds Leaving on timeout
+    behaviorSystem(dt);           // tick patience (Ordering/Mad only); adds Leaving on timeout
     patienceDialSystem(getAssetManager()); // bubble dial frame <- remaining patience
     orderSystem();                // all items served -> add Leaving (success)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
-    recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup
-    gradePopupSystem();           // spawn graded text + particle burst at the customer
-    reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
+    gradePopupSystem();           // spawn graded text + particle burst at the customer; needs OrderGrade
+    // Arrival (bubble/anim/sensor), Mad sprite timing, and the single Leaving->Departing
+    // edge (records DayState, logs outcome, starts the walk-out Tween).
+    customerStateSystem(getAssetManager(), _physics, dt);
     positionHierarchySystem();            // children follow parents
-    customerCleanupSystem();      // tag Leaving entities Destroy
+    customerCleanupSystem();      // destroy once Departing's walk-out Tween finishes
     destroySystem();              // closure + destroy everything tagged Destroy this frame
     cupAlphaSystem();             // fade cup front when contents > 0
 
