@@ -6,15 +6,16 @@
 namespace cafe
 {
 /** @brief Single SDL poll for the start menu (parallels shopInputSystem).
- *  Converts the mouse to world space and hit-tests every MenuButton /
- *  SoundToggleButton Transform. A MenuButton hit sets outStart/outExit by its
- *  MenuAction; a sound-toggle hit sets SoundToggleButton.justPressed.
- *  Sets outExit on window close. Mouse only — the menu has no key bindings. */
-void menuInputSystem(SDL_Renderer* renderer, bool& outStart, bool& outExit);
+ *  Converts a mouse-down to world space and calls updateButtonsFromMouse over
+ *  every Button entity. Sets outExit on window close. The Menu-button hit
+ *  (Start/Exit) is read by the scene afterward via Button{kind==Menu}.pressed;
+ *  this system no longer maps it itself. Mouse only — the menu has no key
+ *  bindings. */
+void menuInputSystem(SDL_Renderer* renderer, bool& outExit, AudioContext& audio);
 
-/** @brief Consume pressed SoundToggleButtons: flip SettingsState::muted and
- *  apply it to the audio device. Also re-tints every toggle square from the
- *  current state each frame (white = sound on, gray = muted), so the visual
- *  is always in sync — same state-driven-tint idiom as the shop bars. */
-void soundToggleSystem(AudioContext& audio);
+/** @brief Re-tints every Button{kind==Sound} square from SettingsState::muted()
+ *  each frame (white = sound on, gray = muted). The toggle action itself
+ *  (flipping muted + applying volume) now lives in buttonDispatchSystem —
+ *  this system is tint-only. */
+void soundToggleSystem();
 } // namespace cafe

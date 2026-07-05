@@ -1,11 +1,9 @@
 #include "ParticleSystem.h"
 
 #include "Components.h"
-#include "Entities.h" // destroyPhysicalEntity
 #include "Transform.h"
 
 #include <bagel.h>
-#include <vector>
 
 namespace cafe
 {
@@ -40,17 +38,13 @@ void lifetimeSystem(float dt)
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<Lifetime>().build();
 
-    std::vector<bagel::ent_type> expired;
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(mask)) continue;
         auto& lt = e.get<Lifetime>();
         lt.age += dt;
         if (lt.age >= lt.duration)
-            expired.push_back(e.entity());
+            e.addAll(Destroy{}); // destroySystem (end of frame) does the actual destroy
     }
-
-    for (auto id : expired)
-        destroyPhysicalEntity(id);
 }
 } // namespace cafe

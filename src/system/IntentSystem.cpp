@@ -1,9 +1,11 @@
 #include "IntentSystem.h"
 #include "AudioContext.h"
+#include "ButtonSystem.h"   // updateButtonsFromMouse
 #include "Components.h"
 #include "RenderContext.h"
 #include "SoundAssets.h"
 #include "Transform.h"
+#include "UpgradeState.h"
 #include "UserInput.h"
 
 #include <bagel.h>
@@ -111,48 +113,22 @@ constexpr SDL_Scancode scancodeForIngredient(LiquidIngredient kind)
     }
 }
 
-// Sets the pour state of the pipe whose key matches sc (no-op for other keys).
-void updatePipePourIntent(bagel::Entity e, UserInput& input)
+// Pours via the keyboard by driving the matching Machine button's `pressed`
+// flag — the same persistent flag the mouse uses — so keyboard and mouse pour
+// coexist and a held key survives across frames (SDL key events are edge-only).
+// Locked until the KeyboardPour upgrade is owned.
+void updateKeyboardPourIntent(bagel::Entity e, UserInput& input)
 {
-    const SDL_Scancode myKey = scancodeForIngredient(e.get<LiquidSpawner>().kind);
-    bool& spawnerActive = e.get<LiquidSpawner>().active;
+    if (UpgradeState::level(UpgradeId::KeyboardPour) < 1) return;
 
+    Button& b = e.get<Button>();
+    if (b.kind != ButtonKind::Machine) return;
+
+    const SDL_Scancode myKey = scancodeForIngredient(b.liquid);
     for (SDL_Scancode sc : input.keyDowns)
-        if (sc == myKey) spawnerActive = true;
+        if (sc == myKey) b.pressed = true;
     for (SDL_Scancode sc : input.keyUps)
-        if (sc == myKey) spawnerActive = false;
-}
-
-void updateMachineButtonIntent(bagel::Entity e, UserInput& input, AudioContext& audio)
-{
-    auto& button = e.get<MachineButton>();
-    const WorldPos worldMouse =
-        screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
-
-    if (input.controls & controlBit(Controls::MouseButtonDown) &&
-        isPointInsideTransform(worldMouse, e.get<Transform>()))
-    {
-        button.pressed = true;
-        audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
-    }
-    else if (input.controls & controlBit(Controls::MouseButtonUp))
-    {
-        button.pressed = false;
-    }
-}
-
-// Flags a supply button as clicked this frame; supplyButtonSystem spawns + clears it.
-void updateSpawnButtonIntent(bagel::Entity e, UserInput& input, AudioContext& audio)
-{
-    const WorldPos worldMouse =
-        screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
-
-    if (input.controls & controlBit(Controls::MouseButtonDown) &&
-        isPointInsideTransform(worldMouse, e.get<Transform>()))
-    {
-        e.get<SpawnButton>().justPressed = true;
-        audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
-    }
+        if (sc == myKey) b.pressed = false;
 }
 
 }
@@ -215,25 +191,27 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& aud
     SDL_GetMouseState(&wx, &wy);
     input.mousePos = mouseWindowToRenderPoint(renderer, wx, wy);
 
+    // Single shared hit-test for every Button entity (Machine kind is the only
+    // held one here; Spawn/Menu/Shop/Sound don't live in this scene's mask but
+    // updateButtonsFromMouse handles them uniformly regardless).
+    const WorldPos worldMouse =
+        screenToWorldPoint(input.mousePos, RenderContext::getCameraPos());
+    updateButtonsFromMouse(worldMouse,
+                           input.controls & controlBit(Controls::MouseButtonDown),
+                           input.controls & controlBit(Controls::MouseButtonUp),
+                           audio);
+
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
-        static const bagel::Mask dragMask        = bagel::MaskBuilder().set<DragIntent>().set<Transform>().build();
-        static const bagel::Mask liqSpawnerMask  = bagel::MaskBuilder().set<LiquidSpawner>().build();
-        static const bagel::Mask machineButton   = bagel::MaskBuilder().set<MachineButton>().build();
-        static const bagel::Mask spawnButtonMask = bagel::MaskBuilder().set<SpawnButton>().set<Transform>().build();
+        static const bagel::Mask dragMask         = bagel::MaskBuilder().set<DragIntent>().set<Transform>().build();
+        static const bagel::Mask buttonMask       = bagel::MaskBuilder().set<Button>().build();
         static const bagel::Mask napkinIntentMask = bagel::MaskBuilder().set<NapkinIntent>().build();
 
         if (e.test(dragMask))
             updateDragIntent(e, input, audio);
 
-        if (e.test(liqSpawnerMask))
-            updatePipePourIntent(e, input);
-
-        if (e.test(machineButton))
-            updateMachineButtonIntent(e, input, audio);
-
-        if (e.test(spawnButtonMask))
-            updateSpawnButtonIntent(e, input, audio);
+        if (e.test(buttonMask))
+            updateKeyboardPourIntent(e, input);
 
         if (e.test(napkinIntentMask))
             updateNapkinIntent(e, input);

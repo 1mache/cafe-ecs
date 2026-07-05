@@ -7,6 +7,7 @@
 #include "Menu.h"
 #include "PhysicsContext.h"
 #include "SoundAssets.h"
+#include "Supply.h"
 #include "Systems.h"
 #include "Texture.h"
 
@@ -25,7 +26,7 @@ void cafe::MainGameScene::onInit()
 
     createBg(assets, BG_PATH);
     createBartop(assets, _physics);
-    createNapkin(assets, _physics);
+    createNapkin(assets);
 
     // Ice machine.
     createIceMachine(assets, _physics, supply::ICE_MACHINE_POS);
@@ -67,7 +68,12 @@ void cafe::MainGameScene::onInit()
     // Apply purchased upgrades to this day's machines (level 0 = base values).
     applyUpgradesSystem();
 
-    getAudioContext().playMusic(sound::MAIN_MUSIC, sound::MUSIC_VOLUME);
+    // Rotate the day's track: day 1 -> main_music, day 2 -> main_music2, day 3 ->
+    // main_music3, day 4 -> main_music again, ... (beginNewDay ran above, so
+    // dayNumber is already this day's 1-based number).
+    getAudioContext().playMusic(
+        sound::MAIN_MUSIC_TRACKS[(DayState::dayNumber() - 1) % sound::MAIN_MUSIC_COUNT],
+        sound::MUSIC_VOLUME);
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
@@ -80,8 +86,9 @@ bool cafe::MainGameScene::onUpdate(float dt)
 
     // Rotate the pastry TV before reading it: keeps the shown pastry current.
     pastryTvSystem(getAssetManager(), dt);
-    // Click a supply button to drop a fresh cup/ice into a free slot.
-    supplyButtonSystem(getAssetManager(), _physics);
+    // Consume every pressed Button that isn't Menu/Machine: buys (Shop, none here),
+    // toggles mute (Sound, none here), and drops a fresh cup/ice into a free slot (Spawn).
+    buttonDispatchSystem(getAssetManager(), &_physics, getAudioContext());
     // Pastry has its own system: its button is the TV icon, spawns the shown type.
     pastrySupplySystem(getAssetManager(), _physics);
 
@@ -96,13 +103,14 @@ bool cafe::MainGameScene::onUpdate(float dt)
     checkPastrySystem();          // grades pastries with CheckPastryIntent
     orderCheckmarkSystem();       // reveal bubble checkmarks for served slots
     dragAndDropSystem();          // held: follow mouse; released: snap/drop
-    napkinSystem(getAssetManager(), _physics, dt);   // napkin state -> body velocity + size ease
+    napkinSystem(getAssetManager(), dt);  // napkin state -> (re)start/retarget Tween
+    tweenSystem(dt);                      // advance all in-flight Tweens (napkin, etc.)
 
     machineButtonSystem();             // coffee-machine buttons -> pour state
     liquidSpawnerSystem(getAssetManager(), _physics, getAudioContext(), dt);    // spawn drops while pouring
     _physics.step(dt);
     liquidVelocityClampSystem(); // TODO: remove and check effects in the end
-    liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
+    sensorEventSystem(_physics);        // count drops into cup; cleanup spilled/discarded items
     dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 
     physicsToTransformSystem();    // physics position -> Transform
@@ -112,13 +120,15 @@ bool cafe::MainGameScene::onUpdate(float dt)
     particleSystem(dt);           // drift + fade active FX particles
     lifetimeSystem(dt);           // reap expired FX entities
     behaviorSystem(dt);           // tick patience; adds Leaving on timeout
+    patienceDialSystem(getAssetManager()); // bubble dial frame <- remaining patience
     orderSystem();                // all items served -> add Leaving (success)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
     recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup
     gradePopupSystem();           // spawn graded text + particle burst at the customer
     reportLeavingCustomers();     // log SUCCESSFUL / FAILED with final rating
-    positionHierarchySystem();            // children follow parents; orphan children of Leaving
-    customerCleanupSystem();      // destroy all Leaving entities
+    positionHierarchySystem();            // children follow parents
+    customerCleanupSystem();      // tag Leaving entities Destroy
+    destroySystem();              // closure + destroy everything tagged Destroy this frame
     cupAlphaSystem();             // fade cup front when contents > 0
 
     SDL_RenderClear(renderer);

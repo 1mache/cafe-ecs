@@ -386,6 +386,7 @@
   "size": { "w": 224, "h": 288 },
   "scale": "1",
   "frameTags": [
+   { "name": "male", "from": 0, "to": 21, "direction": "forward", "color": "#000000ff" },
    { "name": "2", "from": 0, "to": 1, "direction": "forward", "color": "#000000ff" },
    { "name": "3", "from": 2, "to": 3, "direction": "forward", "color": "#000000ff" },
    { "name": "4", "from": 4, "to": 5, "direction": "forward", "color": "#000000ff" },
@@ -397,6 +398,7 @@
    { "name": "10", "from": 16, "to": 17, "direction": "forward", "color": "#000000ff" },
    { "name": "11", "from": 18, "to": 19, "direction": "forward", "color": "#000000ff" },
    { "name": "12", "from": 20, "to": 21, "direction": "forward", "color": "#000000ff" },
+   { "name": "female", "from": 22, "to": 37, "direction": "forward", "color": "#000000ff" },
    { "name": "13", "from": 22, "to": 23, "direction": "forward", "color": "#000000ff" },
    { "name": "14", "from": 24, "to": 25, "direction": "forward", "color": "#000000ff" },
    { "name": "15", "from": 26, "to": 27, "direction": "forward", "color": "#000000ff" },
@@ -405,6 +407,7 @@
    { "name": "18", "from": 32, "to": 33, "direction": "forward", "color": "#000000ff" },
    { "name": "19", "from": 34, "to": 35, "direction": "forward", "color": "#000000ff" },
    { "name": "20", "from": 36, "to": 37, "direction": "forward", "color": "#000000ff" },
+   { "name": "male", "from": 38, "to": 41, "direction": "forward", "color": "#000000ff" },
    { "name": "21", "from": 38, "to": 39, "direction": "forward", "color": "#000000ff" },
    { "name": "22", "from": 40, "to": 41, "direction": "forward", "color": "#000000ff" }
   ],

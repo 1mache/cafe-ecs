@@ -37,12 +37,9 @@ void positionHierarchySystem()
         auto& childComp = e.get<ChildOf>();
         bagel::Entity parent = childComp.parent;
 
-        // If the parent is gone or leaving, destroy this child immediately
-        if (!parent.has<Transform>() || parent.has<Leaving>())
-        {
-            e.destroy();
-            continue;
-        }
+        // Orphan/doomed-parent cleanup is destroySystem's job (ChildOf closure),
+        // not this system's — it only needs the parent's Transform to still exist.
+        if (!parent.has<Transform>()) continue;
 
         auto& t       = e.get<Transform>();
         auto& parentT = parent.get<Transform>();

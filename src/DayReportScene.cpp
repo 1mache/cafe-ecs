@@ -1,6 +1,7 @@
 #include "DayReportScene.h"
 
-#include "Components.h"        // ShopButton, MenuButton, Transform, Drawable
+#include "ButtonSystem.h"      // buttonDispatchSystem
+#include "Components.h"        // Button, Transform, Drawable
 #include "DayReport.h"
 #include "DayState.h"
 #include "Entities.h"          // destroyAllGameEntities
@@ -143,7 +144,7 @@ void DayReportScene::onInit()
         const auto     id = static_cast<UpgradeId>(i);
 
         auto e = makeButtonEntity(pos, BTN_HALF_W, BTN_HALF_H);
-        e.add(ShopButton{ .id = id });
+        e.add(Button{ .kind = ButtonKind::Shop, .upgradeId = id });
 
         const SDL_FRect r  = transformToFrect(
             Transform{ .x = pos.x, .y = pos.y, .w = BTN_HALF_W, .h = BTN_HALF_H }, cam);
@@ -164,13 +165,13 @@ void DayReportScene::onInit()
     }
 
     // Next-day trigger: a Transform-only hit-box over the backdrop's baked-in power
-    // button. No Drawable, so shopInputSystem still hit-tests it (Transform-only
-    // mask, see MenuButton.h) but drawSystem has nothing to draw for it.
+    // button. No Drawable, so updateButtonsFromMouse still hit-tests it (Transform-only
+    // mask) but drawSystem has nothing to draw for it.
     auto next = bagel::Entity::create();
     next.addAll(
         Transform{ .x = NEXT_DAY_HITBOX_POS.x, .y = NEXT_DAY_HITBOX_POS.y,
                    .w = NEXT_DAY_HITBOX_HALF, .h = NEXT_DAY_HITBOX_HALF },
-        MenuButton{ MenuAction::NextDay }
+        Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::NextDay }
     );
 
     getAudioContext().playMusic(sound::MAIN_MUSIC_2, sound::MUSIC_VOLUME);
@@ -183,13 +184,25 @@ bool DayReportScene::onUpdate(float /*dt*/)
 
     bool nextDay = false, exitRequested = false;
     shopInputSystem(renderer, nextDay, exitRequested, getAudioContext());
-    shopPurchaseSystem(getAudioContext());
+
+    // Thin per-scene Menu read: only NextDay is raised in the day-report scene.
+    static const bagel::Mask menuMask = bagel::MaskBuilder().set<Button>().build();
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(menuMask)) continue;
+        auto& b = e.get<Button>();
+        if (b.kind != ButtonKind::Menu || !b.pressed) continue;
+        b.pressed = false;
+        if (b.menuAction == MenuAction::NextDay) nextDay = true;
+    }
+
+    buttonDispatchSystem(getAssetManager(), nullptr, getAudioContext()); // no PhysicsContext here: no Spawn buttons in this scene
 
     if (exitRequested) { requestNext(SceneId::Quit);     return false; }
     if (nextDay)       { requestNext(SceneId::MainGame); return false; }
 
     static const bagel::Mask shopMask =
-        bagel::MaskBuilder().set<ShopButton>().set<Transform>().set<Drawable>().build();
+        bagel::MaskBuilder().set<Button>().set<Transform>().set<Drawable>().build();
     static const bagel::Mask moneyLabelMask =
         bagel::MaskBuilder().set<MoneyLabel>().set<TextLabel>().build();
     static const bagel::Mask statusLabelMask =
@@ -201,10 +214,11 @@ bool DayReportScene::onUpdate(float /*dt*/)
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(shopMask)) continue;
-        const ShopButton& b   = e.get<ShopButton>();
-        const int         lvl = UpgradeState::level(b.id);
-        e.get<Drawable>().tint = isMaxed(b.id, lvl) ? COLOR_MAXED
-                               : (money >= upgradeCost(b.id, lvl) ? COLOR_AFFORD : COLOR_POOR);
+        const Button& b = e.get<Button>();
+        if (b.kind != ButtonKind::Shop) continue;
+        const int lvl = UpgradeState::level(b.upgradeId);
+        e.get<Drawable>().tint = isMaxed(b.upgradeId, lvl) ? COLOR_MAXED
+                               : (money >= upgradeCost(b.upgradeId, lvl) ? COLOR_AFFORD : COLOR_POOR);
     }
 
     // Refresh the money value label.

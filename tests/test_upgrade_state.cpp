@@ -31,6 +31,18 @@ TEST_CASE("tryBuy fails when money is insufficient")
     REQUIRE(UpgradeState::money() == 40);
 }
 
+TEST_CASE("tryBuy unlocks KeyboardPour once, then it is maxed")
+{
+    UpgradeState::resetAll();
+    UpgradeState::bankScore(25);
+    REQUIRE(UpgradeState::level(UpgradeId::KeyboardPour) == 0);
+    REQUIRE(UpgradeState::tryBuy(UpgradeId::KeyboardPour) == true);   // costs 10
+    REQUIRE(UpgradeState::level(UpgradeId::KeyboardPour) == 1);
+    REQUIRE(UpgradeState::money() == 15);
+    REQUIRE(UpgradeState::tryBuy(UpgradeId::KeyboardPour) == false);  // maxed at 1
+    REQUIRE(UpgradeState::money() == 15);
+}
+
 TEST_CASE("tryBuy fails at max level")
 {
     UpgradeState::resetAll();

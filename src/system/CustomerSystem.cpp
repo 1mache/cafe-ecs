@@ -1,9 +1,12 @@
 #include "CustomerSystem.h"
+#include "AssetManager.h"
 #include "Components.h"
 #include "Entities.h"
 #include "MainGameScene.h"
 #include "Menu.h"
 #include "RenderLayers.h"
+#include "SpriteSheet.h"
+#include <algorithm>
 #include <bagel.h>
 #include <cmath>
 #include <iostream>
@@ -153,6 +156,33 @@ void behaviorSystem(float dtSeconds)
 
         if (behavior.patience <= 0.f && !e.has<Leaving>())
             e.add(Leaving{});
+    }
+}
+
+void patienceDialSystem(AssetManager& assets)
+{
+    static const bagel::Mask dialMask =
+        bagel::MaskBuilder().set<PatienceDial>().set<ChildOf>().set<Drawable>().build();
+
+    const SpriteSheet& props = assets.getSpriteSheet("props.png", "props.json");
+    const auto [from, to]    = props.getTagBounds("patience");
+    const int steps          = to - from; // frame steps beyond the full-patience frame
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(dialMask)) continue;
+
+        // Walk up the hierarchy: dial -> bubble -> customer (checkmark idiom).
+        bagel::Entity bubble = e.get<ChildOf>().parent;
+        if (!bubble.has<ChildOf>()) continue;
+        bagel::Entity customer = bubble.get<ChildOf>().parent;
+        if (!customer.has<Behavior>()) continue;
+
+        const auto& b = customer.get<Behavior>();
+        const float frac = b.maxPatience > 0.f
+                         ? std::clamp(b.patience / b.maxPatience, 0.f, 1.f) : 0.f;
+        const int frame = from + static_cast<int>(std::round((1.f - frac) * static_cast<float>(steps)));
+        e.get<Drawable>().srcRect = props.getFrameRect(frame);
     }
 }
 
@@ -331,7 +361,7 @@ void customerCleanupSystem()
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(leavingMask)) continue;
-        destroyPhysicalEntity(e.entity());
+        e.addAll(Destroy{}); // destroySystem (end of frame) cascades to children (bubble, order icons)
     }
 }
 

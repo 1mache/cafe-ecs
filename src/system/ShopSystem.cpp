@@ -1,23 +1,16 @@
 #include "ShopSystem.h"
 
 #include "AudioContext.h"
-#include "Components.h"      // ShopButton, NextDayButton, Transform
+#include "ButtonSystem.h"     // updateButtonsFromMouse
 #include "IntentSystem.h"    // mouseWindowToRenderPoint
 #include "RenderContext.h"
-#include "SoundAssets.h"
-#include "Transform.h"       // isPointInsideTransform, screenToWorldPoint
-#include "UpgradeState.h"
+#include "Transform.h"       // screenToWorldPoint
 #include <bagel.h>
 
 namespace cafe
 {
 void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit, AudioContext& audio)
 {
-    static const bagel::Mask shopMask =
-        bagel::MaskBuilder().set<ShopButton>().set<Transform>().build();
-    static const bagel::Mask nextMask =
-        bagel::MaskBuilder().set<MenuButton>().set<Transform>().build();
-
     bool       clicked = false;
     SDL_FPoint clickPos{};
 
@@ -46,35 +39,6 @@ void shopInputSystem(SDL_Renderer* renderer, bool& outNextDay, bool& outExit, Au
     if (!clicked) return;
 
     const WorldPos worldMouse = screenToWorldPoint(clickPos, RenderContext::getCameraPos());
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (e.test(shopMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
-        {
-            e.get<ShopButton>().justPressed = true;
-            audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
-        }
-        else if (e.test(nextMask) && e.get<MenuButton>().action == MenuAction::NextDay &&
-                 isPointInsideTransform(worldMouse, e.get<Transform>()))
-        {
-            outNextDay = true;
-            audio.play(sound::BUTTON_PRESS, sound::BUTTON_VOLUME);
-        }
-    }
-}
-
-void shopPurchaseSystem(AudioContext& audio)
-{
-    static const bagel::Mask shopMask = bagel::MaskBuilder().set<ShopButton>().build();
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (!e.test(shopMask)) continue;
-        auto& b = e.get<ShopButton>();
-        if (!b.justPressed) continue;
-        b.justPressed = false;
-        if (UpgradeState::tryBuy(b.id))   // no-op + false if unaffordable or maxed
-            audio.play(sound::BUY_UPGRADE);
-    }
+    updateButtonsFromMouse(worldMouse, clicked, /*mouseUp=*/false, audio);
 }
 } // namespace cafe

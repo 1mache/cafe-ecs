@@ -1,11 +1,9 @@
 #include "CheckBeverageSystem.h"
 #include "Components.h"
-#include "Entities.h"
 #include "Menu.h"
 #include "OrderMatch.h"
 #include <cmath>
 #include <iostream>
-#include <vector>
 
 namespace cafe
 {
@@ -85,8 +83,6 @@ void checkBeverageSystem()
 
 void acceptGradedBeverageSystem()
 {
-    std::vector<bagel::ent_type> toDestroy;
-
     static const bagel::Mask mask =
         bagel::MaskBuilder().set<CoffeeOverview>().set<CheckCoffeeIntent>().build();
 
@@ -101,7 +97,7 @@ void acceptGradedBeverageSystem()
         if (!customer.has<Order>() || !customer.has<OrderGrade>())
         {
             e.del<CheckCoffeeIntent>();
-            toDestroy.push_back(e.entity());
+            e.addAll(Destroy{}); // destroySystem cascades to contents/children
             continue;
         }
 
@@ -113,7 +109,7 @@ void acceptGradedBeverageSystem()
         if (slot < 0)
         {
             e.del<CheckCoffeeIntent>();
-            toDestroy.push_back(e.entity());
+            e.addAll(Destroy{});
             continue;
         }
 
@@ -160,11 +156,7 @@ void acceptGradedBeverageSystem()
         markDrinkServed(grade, slot);
 
         e.del<CheckCoffeeIntent>();
-        toDestroy.push_back(e.entity());
+        e.addAll(Destroy{});
     }
-
-    // Destroy cups (and their contents) after the iteration is complete.
-    for (auto id : toDestroy)
-        destroyDeliveredItem(id);
 }
 } // namespace cafe

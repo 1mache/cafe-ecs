@@ -16,6 +16,7 @@ target_sources(
     component/CleanupZone.h
     component/Behavior.h
     component/DayProgress.h
+    component/Destroy.h
     component/CheckCoffeeIntent.h
     component/CheckPastryIntent.h
     component/Checkmark.h
@@ -24,11 +25,8 @@ target_sources(
     component/DragItemType.h
     component/DropSpace.h
     component/Falling.h
-    component/SpawnButton.h
-    component/SpawnButton.cpp
-    component/ShopButton.h
-    component/MenuButton.h
-    component/SoundToggleButton.h
+    component/Button.h
+    component/Button.cpp
     component/TextLabel.h
     component/MoneyLabel.h
     component/UpgradeStatusLabel.h
@@ -40,6 +38,7 @@ target_sources(
     component/NapkinIntent.h
     component/Pastry.h
     component/PastryTv.h
+    component/PatienceDial.h
     component/Order.h
     component/OrderGrade.h
     component/OrderGrade.cpp
@@ -47,6 +46,8 @@ target_sources(
     component/Sensor.cpp
     component/Animation.h
     component/Animation.cpp
+    component/Tween.h
+    component/Tween.cpp
     component/Components.h
 
     # systems
@@ -66,6 +67,8 @@ target_sources(
     system/PastrySupplySystem.cpp
     system/NapkinSystem.h
     system/NapkinSystem.cpp
+    system/TweenSystem.h
+    system/TweenSystem.cpp
     system/CustomerSystem.h
     system/CustomerSystem.cpp
     system/CheckBeverageSystem.h
@@ -76,8 +79,8 @@ target_sources(
     system/DragAndDropSystem.cpp
     system/IntentSystem.h
     system/IntentSystem.cpp
-    system/SupplySystem.h
-    system/SupplySystem.cpp
+    system/ButtonSystem.h
+    system/ButtonSystem.cpp
     system/UpgradeSystem.h
     system/UpgradeSystem.cpp
     system/SensorSystem.h
@@ -88,6 +91,8 @@ target_sources(
     system/MenuSystem.cpp
     system/DayCycleSystem.h
     system/DayCycleSystem.cpp
+    system/DestroySystem.h
+    system/DestroySystem.cpp
     system/CoffeeMachineSystem.cpp
     system/CoffeeMachineSystem.h
     system/CupSystem.h
@@ -159,6 +164,7 @@ target_sources(
     PhysicsContext.cpp
 
     WorldPos.h
+    Supply.h
 
     Scene.h
     Scene.cpp

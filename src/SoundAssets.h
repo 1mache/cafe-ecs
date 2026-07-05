@@ -12,9 +12,14 @@ namespace cafe::sound
     constexpr auto PUT_IN_MICROWAVE = "put_in_microwave.wav";
     constexpr auto MICROWAVE       = "microwave.wav";
     constexpr auto MICROWAVE_END   = "microwave_end.wav";
-    constexpr auto INTRO_MUSIC     = "intro_music.wav";   // declared; wired later
+    constexpr auto INTRO_MUSIC     = "intro_music.wav";
     constexpr auto MAIN_MUSIC      = "main_music.wav";
     constexpr auto MAIN_MUSIC_2    = "main_music2.wav";
+    constexpr auto MAIN_MUSIC_3    = "main_music3.wav";
+
+    // In-game music rotates through these by day (day 1 -> [0], day 2 -> [1], ...).
+    constexpr const char* MAIN_MUSIC_TRACKS[] = { MAIN_MUSIC, MAIN_MUSIC_2, MAIN_MUSIC_3 };
+    constexpr int         MAIN_MUSIC_COUNT    = 3;
 
     // Per-sound volume knobs (tune here; 1.0 = unchanged).
     constexpr float MUSIC_VOLUME     = 0.15f;   // background sits low

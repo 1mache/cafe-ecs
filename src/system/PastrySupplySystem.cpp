@@ -32,17 +32,18 @@ void pastryTvSystem(AssetManager& assets, float dt)
 
         tv.timer -= PASTRY_TV_ROTATE_TIME;
         tv.index = (tv.index + 1) % static_cast<int>(PastryType::count);
-        e.get<Drawable>().srcRect = props.getFrameRect(pastryFrom + tv.index);
+        e.get<Drawable>().srcRect =
+            props.getFrameRect(pastryFrom + static_cast<int>(tv.queue[tv.index]));
     }
 }
 
 // The pastry-TV icon entity is itself the spawn button (createPastryTv builds it
-// via createSpawnButton), so PastryTv and SpawnButton live on one entity: a single
+// via createSpawnButton), so PastryTv and Button live on one entity: a single
 // scan reads the shown pastry index and the click, then spawns after the loop.
 void pastrySupplySystem(AssetManager& assets, PhysicsContext& physics)
 {
     static const bagel::Mask mask =
-        bagel::MaskBuilder().set<PastryTv>().set<SpawnButton>().build();
+        bagel::MaskBuilder().set<PastryTv>().set<Button>().build();
 
     bool       shouldSpawn{};
     WorldPos   spawnPos{};
@@ -52,12 +53,14 @@ void pastrySupplySystem(AssetManager& assets, PhysicsContext& physics)
     {
         if (!e.test(mask)) continue;
 
-        auto& b = e.get<SpawnButton>();
+        auto& b = e.get<Button>();
+        if (b.kind != ButtonKind::Spawn) continue;
         if (!consumeSpawnRequest(b)) continue;
 
         shouldSpawn   = true;
         spawnPos      = b.spawnPos;
-        type          = static_cast<PastryType>(e.get<PastryTv>().index);
+        const auto& tv = e.get<PastryTv>();
+        type          = tv.queue[tv.index];
     }
 
     if (shouldSpawn) createPastry(assets, physics, spawnPos, type);

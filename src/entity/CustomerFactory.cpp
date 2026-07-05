@@ -25,12 +25,17 @@ constexpr auto TEX          = "customers.png";
 constexpr auto SPRITE_DATA  = "customers.json";
 
 
-// from the spritesheet takes a random customer sprite
+// from the spritesheet takes a random customer sprite.
+// Each customer occupies FRAMES_PER_CUSTOMER consecutive frames (mouth shut/open),
+// so the customer count comes from the frame count -- NOT the tag count. The sheet's
+// frameTags include overlapping group tags (male/female) and live in an unordered map,
+// so tag index has no 1:1 relation to frames; multiplying it by 2 could overshoot the
+// last frame and fatal in getFrameRect.
 int getRandomCustomerId(const SpriteSheet& spriteSheet)
 {
     constexpr int FRAMES_PER_CUSTOMER = 2;
-    int nTags = static_cast<int>(std::ranges::size(spriteSheet.tags()));
-    auto dist = std::uniform_int_distribution(0,  nTags - 1);
+    int nCustomers = spriteSheet.frameCount() / FRAMES_PER_CUSTOMER;
+    auto dist = std::uniform_int_distribution(0, nCustomers - 1);
 
     return dist(getRng()) * FRAMES_PER_CUSTOMER;
 }
@@ -131,6 +136,16 @@ bagel::Entity spawnCustomer(AssetManager& assets, PhysicsContext& physics,
     const int coffeeFrom = props.getTagBounds("coffee").first;
     const int pastryFrom = props.getTagBounds("pastry").first;
     const int checkFrame = props.getTagBounds("status").first; // green checkmark
+
+    // Patience dial: badge on the bubble's top-left corner, drained by patienceDialSystem.
+    constexpr float      DIAL_SIZE   = 10.f; // px, ~order-icon size
+    constexpr SDL_FPoint DIAL_OFFSET = { -BUBBLE_DIMS.x / 2.f, BUBBLE_DIMS.y / 2.f - 4.f };
+    const int patienceFrom = props.getTagBounds("patience").first;
+    bagel::Entity::create().addAll(
+        Transform{ .w = texToWorldScale(DIAL_SIZE), .h = texToWorldScale(DIAL_SIZE) },
+        Drawable{ propsTex.get(), props.getFrameRect(patienceFrom), layer::UI3 },
+        ChildOf{ bubble, DIAL_OFFSET },
+        PatienceDial{});
 
     // Each icon carries its frame and, for a main item icon, the order slot it
     // represents (drinkSlot/pastrySlot < 0 for temperature icons). The slot lets

@@ -1,10 +1,11 @@
 #include "MenuSystem.h"
 
-#include "Components.h"      // MenuButton, SoundToggleButton, Transform, Drawable
+#include "ButtonSystem.h"     // updateButtonsFromMouse
+#include "Components.h"      // Button, Drawable
 #include "IntentSystem.h"    // mouseWindowToRenderPoint
 #include "RenderContext.h"
 #include "SettingsState.h"
-#include "Transform.h"       // isPointInsideTransform, screenToWorldPoint
+#include "Transform.h"       // screenToWorldPoint
 #include <bagel.h>
 
 namespace cafe
@@ -17,13 +18,8 @@ constexpr SDL_Color COLOR_SOUND_ON  = { 255, 255, 255, 255 };
 constexpr SDL_Color COLOR_MUTED     = {  78,  78,  86, 255 };
 } // namespace
 
-void menuInputSystem(SDL_Renderer* renderer, bool& outStart, bool& outExit)
+void menuInputSystem(SDL_Renderer* renderer, bool& outExit, AudioContext& audio)
 {
-    static const bagel::Mask menuMask =
-        bagel::MaskBuilder().set<MenuButton>().set<Transform>().build();
-    static const bagel::Mask soundMask =
-        bagel::MaskBuilder().set<SoundToggleButton>().set<Transform>().build();
-
     bool       clicked = false;
     SDL_FPoint clickPos{};
 
@@ -47,39 +43,19 @@ void menuInputSystem(SDL_Renderer* renderer, bool& outStart, bool& outExit)
     if (!clicked) return;
 
     const WorldPos worldMouse = screenToWorldPoint(clickPos, RenderContext::getCameraPos());
-
-    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
-    {
-        if (e.test(menuMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
-        {
-            switch (e.get<MenuButton>().action)
-            {
-            case MenuAction::Start: outStart = true; break;
-            case MenuAction::Exit:  outExit  = true; break;
-            default: break; // NextDay is not raised in the start menu
-            }
-        }
-        else if (e.test(soundMask) && isPointInsideTransform(worldMouse, e.get<Transform>()))
-            e.get<SoundToggleButton>().justPressed = true;
-    }
+    updateButtonsFromMouse(worldMouse, clicked, /*mouseUp=*/false, audio);
 }
 
-void soundToggleSystem(AudioContext& audio)
+void soundToggleSystem()
 {
     static const bagel::Mask soundMask =
-        bagel::MaskBuilder().set<SoundToggleButton>().set<Drawable>().build();
+        bagel::MaskBuilder().set<Button>().set<Drawable>().build();
 
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
         if (!e.test(soundMask)) continue;
+        if (e.get<Button>().kind != ButtonKind::Sound) continue;
 
-        auto& b = e.get<SoundToggleButton>();
-        if (b.justPressed)
-        {
-            b.justPressed = false;
-            SettingsState::toggleMuted();
-            audio.setVolume(SettingsState::muted() ? 0.f : 1.f);
-        }
         // State-driven tint every frame: also paints the correct colour on the
         // very first update, so onInit doesn't need to know the colours.
         e.get<Drawable>().tint = SettingsState::muted() ? COLOR_MUTED : COLOR_SOUND_ON;

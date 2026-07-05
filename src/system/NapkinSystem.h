@@ -3,9 +3,8 @@
 namespace cafe
 {
 class AssetManager;
-class PhysicsContext;
 
-/** @brief Drives napkin position (Box2D velocity chase) and size (exponential ease)
- *  toward the layout for NapkinIntent.state. Run before PhysicsContext::step(). */
-void napkinSystem(AssetManager& assets, PhysicsContext& physics, float dt);
+/** @brief Drives the napkin's Transform toward the layout for NapkinIntent.state by
+ *  (re)starting a Tween on state change. tweenSystem does the actual interpolation. */
+void napkinSystem(AssetManager& assets, float dt);
 } // namespace cafe
