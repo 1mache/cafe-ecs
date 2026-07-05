@@ -172,7 +172,7 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
                 std::lround(recipe.ratio[static_cast<size_t>(ing)] * 100.f));
 
             char buf[8];
-            std::snprintf(buf, sizeof(buf), "%dx", pct);
+            std::snprintf(buf, sizeof(buf), "%d%%", pct);
 
             const SDL_FPoint center = cellCenter(j + 1, i);
             const SDL_FPoint pos    = { center.x, center.y + textYOffset };
