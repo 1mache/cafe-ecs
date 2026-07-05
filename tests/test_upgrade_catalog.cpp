@@ -34,3 +34,10 @@ TEST_CASE("KeyboardPour is a binary unlock costing 10")
     REQUIRE(isMaxed(UpgradeId::KeyboardPour, 0) == false);
     REQUIRE(isMaxed(UpgradeId::KeyboardPour, 1) == true);
 }
+
+TEST_CASE("KeyboardPastry is a binary unlock costing 10")
+{
+    REQUIRE(upgradeCost(UpgradeId::KeyboardPastry, 0) == 10);
+    REQUIRE(isMaxed(UpgradeId::KeyboardPastry, 0) == false);
+    REQUIRE(isMaxed(UpgradeId::KeyboardPastry, 1) == true);
+}

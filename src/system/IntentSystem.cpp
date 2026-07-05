@@ -133,6 +133,22 @@ void updateKeyboardPourIntent(bagel::Entity e, UserInput& input)
         if (sc == myKey) b.pressed = false;
 }
 
+// Spawns a pastry via SPACE by pulsing the pastry SpawnButton's momentary
+// `pressed` flag — the same flag the mouse sets — so keyboard and mouse spawn
+// coexist. Momentary (no key-up needed): consumeSpawnRequest clears `pressed`
+// on each spawn and the slot-occupancy check throttles repeats.
+// Locked until the KeyboardPastry upgrade is owned.
+void updateKeyboardPastryIntent(bagel::Entity e, const UserInput& input)
+{
+    if (UpgradeState::level(UpgradeId::KeyboardPastry) < 1) return;
+
+    Button& b = e.get<Button>();
+    if (b.kind != ButtonKind::Spawn || b.dropType != DropType::Pastry) return;
+
+    for (SDL_Scancode sc : input.keyDowns)
+        if (sc == SDL_SCANCODE_SPACE) b.pressed = true;
+}
+
 }
 void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& audio)
 {
@@ -213,7 +229,10 @@ void intentSystem(SDL_Renderer* renderer, bool& outExitCalled, AudioContext& aud
             updateDragIntent(e, input, audio);
 
         if (e.test(buttonMask))
+        {
             updateKeyboardPourIntent(e, input);
+            updateKeyboardPastryIntent(e, input);
+        }
 
         if (e.test(napkinIntentMask))
             updateNapkinIntent(e, input, audio);

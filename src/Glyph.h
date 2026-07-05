@@ -24,7 +24,7 @@ constexpr int glyphIndex(char c)
     return -1;
 }
 
-/** @brief Rendered pixel width of @p text at @p scale. */
+/** @brief Rendered pixel width of @p text at @p scale (may be fractional). */
 constexpr float textWidth(std::string_view text, float scale)
 {
     const int n = static_cast<int>(text.size());

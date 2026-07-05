@@ -22,7 +22,7 @@ namespace cafe
  *  @param text      Text to render
  *  @param x         Left-top X coordinate in pixels
  *  @param y         Left-top Y coordinate in pixels
- *  @param scale     Uniform scale factor (default 1)
+ *  @param scale     Scale factor, may be fractional (default 1)
  */
 void drawText(SDL_Renderer* renderer, const Texture& font, std::string_view text,
               float x, float y, float scale = 1.f);
