@@ -68,7 +68,12 @@ void cafe::MainGameScene::onInit()
     // Apply purchased upgrades to this day's machines (level 0 = base values).
     applyUpgradesSystem();
 
-    getAudioContext().playMusic(sound::MAIN_MUSIC, sound::MUSIC_VOLUME);
+    // Rotate the day's track: day 1 -> main_music, day 2 -> main_music2, day 3 ->
+    // main_music3, day 4 -> main_music again, ... (beginNewDay ran above, so
+    // dayNumber is already this day's 1-based number).
+    getAudioContext().playMusic(
+        sound::MAIN_MUSIC_TRACKS[(DayState::dayNumber() - 1) % sound::MAIN_MUSIC_COUNT],
+        sound::MUSIC_VOLUME);
 }
 bool cafe::MainGameScene::onUpdate(float dt)
 {
@@ -115,6 +120,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     particleSystem(dt);           // drift + fade active FX particles
     lifetimeSystem(dt);           // reap expired FX entities
     behaviorSystem(dt);           // tick patience; adds Leaving on timeout
+    patienceDialSystem(getAssetManager()); // bubble dial frame <- remaining patience
     orderSystem();                // all items served -> add Leaving (success)
     finalizeOrderGradeSystem();   // sum per-item grades + apply patience penalty -> Behavior.rating
     recordDayResultsSystem();     // capture rating/succeeded into DayState before cleanup

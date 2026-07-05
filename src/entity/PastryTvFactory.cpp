@@ -7,6 +7,8 @@
 #include "SpriteSheet.h"
 #include "Texture.h"
 #include "Transform.h" // texToWorldScale
+#include "Utils.h"     // getRng
+#include <algorithm>   // std::shuffle
 #include <bagel.h>
 
 namespace cafe
@@ -41,11 +43,18 @@ void createPastryTv(AssetManager& assets, PhysicsContext& physics, WorldPos pos)
     const int          pastryFrom = props.getTagBounds("pastry").first;
     const Texture&     propsTex   = assets.getTexture(PROPS_TEX);
 
+    // A fresh random line each TV (re)creation — i.e. every new day/game.
+    PastryTv tv{};
+    for (int i = 0; i < static_cast<int>(PastryType::count); ++i)
+        tv.queue[i] = static_cast<PastryType>(i);
+    std::shuffle(std::begin(tv.queue), std::end(tv.queue), getRng());
+
     auto icon = createSpawnButton(assets, physics, pos, DropType::Pastry);
     icon.addAll(
         Transform{ .x = pos.x, .y = pos.y,
                    .w = tvHalfW * SCREEN_FRACTION, .h = tvHalfH * SCREEN_FRACTION },
-        Drawable{ propsTex.get(), props.getFrameRect(pastryFrom), layer::UI2 },
-        PastryTv{});
+        Drawable{ propsTex.get(),
+                  props.getFrameRect(pastryFrom + static_cast<int>(tv.queue[0])), layer::UI2 },
+        tv);
 }
 } // namespace cafe

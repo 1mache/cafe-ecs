@@ -32,7 +32,8 @@ void pastryTvSystem(AssetManager& assets, float dt)
 
         tv.timer -= PASTRY_TV_ROTATE_TIME;
         tv.index = (tv.index + 1) % static_cast<int>(PastryType::count);
-        e.get<Drawable>().srcRect = props.getFrameRect(pastryFrom + tv.index);
+        e.get<Drawable>().srcRect =
+            props.getFrameRect(pastryFrom + static_cast<int>(tv.queue[tv.index]));
     }
 }
 
@@ -58,7 +59,8 @@ void pastrySupplySystem(AssetManager& assets, PhysicsContext& physics)
 
         shouldSpawn   = true;
         spawnPos      = b.spawnPos;
-        type          = static_cast<PastryType>(e.get<PastryTv>().index);
+        const auto& tv = e.get<PastryTv>();
+        type          = tv.queue[tv.index];
     }
 
     if (shouldSpawn) createPastry(assets, physics, spawnPos, type);
