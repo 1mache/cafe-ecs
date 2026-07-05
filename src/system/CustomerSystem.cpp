@@ -19,11 +19,11 @@ namespace cafe
 {
 // Patience scales with prep effort: each item adds seconds by how long it takes
 // to make — a cold drink needs the extra cooling step, a hot pastry a microwave trip.
-static constexpr float PATIENCE_BASE        = 20.f; // seconds regardless of order size
-static constexpr float PATIENCE_HOT_DRINK   = 10.f;
-static constexpr float PATIENCE_COLD_DRINK  = 14.f;
-static constexpr float PATIENCE_COLD_PASTRY = 10.f;
-static constexpr float PATIENCE_HOT_PASTRY  = 16.f; // microwave trip
+static constexpr float PATIENCE_BASE        = 22.f; // seconds regardless of order size
+static constexpr float PATIENCE_HOT_DRINK   = 12.5f;
+static constexpr float PATIENCE_COLD_DRINK  = 15.5f;
+static constexpr float PATIENCE_COLD_PASTRY = 11.5f;
+static constexpr float PATIENCE_HOT_PASTRY  = 17.5f; // microwave trip
 
 constexpr float patienceFor(const Order& o)
 {
