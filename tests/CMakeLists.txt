@@ -6,6 +6,7 @@ add_executable(unit_tests
     test_glyph.cpp
     test_grade_tier.cpp
     test_order_match.cpp
+    test_packed_storage_del.cpp
     test_settings_state.cpp
     test_upgrade_catalog.cpp
     test_upgrade_state.cpp

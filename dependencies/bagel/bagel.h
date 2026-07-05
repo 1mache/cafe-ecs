@@ -186,12 +186,20 @@ public:
     }
     static void del(const ent_type ent)
     {
-        int           idx  = _idToComp[ent.id];
-        const id_type last = _compToId.pop();
+        const int idx     = _idToComp[ent.id];
+        const int lastIdx = _comps.size() - 1;
 
-        _comps[idx]     = _comps.pop();
-        _compToId[idx]  = last;
-        _idToComp[last] = idx;
+        if (idx != lastIdx)
+        {
+            const id_type movedEntId = _compToId[lastIdx];
+            _comps[idx]              = _comps[lastIdx];
+            _compToId[idx]           = movedEntId;
+            _idToComp[movedEntId]    = idx;
+        }
+
+        _comps.pop();
+        _compToId.pop();
+        _idToComp[ent.id] = -1;
     }
     static T& get(const ent_type ent)
     {
