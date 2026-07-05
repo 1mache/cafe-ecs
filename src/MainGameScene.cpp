@@ -103,7 +103,7 @@ bool cafe::MainGameScene::onUpdate(float dt)
     liquidSpawnerSystem(getAssetManager(), _physics, getAudioContext(), dt);    // spawn drops while pouring
     _physics.step(dt);
     liquidVelocityClampSystem(); // TODO: remove and check effects in the end
-    liquidSensorEventSystem(_physics);  // count drops into cup; cleanup spilled
+    sensorEventSystem(_physics);        // count drops into cup; cleanup spilled/discarded items
     dropSpaceDetectionSystem(_physics); // update DragIntent.dropSpaceEntity
 
     physicsToTransformSystem();    // physics position -> Transform

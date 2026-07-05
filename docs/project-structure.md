@@ -61,8 +61,10 @@ Systems that share file-local state or operate on the same feature area live in 
 system/
   RenderSystem.h / .cpp      # drawSystem
   TransformSystem.h / .cpp   # syncTransformFromBody, hierarchySystem
-  LiquidSystem.h / .cpp      # coffeeSpawnerSystem, sensorEventSystem, dumpDebugStatsEvery
-  CustomerSystem.h / .cpp      # behaviorSystem, orderSystem, cleanupSystem
+  LiquidSystem.h / .cpp      # liquidSpawnerSystem, liquidVelocityClampSystem
+  SensorSystem.h / .cpp      # sensorGatheringSystem (overlap polling) + sensorEventSystem (begin-event draining)
+  DestroySystem.h / .cpp     # destroySystem: closure + destroy everything tagged Destroy, runs last
+  CustomerSystem.h / .cpp      # behaviorSystem, orderSystem, customerCleanupSystem
   Systems.h                  # umbrella: #includes all system headers
 ```
 

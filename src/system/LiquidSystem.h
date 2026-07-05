@@ -13,7 +13,4 @@ class AudioContext;
 void liquidSpawnerSystem(AssetManager& assets, PhysicsContext& physics, AudioContext& audio, float dtSeconds);
 
 void liquidVelocityClampSystem();
-
-/** @brief Drains Box2D sensor events: counts cup fills and destroys drops on contact. */
-void liquidSensorEventSystem(PhysicsContext& physics);
 } // namespace cafe

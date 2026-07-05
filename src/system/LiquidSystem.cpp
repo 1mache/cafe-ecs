@@ -4,7 +4,6 @@
 #include "Components.h"
 #include "Entities.h"
 #include "PhysicsContext.h"
-#include "PhysicsFilters.h"
 #include "SoundAssets.h"
 #include "Utils.h"
 
@@ -72,73 +71,6 @@ void liquidVelocityClampSystem()
         if (b2Length(vel) > MAX_LIQUID_SPEED)
         {
             b2Body_SetLinearVelocity(p.id,b2Normalize(vel) * MAX_LIQUID_SPEED);
-        }
-    }
-}
-
-void liquidSensorEventSystem(PhysicsContext& physics)
-{
-    // Read the accumulated begin events: Box2D clears its own buffer each sub-step,
-    // so PhysicsContext gathers every sub-step's events across the frame.
-    const auto beginEvents = physics.sensorBeginEvents();
-
-    static const bagel::Mask liquidMask = bagel::MaskBuilder().set<Liquid>().build();
-    static const bagel::Mask cupMask    = bagel::MaskBuilder().set<Cup>().build();
-    static const bagel::Mask iceMask    = bagel::MaskBuilder().set<Ice>().build();
-
-    for (const auto& be : beginEvents)
-    {
-
-        // Skip events whose shapes were destroyed since the buffer was filled.
-        if (!b2Shape_IsValid(be.visitorShapeId)) continue;
-        if (!b2Shape_IsValid(be.sensorShapeId))  continue;
-
-        // Recover the visitor (= the drop) entity from the body's userData.
-        const b2BodyId visitorBody = b2Shape_GetBody(be.visitorShapeId);
-        const bagel::ent_type visitorId{
-            static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(visitorBody)))
-        };
-        bagel::Entity visitor{ visitorId };
-        const bool visitorIsLiquid = visitor.test(liquidMask);
-        const bool visitorIsIce    = visitor.test(iceMask);
-        if (!visitorIsLiquid && !visitorIsIce) continue;
-
-        // Which sensor was hit? Read the category bit on the sensor shape.
-        const uint64_t sensorCat = b2Shape_GetFilter(be.sensorShapeId).categoryBits;
-
-        if (sensorCat & filter::CUP_INSIDE)
-        {
-            const b2BodyId cupBody = b2Shape_GetBody(be.sensorShapeId);
-            bagel::Entity cup{ bagel::ent_type{
-                static_cast<int>(reinterpret_cast<uintptr_t>(b2Body_GetUserData(cupBody)))
-            } };
-
-            if (!cup.test(cupMask))
-                fatalError("Object with filter CUP_INSIDE detected that is not cup");
-
-            auto& c = cup.get<Cup>();
-            if (visitorIsIce)
-            {
-                // Count an ice cube once, the first time it enters any cup.
-                auto& ice = visitor.get<Ice>();
-                if (ice.holdingContainer.id < 0)
-                {
-                    ++c.iceCount;
-                    ice.holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
-                }
-            }
-            else // liquid drop
-            {
-                ++c.filled[static_cast<size_t>(visitor.get<Liquid>().kind)];
-                visitor.get<Liquid>().holdingContainer = cup.entity(); // tag for per-cup cleanup on delivery
-            }
-        }
-        else if (sensorCat & filter::CLEANUP)
-        {
-            // A drop can show up in more than one begin-event this frame (e.g.
-            // brushing CLEANUP twice); Destroy is a tag, so re-tagging is a
-            // no-op. destroySystem (end of frame) does the actual destroy + logs it.
-            visitor.addAll(Destroy{});
         }
     }
 }
