@@ -9,8 +9,8 @@ namespace
 {
 static constexpr const char* kIngredientNames[] = { "Coffee", "Water", "Milk" };
 
-static constexpr float kRatioGradeWeight          = 0.8f;
-static constexpr float kVolumeGradeWeight         = 0.2f;
+static constexpr float kRatioGradeWeight          = 0.65f;
+static constexpr float kVolumeGradeWeight         = 0.35f;
 static constexpr float kNormalizedGradeMin        = 0.0f;
 static constexpr float kNormalizedGradeMax        = 1.0f;
 static constexpr int   kMaxDrinkScore             = 100;
