@@ -10,7 +10,7 @@
 namespace cafe
 {
 void drawText(SDL_Renderer* renderer, const Texture& font, std::string_view text,
-              float x, float y, int scale)
+              float x, float y, float scale)
 {
     float xpos = x;
 

@@ -88,16 +88,22 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
     constexpr float MARGIN     = 0.05f * NAPKIN_FULL_SCREEN_W;
     constexpr float MARGIN_TOP = 0.07f * NAPKIN_FULL_SCREEN_H;
 
-    constexpr int nDrinks      = static_cast<int>(DrinkType::count);
-    constexpr int nIngredients = 3;
-    constexpr int nRows        = 1 + nDrinks;
+    constexpr int nDrinks         = static_cast<int>(DrinkType::count);
+    constexpr int nIngredientCols = 3;
+    constexpr int nDataCols       = nIngredientCols + 1; // + fill column
+    constexpr int nRows           = 1 + nDrinks;
 
     const float contentW  = NAPKIN_FULL_SCREEN_W - 2.f * MARGIN;
     const float contentH  = NAPKIN_FULL_SCREEN_H - MARGIN - MARGIN_TOP;
-    const float drinkColW = contentW * 0.24f;
-    const float pctColW   = (contentW - drinkColW) / static_cast<float>(nIngredients);
+    const float drinkColW = contentW * 0.20f;
+    const float pctColW   = (contentW - drinkColW) / static_cast<float>(nDataCols);
     const float cellH     = contentH / static_cast<float>(nRows);
-    const float iconSize  = std::min(std::min(drinkColW, pctColW), cellH) * 0.62f;
+    const float iconSize  = std::min(std::min(drinkColW, pctColW), cellH) * 0.58f;
+
+    // Scale text to fit the widest label ("100%") inside a data column.
+    const float textScale = std::clamp(
+        pctColW * 0.85f / textWidth("100%", 1.f), 0.45f, 1.f);
+    const float textYOffset = static_cast<float>(GLYPH_H) * textScale * 0.5f;
 
     const float originX = -NAPKIN_FULL_SCREEN_W * 0.5f + MARGIN;
     const float originY = -NAPKIN_FULL_SCREEN_H * 0.5f + MARGIN_TOP;
@@ -120,21 +126,25 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
         return { colCenterX(col), rowCenterY(row) };
     };
 
-    constexpr int   TEXT_SCALE = 1;
-    // ChildOf local +Y is up; drawText anchors at glyph top - nudge up half a glyph
-    // to vertically center in the cell (screen-space scenes use the opposite sign).
-    constexpr float TEXT_Y_OFFSET = static_cast<float>(GLYPH_H * TEXT_SCALE) * 0.5f;
-
     constexpr LiquidIngredient topRowIngredients[] = {
         LiquidIngredient::Coffee,
         LiquidIngredient::Milk,
         LiquidIngredient::Water,
     };
 
-    for (int j = 0; j < nIngredients; ++j)
+    for (int j = 0; j < nIngredientCols; ++j)
     {
         const SDL_FPoint pos   = cellCenter(j + 1, nDrinks);
         const int        frame = menuFrom + j;
+
+        auto icon = createOrderIcon(assets, frame, iconSize, iconSize, napkin, pos);
+        icon.get<Drawable>().renderLayer = layer::UI4;
+        icon.add(CheatSheetIcon{});
+    }
+
+    {
+        const SDL_FPoint pos   = cellCenter(nIngredientCols + 1, nDrinks);
+        const int        frame = menuFrom + 3; // fillAmount (menu frame 18)
 
         auto icon = createOrderIcon(assets, frame, iconSize, iconSize, napkin, pos);
         icon.get<Drawable>().renderLayer = layer::UI4;
@@ -155,7 +165,7 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
     {
         const DrinkRecipe& recipe = recipeFor(static_cast<DrinkType>(i));
 
-        for (int j = 0; j < nIngredients; ++j)
+        for (int j = 0; j < nIngredientCols; ++j)
         {
             const LiquidIngredient ing = topRowIngredients[j];
             const int pct = static_cast<int>(
@@ -165,10 +175,25 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
             std::snprintf(buf, sizeof(buf), "%dx", pct);
 
             const SDL_FPoint center = cellCenter(j + 1, i);
-            const SDL_FPoint pos    = { center.x, center.y + TEXT_Y_OFFSET };
+            const SDL_FPoint pos    = { center.x, center.y + textYOffset };
             bagel::Entity::create().addAll(
                 Transform{},
-                TextLabel{ buf, TEXT_SCALE, TextAlign::Center },
+                TextLabel{ buf, textScale, TextAlign::Center },
+                ChildOf{ napkin, pos },
+                CheatSheetIcon{});
+        }
+
+        {
+            const int fillPct = static_cast<int>(std::lround(recipe.targetFill * 100.f));
+
+            char buf[8];
+            std::snprintf(buf, sizeof(buf), "%d%%", fillPct);
+
+            const SDL_FPoint center = cellCenter(nIngredientCols + 1, i);
+            const SDL_FPoint pos    = { center.x, center.y + textYOffset };
+            bagel::Entity::create().addAll(
+                Transform{},
+                TextLabel{ buf, textScale, TextAlign::Center },
                 ChildOf{ napkin, pos },
                 CheatSheetIcon{});
         }

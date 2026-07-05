@@ -25,12 +25,12 @@ struct TextLabel
     static constexpr std::size_t MaxLen  = BufSize - 1; // visible chars
 
     char        text[BufSize]{};
-    int         scale{1};
+    float       scale{1.f};
     TextAlign   align{TextAlign::Left};
     SDL_Color   tint{255, 255, 255, 255};
 
     TextLabel() = default;
-    TextLabel(std::string_view s, int scale_ = 1, TextAlign align_ = TextAlign::Left,
+    TextLabel(std::string_view s, float scale_ = 1.f, TextAlign align_ = TextAlign::Left,
               SDL_Color tint_ = { 255, 255, 255, 255 })
         : scale{ scale_ }, align{ align_ }, tint{ tint_ }
     {

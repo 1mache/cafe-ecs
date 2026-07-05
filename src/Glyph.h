@@ -24,12 +24,12 @@ constexpr int glyphIndex(char c)
     return -1;
 }
 
-/** @brief Rendered pixel width of @p text at integer @p scale. */
-constexpr float textWidth(std::string_view text, int scale)
+/** @brief Rendered pixel width of @p text at @p scale. */
+constexpr float textWidth(std::string_view text, float scale)
 {
     const int n = static_cast<int>(text.size());
     if (n == 0) return 0.f;
-    return static_cast<float>((n * GLYPH_W + (n - 1) * GLYPH_GAP) * scale);
+    return static_cast<float>(n * GLYPH_W + (n - 1) * GLYPH_GAP) * scale;
 }
 
 /** @brief Horizontal anchor rule for @ref alignedX. */
@@ -38,7 +38,7 @@ enum class TextAlign { Left, Center, Right };
 /** @brief Left-edge x for @p text at @p scale, positioned so it reads as
  *  @p align relative to @p anchorX (Left: starts at anchorX; Center: centered
  *  on anchorX; Right: ends at anchorX). */
-constexpr float alignedX(std::string_view text, int scale, TextAlign align, float anchorX)
+constexpr float alignedX(std::string_view text, float scale, TextAlign align, float anchorX)
 {
     switch (align)
     {
