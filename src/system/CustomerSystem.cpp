@@ -45,7 +45,7 @@ constexpr float PART_SPEED        = 4.0f;  // particle burst speed (u/s)
 struct TierLook
 {
     const char* text;
-    int         scale;
+    float       scale;
     SDL_Color   color;
     float       textVelY;   // popup text vertical drift
     int         partCount;  // number of burst quads
@@ -58,14 +58,14 @@ TierLook lookFor(GradeTier tier)
     switch (tier)
     {
         case GradeTier::Perfect:
-            return { "PERFECT", 1, {255, 210, 60, 255}, POPUP_RISE, 8,  1.f, {255, 230, 120, 255} };
+            return { "PERFECT", 1.f, {255, 210, 60, 255}, POPUP_RISE, 8,  1.f, {255, 230, 120, 255} };
         case GradeTier::Good:
-            return { "GOOD",    1, {110, 220, 90, 255}, POPUP_RISE, 4,  1.f, {110, 220, 90, 255} };
+            return { "GOOD",    1.f, {110, 220, 90, 255}, POPUP_RISE, 4,  1.f, {110, 220, 90, 255} };
         case GradeTier::Meh:
-            return { "MEH",     1, {150, 150, 150, 255}, POPUP_RISE, 3, -1.f, {150, 150, 150, 255} };
+            return { "MEH",     1.f, {150, 150, 150, 255}, POPUP_RISE, 3, -1.f, {150, 150, 150, 255} };
         case GradeTier::Failed:
         default:
-            return { "TOO SLOW", 1, {230, 60, 50, 255}, POPUP_SINK, 5, -1.f, {40, 40, 40, 255} };
+            return { "TOO SLOW", 1.f, {230, 60, 50, 255}, POPUP_SINK, 5, -1.f, {40, 40, 40, 255} };
     }
 }
 

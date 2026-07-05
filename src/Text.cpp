@@ -10,7 +10,7 @@
 namespace cafe
 {
 void drawText(SDL_Renderer* renderer, const Texture& font, std::string_view text,
-              float x, float y, int scale)
+              float x, float y, float scale)
 {
     float xpos = x;
 
@@ -27,14 +27,14 @@ void drawText(SDL_Renderer* renderer, const Texture& font, std::string_view text
                                  static_cast<float>(GLYPH_H)};
 
         // Destination: scaled glyph at (xpos, y)
-        const float dst_w = static_cast<float>(GLYPH_W * scale);
-        const float dst_h = static_cast<float>(GLYPH_H * scale);
+        const float dst_w = static_cast<float>(GLYPH_W) * scale;
+        const float dst_h = static_cast<float>(GLYPH_H) * scale;
         const SDL_FRect dst_rect{xpos, y, dst_w, dst_h};
 
         SDL_RenderTexture(renderer, font.get(), &src_rect, &dst_rect);
 
         // Advance x by glyph width + tracking, scaled
-        xpos += static_cast<float>((GLYPH_W + GLYPH_GAP) * scale);
+        xpos += static_cast<float>(GLYPH_W + GLYPH_GAP) * scale;
     }
 }
 } // namespace cafe
