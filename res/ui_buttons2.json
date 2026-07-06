@@ -1,6 +1,6 @@
 { "frames": [
    {
-    "filename": "ui2_0.aseprite",
+    "filename": "ui2 0.aseprite",
     "frame": { "x": 0, "y": 0, "w": 32, "h": 16 },
     "rotated": false,
     "trimmed": false,
@@ -9,7 +9,7 @@
     "duration": 100
    },
    {
-    "filename": "ui2_1.aseprite",
+    "filename": "ui2 1.aseprite",
     "frame": { "x": 32, "y": 0, "w": 32, "h": 16 },
     "rotated": false,
     "trimmed": false,

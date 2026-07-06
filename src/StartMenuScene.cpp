@@ -22,7 +22,7 @@ namespace
 constexpr auto FONT_TEX    = "font.png";
 constexpr auto MENU_BG_TEX = "bg_big.png"; // shared cafe backdrop, authored oversized (createBg scales it down)
 constexpr auto LOGO_TEX    = "logo.png";
-constexpr int  SCALE       = 1;
+constexpr float SCALE      = 0.75f; // a bit smaller than the default full-glyph size
 
 // --- Layout. Squares are in WORLD units (camera at origin: 1 unit = 8 px,
 // screen centre 80,45 = world 0,0, world y up); text anchors are in screen px
@@ -35,16 +35,18 @@ constexpr WorldPos LOGO_POS    = { 0.f, 2.75f };   // screen (80, 23)
 constexpr float    LOGO_HALF_W = 3.0f;             // 48 px wide
 
 constexpr WorldPos START_POS   = { 0.f, -0.875f }; // screen (80, 52)
-constexpr WorldPos EXIT_POS    = { 0.f, -2.5f };   // screen (80, 65)
+constexpr WorldPos EXIT_POS    = { 0.f, -3.375f };  // screen (80, 72) — 20px below START, 4px clear of its 16px-tall art
 
 constexpr WorldPos SOUND_POS   = { 8.5f, -4.375f };// screen (148, 80), bottom-right
 constexpr float    SOUND_HALF  = 0.625f;           // 10 x 10 px
 
 // Vertical centring for a label over a square (same trick as DayReportScene).
-constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * 0.5f;
+// Scaled by SCALE too, else it centres for scale-1 glyphs regardless of the
+// label's actual (smaller) size.
+constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * SCALE * 0.5f;
 
-// Font glyphs are white; black text keeps the labels readable on white squares.
-constexpr SDL_Color TEXT_ON_SQUARE = { 0, 0, 0, 255 };
+// White text over the ui_buttons2 art (was black, back when the buttons were plain white squares).
+constexpr SDL_Color TEXT_ON_SQUARE = { 255, 255, 255, 255 };
 
 /** Centred label over a square: its own TextLabel entity at the square's
  *  centre, nudged up half a glyph (text-over-bar layout from DayReportScene). */
