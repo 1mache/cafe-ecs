@@ -29,9 +29,9 @@ inline constexpr DrinkRecipe MENU[] = {
     // name           {coffee, water, milk}                    hot    cold   iconFrame  targetFill
     { "Black coffee",{ 0.80f, 0.20f, 0.00f }, true,  true,          1.f },
     { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false,         0.5f },
-    { "Americano",   { 0.35f, 0.50f, 0.15f }, true,  true,          1.f },
-    { "Latte",       { 0.20f, 0.70f, 0.10f }, true,  false,         1.f },
-    { "Cappuccino",  { 0.30f, 0.70f, 0.00f }, true,  true,          0.75f },
+    { "Americano",   { 0.00f, 0.50f, 0.50f }, true,  true,          1.f },
+    { "Latte",       { 0.25f, 0.50f, 0.25f }, true,  false,         1.f },
+    { "Cappuccino",  { 0.30f, 0.70f, 0.00f }, true,  true,          0.8f },
 };
 static_assert(std::size(MENU) == static_cast<size_t>(DrinkType::count),
               "MENU must have one entry per DrinkType");

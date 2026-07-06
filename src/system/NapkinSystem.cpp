@@ -128,8 +128,8 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
 
     constexpr LiquidIngredient topRowIngredients[] = {
         LiquidIngredient::Coffee,
-        LiquidIngredient::Milk,
         LiquidIngredient::Water,
+        LiquidIngredient::Milk,
     };
 
     for (int j = 0; j < nIngredientCols; ++j)
@@ -178,7 +178,7 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
             const SDL_FPoint pos    = { center.x, center.y + textYOffset };
             bagel::Entity::create().addAll(
                 Transform{},
-                TextLabel{ buf, textScale, TextAlign::Center },
+                TextLabel{ buf, textScale, TextAlign::Center, SDL_Color{ 0, 0, 0, 255 } },
                 ChildOf{ napkin, pos },
                 CheatSheetIcon{});
         }
@@ -193,7 +193,7 @@ void createCheatSheet(AssetManager& assets, bagel::Entity napkin)
             const SDL_FPoint pos    = { center.x, center.y + textYOffset };
             bagel::Entity::create().addAll(
                 Transform{},
-                TextLabel{ buf, textScale, TextAlign::Center },
+                TextLabel{ buf, textScale, TextAlign::Center, SDL_Color{ 0, 0, 0, 255 } },
                 ChildOf{ napkin, pos },
                 CheatSheetIcon{});
         }
