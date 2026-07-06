@@ -115,10 +115,14 @@ void buttonDispatchSystem(AssetManager& assets, PhysicsContext* physics, AudioCo
     constexpr auto UI_SHEET_PATH = "ui_buttons.json";
     const SpriteSheet& uiSheet = assets.getSpriteSheet(UI_TEX_PATH, UI_SHEET_PATH);
 
-    // Start/Exit long-button background: no frame tags, just idle (0) / pressed (1).
+    // Start/Exit/Back long-button background: no frame tags, just idle (0) /
+    // pressed (1). Other Menu-kind buttons (e.g. the info toggle) use a
+    // different texture/sheet and must keep whatever srcRect the scene gave
+    // them, hence the texture check below.
     constexpr auto UI2_TEX_PATH   = "ui_buttons2.png";
     constexpr auto UI2_SHEET_PATH = "ui_buttons2.json";
     const SpriteSheet& menuSheet = assets.getSpriteSheet(UI2_TEX_PATH, UI2_SHEET_PATH);
+    const Texture&     menuTex   = assets.getTexture(UI2_TEX_PATH);
 
     float mx{}, my{};
     const bool mouseHeld = (SDL_GetMouseState(&mx, &my) & SDL_BUTTON_LMASK) != 0;
@@ -145,7 +149,7 @@ void buttonDispatchSystem(AssetManager& assets, PhysicsContext* physics, AudioCo
         {
             d.srcRect = uiSheet.getFrameRect(SettingsState::muted() ? soundOffFrame : soundOnFrame);
         }
-        else if (b.kind == ButtonKind::Menu)
+        else if (b.kind == ButtonKind::Menu && d.texture == menuTex.get())
         {
             const bool showPressed = mouseHeld && isPointInsideTransform(worldMouse, e.get<Transform>());
             d.srcRect = menuSheet.getFrameRect(showPressed ? 1 : 0);

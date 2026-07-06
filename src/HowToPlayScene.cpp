@@ -24,13 +24,12 @@ constexpr int  SCALE    = 1;
 // world 0,0, world y up). Screen-px equivalents in comments — same split
 // StartMenuScene/DayReportScene use.
 
-// BACK button: small, bottom-left corner.
-constexpr WorldPos BACK_POS    = { -8.f, -4.25f };   // screen (16, 79), bottom-left
-constexpr float    BTN_HALF_W  = 1.25f;              // 20 px wide
-constexpr float    BTN_HALF_H  = 0.5f;               // 8 px tall
+// BACK button: bottom-left corner.
+constexpr WorldPos BACK_POS = { -8.f, -4.25f }; // screen (16, 79), bottom-left
 
 constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * 0.5f;
-constexpr SDL_Color TEXT_ON_SQUARE = { 0, 0, 0, 255 }; // black text on white square
+// White text over the ui_buttons2 art (same as the main menu's START/EXIT).
+constexpr SDL_Color TEXT_ON_SQUARE = { 255, 255, 255, 255 };
 
 // How-to text: white lines centred on the screen's vertical axis (screen x=80),
 // drawn straight on the black background. All-caps, only ' 0-9 A-Z / - %' glyphs
@@ -67,17 +66,6 @@ constexpr const char* HOWTO_LINES[] = {
     "EARN MONEY - BUY UPGRADES",
     "BETWEEN DAYS",
 };
-
-/** White placeholder square (null texture => drawSystem fills the rect with tint).
- *  Swap to real art later by filling texture + srcRect. */
-bagel::Entity makeSquare(WorldPos pos, float halfW, float halfH)
-{
-    auto e = bagel::Entity::create();
-    e.addAll(
-        Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ nullptr, SDL_FRect{}, layer::UI1 }); // default tint: opaque white
-    return e;
-}
 
 /** Centred label over a square (text-over-bar layout from StartMenuScene). */
 void addCenteredLabel(WorldPos squarePos, const char* text, WorldPos cam)
@@ -119,9 +107,23 @@ void HowToPlayScene::onInit()
         y += BODY_STEP;
     }
 
-    // BACK button: square + tag + centred label.
-    makeSquare(BACK_POS, BTN_HALF_W, BTN_HALF_H)
-        .add(Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::Back });
+    // BACK button: ui_buttons2's long-button background (frame 0 idle, frame 1
+    // pressed — buttonDispatchSystem swaps it live), same native size as the
+    // main menu's START/EXIT, plus a centred label.
+    {
+        constexpr auto TEX_PATH   = "ui_buttons2.png";
+        constexpr auto SHEET_PATH = "ui_buttons2.json";
+        const SpriteSheet& sheet  = getAssetManager().getSpriteSheet(TEX_PATH, SHEET_PATH);
+        const Texture&     tex    = getAssetManager().getTexture(TEX_PATH);
+        const float halfW = texToWorldScale(sheet.spriteSize().x);
+        const float halfH = texToWorldScale(sheet.spriteSize().y);
+
+        auto e = bagel::Entity::create();
+        e.addAll(
+            Transform{ .x = BACK_POS.x, .y = BACK_POS.y, .w = halfW, .h = halfH },
+            Drawable{ tex.get(), sheet.getFrameRect(0), layer::UI1 },
+            Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::Back });
+    }
     addCenteredLabel(BACK_POS, "BACK", cam);
 }
 
@@ -152,7 +154,7 @@ bool HowToPlayScene::onUpdate(float /*dt*/)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // black background
     SDL_RenderClear(renderer);
 
-    drawSystem(renderer);                                             // placeholder squares
+    drawSystem(renderer);                                             // BACK button
     drawTextSystem(renderer, getAssetManager().getTexture(FONT_TEX)); // BACK label
 
     SDL_RenderPresent(renderer);

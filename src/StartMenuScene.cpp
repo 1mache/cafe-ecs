@@ -37,14 +37,13 @@ constexpr float    LOGO_HALF_W = 3.0f;             // 48 px wide
 constexpr WorldPos START_POS   = { 0.f, -0.875f }; // screen (80, 52)
 constexpr WorldPos EXIT_POS    = { 0.f, -3.375f };  // screen (80, 72) — 20px below START, 4px clear of its 16px-tall art
 
-constexpr WorldPos SOUND_POS   = { 8.5f, -4.375f };// screen (148, 80), bottom-right
-constexpr float    SOUND_HALF  = 0.625f;           // 10 x 10 px
+// HOW-TO-PLAY (info) button: bottom-left corner.
+constexpr WorldPos HOWTO_POS  = { -8.5f, -4.375f }; // screen (12, 80), bottom-left
+constexpr float    HOWTO_HALF = 0.625f;            // 10 x 10 px
 
-// HOW-TO-PLAY button: gray placeholder square left of the sound toggle. No label
-// (per the sketch). Swap to a real sprite later by filling texture + srcRect.
-constexpr WorldPos  HOWTO_POS  = { 6.75f, -4.375f };// screen (134, 80), left of sound
-constexpr float     HOWTO_HALF = 0.625f;           // 10 x 10 px
-constexpr SDL_Color HOWTO_TINT = { 128, 128, 128, 255 };
+// Sound toggle: next to info, same y, one step right.
+constexpr WorldPos SOUND_POS   = { -6.75f, -4.375f }; // screen (26, 80), right of info
+constexpr float    SOUND_HALF  = 0.625f;              // 10 x 10 px
 
 // Vertical centring for a label over a square (same trick as DayReportScene).
 // Scaled by SCALE too, else it centres for scale-1 glyphs regardless of the
@@ -53,20 +52,6 @@ constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * SCALE * 0.5f;
 
 // White text over the ui_buttons2 art (was black, back when the buttons were plain white squares).
 constexpr SDL_Color TEXT_ON_SQUARE = { 255, 255, 255, 255 };
-
-/** White placeholder square: null texture => drawSystem fills the rect with
- *  tint. Pass `tint` for a non-white placeholder (e.g. gray). Swap to real art
- *  later by filling texture + srcRect (the microwave placeholder workflow). */
-bagel::Entity makeSquare(WorldPos pos, float halfW, float halfH,
-                         SDL_Color tint = { 255, 255, 255, 255 })
-{
-    auto e = bagel::Entity::create();
-    e.addAll(
-        Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ nullptr, SDL_FRect{}, layer::UI1, tint }
-    );
-    return e;
-}
 
 /** Centred label over a square: its own TextLabel entity at the square's
  *  centre, nudged up half a glyph (text-over-bar layout from DayReportScene). */
@@ -129,27 +114,30 @@ void StartMenuScene::onInit()
         makeMenuButton(EXIT_POS, MenuAction::Exit, "EXIT");
     }
 
-    // Sound toggle: no label (per the sketch); buttonDispatchSystem paints the
-    // soundon/soundoff sprite frame every frame, including the first. Kept at
-    // its existing on-screen size (SOUND_HALF) rather than ui_buttons.json's
-    // native 16x16 frame size.
+    // Sound + info toggles: share ui_buttons.json's sheet. Neither has a label
+    // (per the sketch); buttonDispatchSystem paints the soundon/soundoff frame
+    // every frame for the sound button. Both kept at their existing on-screen
+    // size (SOUND_HALF/HOWTO_HALF) rather than the sheet's native 16x16 frame.
     {
         constexpr auto TEX_PATH   = "ui_buttons.png";
         constexpr auto SHEET_PATH = "ui_buttons.json";
         const SpriteSheet& sheet  = getAssetManager().getSpriteSheet(TEX_PATH, SHEET_PATH);
         const Texture&     tex    = getAssetManager().getTexture(TEX_PATH);
-        const auto [soundOnFrame, _] = sheet.getTagBounds("soundon");
+        const auto [soundOnFrame, soundOnEnd] = sheet.getTagBounds("soundon");
+        const auto [infoFrame, infoEnd]       = sheet.getTagBounds("info");
 
-        auto e = bagel::Entity::create();
-        e.addAll(
+        auto sound = bagel::Entity::create();
+        sound.addAll(
             Transform{ .x = SOUND_POS.x, .y = SOUND_POS.y, .w = SOUND_HALF, .h = SOUND_HALF },
             Drawable{ tex.get(), sheet.getFrameRect(soundOnFrame), layer::UI1 },
             Button{ .kind = ButtonKind::Sound });
-    }
 
-    // HOW-TO-PLAY: gray placeholder square, no label; opens the how-to scene.
-    makeSquare(HOWTO_POS, HOWTO_HALF, HOWTO_HALF, HOWTO_TINT)
-        .add(Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::HowToPlay });
+        auto info = bagel::Entity::create();
+        info.addAll(
+            Transform{ .x = HOWTO_POS.x, .y = HOWTO_POS.y, .w = HOWTO_HALF, .h = HOWTO_HALF },
+            Drawable{ tex.get(), sheet.getFrameRect(infoFrame), layer::UI1 },
+            Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::HowToPlay });
+    }
 
     getAudioContext().playMusic(sound::INTRO_MUSIC, sound::MUSIC_VOLUME);
 }
