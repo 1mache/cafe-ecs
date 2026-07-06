@@ -68,7 +68,7 @@ void checkBeverageSystem()
 
         const Cup& cup = e.get<Cup>();
 
-        //**start score log
+#ifdef DEBUG
         std::cout << "[BeverageScore] snapshot (cup waiting on customer)\n";
         std::cout << "[BeverageScore]   actual drops: " << overview.dropSum
                   << " (" << static_cast<int>(overview.fillPercent * 100.f) << "% fill)\n";
@@ -79,7 +79,7 @@ void checkBeverageSystem()
         }
         std::cout << "[BeverageScore]   ice count: " << cup.iceCount
                   << ", ice found: " << (cup.iceCount > 0 ? "yes" : "no") << "\n";
-        //**end score log
+#endif
     }
 }
 
@@ -133,7 +133,7 @@ void acceptGradedBeverageSystem()
         const int expectedDrops = static_cast<int>(
             std::lround(recipe.targetFill * static_cast<float>(cup.capacity)));
 
-        //**start score log
+#ifdef DEBUG
         std::cout << "[BeverageScore] === Beverage submitted ===\n";
         std::cout << "[BeverageScore] drink slot: " << slot
                   << ", drink: " << recipe.name << "\n";
@@ -158,14 +158,14 @@ void acceptGradedBeverageSystem()
                   << ", ice found: " << (cup.iceCount > 0 ? "yes" : "no") << "\n";
         std::cout << "[BeverageScore]   actual temperature: "
                   << (ov.isHot ? "Hot" : "Cold") << "\n";
-        //**end score log
+#endif
 
         grade.drinkGrades[slot] = gradeDrink(recipe, expectedHot, ov);
 
-        //**start score log
+#ifdef DEBUG
         std::cout << "[BeverageScore] final drinkGrades[" << slot << "] = "
                   << grade.drinkGrades[slot] << "\n";
-        //**end score log
+#endif
 
         markDrinkServed(grade, slot);
         calmCustomer(customer);

@@ -33,9 +33,9 @@ int gradeDrink(const DrinkRecipe& recipe, bool expectedHot, const CoffeeOverview
 {
     if (overview.dropSum == 0)
     {
-        //**start score log
+#ifdef DEBUG
         std::cout << "[BeverageScore] (empty cup) -> final score 0\n";
-        //**end score log
+#endif
         return 0;
     }
 
@@ -51,47 +51,47 @@ int gradeDrink(const DrinkRecipe& recipe, bool expectedHot, const CoffeeOverview
         {
             ++expectedTypeCount;
         }
-        //**start score log
+#ifdef DEBUG
         std::cout << "[BeverageScore] " << kIngredientNames[i]
                   << ": expected " << want << ", got " << got
                   << ", delta " << delta << "\n";
-        //**end score log
+#endif
     }
 
     const float divisor             = ratioGradeDivisor(expectedTypeCount);
     const float ratioGradeUnclamped = 1.0f - totalDelta / divisor;
-    //**start score log
+#ifdef DEBUG
     std::cout << "[BeverageScore] ratio: totalDelta " << totalDelta
               << ", expectedTypeCount " << expectedTypeCount
               << ", divisor " << divisor
               << ", ratioGrade " << ratioGradeUnclamped << "\n";
-    //**end score log
+#endif
 
     const float ratioGradeBeforeClamp = ratioGradeUnclamped;
     const float ratioGrade            = std::clamp(ratioGradeUnclamped, kNormalizedGradeMin, kNormalizedGradeMax);
-    //**start score log
+#ifdef DEBUG
     if (ratioGradeBeforeClamp != ratioGrade)
     {
         std::cout << "[BeverageScore] ratioGrade clamped: " << ratioGradeBeforeClamp
                   << " -> " << ratioGrade << "\n";
     }
-    //**end score log
+#endif
 
     const float volumeGrade = std::clamp(
         1.0f - std::fabs(overview.fillPercent - recipe.targetFill),
         kNormalizedGradeMin, kNormalizedGradeMax);
 
-    //**start score log
+#ifdef DEBUG
     std::cout << "[BeverageScore] fill: expected " << recipe.targetFill
               << " (targetFill), got " << overview.fillPercent
               << " (fillPercent), volumeGrade " << volumeGrade << "\n";
-    //**end score log
+#endif
 
     const float grade        = kRatioGradeWeight * ratioGrade + kVolumeGradeWeight * volumeGrade;
     const float clampedGrade = std::clamp(grade, kNormalizedGradeMin, kNormalizedGradeMax);
     int         score        = static_cast<int>(std::round(clampedGrade * static_cast<float>(kMaxDrinkScore)));
 
-    //**start score log
+#ifdef DEBUG
     std::cout << "[BeverageScore] weighted: " << kRatioGradeWeight << " * " << ratioGrade
               << " + " << kVolumeGradeWeight << " * " << volumeGrade << " = " << grade << "\n";
     std::cout << "[BeverageScore] base score: " << score << "\n";
@@ -99,31 +99,31 @@ int gradeDrink(const DrinkRecipe& recipe, bool expectedHot, const CoffeeOverview
               << (expectedHot ? "Hot" : "Cold") << ", actual "
               << (overview.isHot ? "Hot" : "Cold") << " (ice present: "
               << (overview.isHot ? "no" : "yes") << ")\n";
-    //**end score log
+#endif
 
     if (!expectedHot && !overview.isHot)
     {
         const int scoreBeforeBonus = score;
         score                      = std::min(kMaxDrinkScore, score + kColdMatchBonus);
-        //**start score log
+#ifdef DEBUG
         std::cout << "[BeverageScore] cold match bonus: " << scoreBeforeBonus
                   << " + " << kColdMatchBonus << " -> " << score << "\n";
-        //**end score log
+#endif
     }
 
     if (expectedHot != overview.isHot)
     {
         const int scoreBeforePenalty = score;
         score                        = static_cast<int>(std::round(static_cast<float>(score) * kTempMismatchPenaltyFactor));
-        //**start score log
+#ifdef DEBUG
         std::cout << "[BeverageScore] temperature mismatch penalty: " << scoreBeforePenalty
                   << " * " << kTempMismatchPenaltyFactor << " -> " << score << "\n";
-        //**end score log
+#endif
     }
 
-    //**start score log
+#ifdef DEBUG
     std::cout << "[BeverageScore] final score: " << score << "\n";
-    //**end score log
+#endif
 
     return score;
 }

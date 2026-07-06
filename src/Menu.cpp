@@ -110,12 +110,14 @@ void validateOrderSprites(const SpriteSheet& props)
         "DrinkType has more entries than props.json 'coffee' sprites");
 
     // sprites bigger than enum -> unimplemented art -> warning only
+#ifdef DEBUG
     if (pastrySprites > static_cast<int>(PastryType::count))
         SDL_Log("Warning: props.json 'pastry' has %d sprites, only %d PastryType impl'd",
                 pastrySprites, static_cast<int>(PastryType::count));
     if (coffeeSprites > static_cast<int>(DrinkType::count))
         SDL_Log("Warning: props.json 'coffee' has %d sprites, only %d DrinkType impl'd",
                 coffeeSprites, static_cast<int>(DrinkType::count));
+#endif
 }
 
 const char* temperatureName(Temperature t)

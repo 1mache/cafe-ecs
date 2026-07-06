@@ -72,6 +72,7 @@ void destroySystem()
     for (auto id : toDestroy)
     {
         bagel::Entity e{ id };
+#ifdef DEBUG
         if (e.test(iceMask))
             SDL_Log("destroySystem: destroyed entity %d (Ice)", id.id);
         else if (e.test(liquidMask))
@@ -82,6 +83,7 @@ void destroySystem()
         else if (e.test(pastryMask))
             SDL_Log("destroySystem: destroyed entity %d (Pastry, type=%d)",
                      id.id, static_cast<int>(e.get<Pastry>().type));
+#endif
 
         destroyPhysicalEntity(id);
     }

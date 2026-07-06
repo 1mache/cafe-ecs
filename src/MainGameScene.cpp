@@ -150,5 +150,7 @@ void cafe::MainGameScene::onCleanup()
 {
     destroyAllGameEntities();   // global ECS registry: clear it before the next scene
     _physics.cleanup();
+#ifdef DEBUG
     std::cout << "[Main scene] Ended\n";
+#endif
 }

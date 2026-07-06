@@ -400,10 +400,12 @@ void customerStateSystem(AssetManager& assets, PhysicsContext& physics, float dt
                          .kind     = Tween::Smooth, .duration = CUSTOMER_WALK_OUT_DURATION });
 
             DayState::record(behavior.succeeded, behavior.rating);
+#ifdef DEBUG
             if (behavior.succeeded)
                 std::cout << "[Order] Customer left SUCCESSFUL — rating: " << behavior.rating << "\n";
             else
                 std::cout << "[Order] Customer left FAILED (patience ran out) — rating: " << behavior.rating << "\n";
+#endif
 
             customer.state = CustomerState::Departing;
             continue;

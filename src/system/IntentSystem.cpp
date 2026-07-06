@@ -34,7 +34,9 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input, AudioContext& a
                                     NAPKIN_HIDDEN_HITBOX_H))
         {
             intent.state = NapkinState::Toggle;
+#ifdef DEBUG
             std::cout << "NapkinIntent: switched to Toggle (hover over hidden hitbox)\n";
+#endif
         }
     }
     else if (intent.state == NapkinState::Toggle)
@@ -48,7 +50,9 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input, AudioContext& a
         {
             intent.state = NapkinState::FullBlank;
             audio.play(sound::PAPER, sound::PAPER_VOLUME);
+#ifdef DEBUG
             std::cout << "NapkinIntent: switched to FullBlank (click inside toggle hitbox)\n";
+#endif
         }
         else if (!isPointInsideScreenRect(input.mousePos,
                                           NAPKIN_TOGGLE_HITBOX_X,
@@ -57,7 +61,9 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input, AudioContext& a
                                           NAPKIN_TOGGLE_HITBOX_H))
         {
             intent.state = NapkinState::Hidden;
+#ifdef DEBUG
             std::cout << "NapkinIntent: switched to Hidden (mouse left toggle hitbox)\n";
+#endif
         }
     }
     else if (intent.state == NapkinState::FullBlank || intent.state == NapkinState::Full)
@@ -66,7 +72,9 @@ void updateNapkinIntent(bagel::Entity e, const UserInput& input, AudioContext& a
         {
             intent.state = NapkinState::Hidden;
             audio.play(sound::PAPER, sound::PAPER_VOLUME);
+#ifdef DEBUG
             std::cout << "NapkinIntent: switched to Hidden (click inside full hitbox)\n";
+#endif
         }
     }
 }

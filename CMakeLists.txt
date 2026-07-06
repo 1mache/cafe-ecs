@@ -38,6 +38,8 @@ if(WIN32)
     add_compile_definitions(_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING)
 endif()
 
+add_compile_definitions($<$<CONFIG:Debug>:DEBUG>)
+
 if(ENABLE_WARNINGS)
     include(Warnings)
 endif()
