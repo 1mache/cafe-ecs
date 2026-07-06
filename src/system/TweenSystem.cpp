@@ -16,12 +16,10 @@ void tweenSystem(float dt)
         auto& transform = ent.get<Transform>();
         auto& tween     = ent.get<Tween>();
 
-        // if ended.
-        if (getTweenProgress(tween) >= 1.0f)
-            ent.del<Tween>(); // remove the component
-
-        // else ease into target transform
         tweenTick(tween, dt, transform);
+
+        if (getTweenProgress(tween) >= 1.0f)
+            ent.del<Tween>();
 
     }
 };

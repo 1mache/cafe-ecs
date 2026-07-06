@@ -1,6 +1,7 @@
 #include "CheckBeverageSystem.h"
 #include "Components.h"
 #include "CustomerSystem.h"
+#include "Entities.h"
 #include "Menu.h"
 #include "OrderMatch.h"
 #include <cmath>
@@ -105,7 +106,18 @@ void acceptGradedBeverageSystem()
         const CoffeeOverview& ov    = e.get<CoffeeOverview>();
         const Order&          order = customer.get<Order>();
         auto&                 grade = customer.get<OrderGrade>();
-        const int             slot  = matchDrinkSlotByRatio(order, grade, ov);
+
+        if (ov.dropSum == 0)
+        {
+            if (e.has<DragIntent>())
+                e.get<DragIntent>().dropSpaceEntity = std::nullopt;
+            e.del<CheckCoffeeIntent>();
+            rejectItem(e);
+            makeCustomerMad(customer);
+            continue;
+        }
+
+        const int slot = matchDrinkSlotByRatio(order, grade, ov);
 
         if (slot < 0)
         {
