@@ -40,30 +40,79 @@ SceneId Scene::run()
         isRunning = onUpdate(dt);
         _audioContext.updateMusic(); // keep background music looping seamlessly
 
-        // ============= FRAME EQUALIZER ============
+        limitFrameRate(frameStart, ticksPerFrame, performanceFrequency);
+    }
 
-        Uint64 frameEnd     = SDL_GetPerformanceCounter();
-        Uint64 frameElapsed = frameEnd - frameStart;
+    // ---- Fade out: grab the last presented frame and fade it to black. ----
+    if (SDL_Texture* lastFrame = captureFrame())
+    {
+        playFadeOut(lastFrame);
+        SDL_DestroyTexture(lastFrame);
+    }
 
-        if (frameElapsed < ticksPerFrame)
+    return _next;
+}
+
+void Scene::limitFrameRate(Uint64 frameStart, Uint64 ticksPerFrame,
+                            Uint64 performanceFrequency) const
+{
+    Uint64 frameEnd     = SDL_GetPerformanceCounter();
+    Uint64 frameElapsed = frameEnd - frameStart;
+
+    if (frameElapsed < ticksPerFrame)
+    {
+        Uint64 ticksToWait = ticksPerFrame - frameElapsed;
+
+        // 1. Coarse Sleep: Convert to milliseconds and sleep for the bulk of the time.
+        // We subtract a 2ms buffer because SDL_Delay frequently oversleeps.
+        Uint32 msToWait = static_cast<Uint32>((ticksToWait * 1000) / performanceFrequency);
+        if (msToWait > 2)
+            SDL_Delay(msToWait - 2);
+
+        // 2. Fine Tuning: Spin-lock for the remaining micro-seconds to hit the exact target.
+        while (SDL_GetPerformanceCounter() - frameStart < ticksPerFrame)
         {
-            Uint64 ticksToWait = ticksPerFrame - frameElapsed;
-
-            // 1. Coarse Sleep: Convert to milliseconds and sleep for the bulk of the time.
-            // We subtract a 2ms buffer because SDL_Delay frequently oversleeps.
-            Uint32 msToWait = static_cast<Uint32>((ticksToWait * 1000) / performanceFrequency);
-            if (msToWait > 2)
-                SDL_Delay(msToWait - 2);
-
-            // 2. Fine Tuning: Spin-lock for the remaining micro-seconds to hit the exact target.
-            while (SDL_GetPerformanceCounter() - frameStart < ticksPerFrame)
-            {
-                // High-precision wait loop
-            }
-        // ============= FRAME EQUALIZER ============
+            // High-precision wait loop
         }
     }
-    return _next;
+}
+
+SDL_Texture* Scene::captureFrame() const
+{
+    SDL_Surface* surface = SDL_RenderReadPixels(_renderer, nullptr);
+    if (!surface) return nullptr;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer, surface);
+    SDL_DestroySurface(surface);
+    return texture;
+}
+
+void Scene::playFadeOut(SDL_Texture* frame) const
+{
+    const Uint64 performanceFrequency = SDL_GetPerformanceFrequency();
+    const Uint64 ticksPerFrame        = performanceFrequency / FPS;
+    const Uint64 fadeStart            = SDL_GetPerformanceCounter();
+
+    float elapsed = 0.f;
+    while (elapsed < FADE_DURATION)
+    {
+        Uint64 frameStart = SDL_GetPerformanceCounter();
+        elapsed = static_cast<float>(frameStart - fadeStart)
+                / static_cast<float>(performanceFrequency);
+
+        float progress = elapsed / FADE_DURATION;
+        if (progress > 1.f) progress = 1.f;
+        Uint8 alpha = static_cast<Uint8>(255.f * progress);
+
+        SDL_RenderClear(_renderer);
+        SDL_RenderTexture(_renderer, frame, nullptr, nullptr);
+        SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(_renderer, 0, 0, 0, alpha);
+        SDL_RenderFillRect(_renderer, nullptr);
+        SDL_RenderPresent(_renderer);
+
+        limitFrameRate(frameStart, ticksPerFrame, performanceFrequency);
+    }
 }
 void Scene::cleanup()
 {

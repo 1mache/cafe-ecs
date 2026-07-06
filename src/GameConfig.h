@@ -5,6 +5,7 @@ namespace cafe
 static constexpr auto  WINDOW_TITLE   = "Entity Coffee System";
 static constexpr int   FPS            = 60;
 static constexpr float FRAME_DELTA_MS = FPS ? (1000.f / FPS) : 0.f;
+static constexpr float FADE_DURATION  = 0.3f; // seconds, per fade in/out
 static constexpr float PTM            = 8.f;  // pixels to meters conversion factor
 static constexpr float START_WIN_W    = 1280; // physical window size
 static constexpr float START_WIN_H    = 720;
