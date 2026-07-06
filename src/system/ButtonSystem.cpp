@@ -1,11 +1,15 @@
 #include "ButtonSystem.h"
 
+#include "AssetManager.h"
 #include "AudioContext.h"
 #include "Components.h"
 #include "Entities.h"       // createCup, createIceCube
+#include "IntentSystem.h"   // mouseWindowToRenderPoint
+#include "RenderContext.h"
 #include "SettingsState.h"
 #include "SoundAssets.h"
-#include "Transform.h"      // isPointInsideTransform
+#include "SpriteSheet.h"
+#include "Transform.h"      // isPointInsideTransform, screenToWorldPoint
 #include "UpgradeState.h"
 
 #include <bagel.h>
@@ -50,7 +54,8 @@ void updateButtonsFromMouse(WorldPos worldMouse, bool clicked, bool mouseUp, Aud
     }
 }
 
-void buttonDispatchSystem(AssetManager& assets, PhysicsContext* physics, AudioContext& audio)
+void buttonDispatchSystem(AssetManager& assets, PhysicsContext* physics, AudioContext& audio,
+                          SDL_Renderer* renderer)
 {
     static const bagel::Mask buttonMask = bagel::MaskBuilder().set<Button>().build();
 
@@ -98,6 +103,53 @@ void buttonDispatchSystem(AssetManager& assets, PhysicsContext* physics, AudioCo
             createCup(assets, *physics, sp.first);
         else if (sp.second == DropType::Ice)
             createIceCube(assets, *physics, sp.first);
+    }
+
+    // Live sprite-state refresh: independent of `pressed` above (already consumed
+    // for Spawn by the time we get here), so cup/sound art reflects the current
+    // frame's real state rather than a one-frame-old edge.
+    static const bagel::Mask spriteMask =
+        bagel::MaskBuilder().set<Button>().set<Drawable>().set<Transform>().build();
+
+    constexpr auto UI_TEX_PATH   = "ui_buttons.png";
+    constexpr auto UI_SHEET_PATH = "ui_buttons.json";
+    const SpriteSheet& uiSheet = assets.getSpriteSheet(UI_TEX_PATH, UI_SHEET_PATH);
+
+    // Start/Exit long-button background: no frame tags, just idle (0) / pressed (1).
+    constexpr auto UI2_TEX_PATH   = "ui_buttons2.png";
+    constexpr auto UI2_SHEET_PATH = "ui_buttons2.json";
+    const SpriteSheet& menuSheet = assets.getSpriteSheet(UI2_TEX_PATH, UI2_SHEET_PATH);
+
+    float mx{}, my{};
+    const bool mouseHeld = (SDL_GetMouseState(&mx, &my) & SDL_BUTTON_LMASK) != 0;
+    const WorldPos worldMouse =
+        screenToWorldPoint(mouseWindowToRenderPoint(renderer, mx, my), RenderContext::getCameraPos());
+
+    const auto [cupIdle, cupPressed]  = uiSheet.getTagBounds("cup");
+    const auto [soundOnFrame, soundOnEnd]   = uiSheet.getTagBounds("soundon");
+    const auto [soundOffFrame, soundOffEnd] = uiSheet.getTagBounds("soundoff");
+    (void)soundOnEnd; (void)soundOffEnd; // single-frame tags; only .first is used
+
+    for (auto e = bagel::Entity::first(); !e.eof(); e.next())
+    {
+        if (!e.test(spriteMask)) continue;
+        auto& b = e.get<Button>();
+        auto& d = e.get<Drawable>();
+
+        if (b.kind == ButtonKind::Spawn && b.dropType == DropType::Cup)
+        {
+            const bool showPressed = mouseHeld && isPointInsideTransform(worldMouse, e.get<Transform>());
+            d.srcRect = uiSheet.getFrameRect(showPressed ? cupPressed : cupIdle);
+        }
+        else if (b.kind == ButtonKind::Sound)
+        {
+            d.srcRect = uiSheet.getFrameRect(SettingsState::muted() ? soundOffFrame : soundOnFrame);
+        }
+        else if (b.kind == ButtonKind::Menu)
+        {
+            const bool showPressed = mouseHeld && isPointInsideTransform(worldMouse, e.get<Transform>());
+            d.srcRect = menuSheet.getFrameRect(showPressed ? 1 : 0);
+        }
     }
 }
 } // namespace cafe

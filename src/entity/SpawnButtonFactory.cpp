@@ -51,8 +51,8 @@ bagel::Entity createSpawnButton(AssetManager& assets, PhysicsContext& physics, W
 
     if (item == DropType::Cup)
     {
-        constexpr auto TEX_PATH   = "spawn_buttons.png";
-        constexpr auto SHEET_PATH = "spawn_buttons.json";
+        constexpr auto TEX_PATH   = "ui_buttons.png";
+        constexpr auto SHEET_PATH = "ui_buttons.json";
 
         const SpriteSheet& sheet = assets.getSpriteSheet( TEX_PATH, SHEET_PATH);
         const Texture& tex       = assets.getTexture(TEX_PATH);

@@ -2,7 +2,7 @@
 
 namespace cafe
 {
-static constexpr auto  WINDOW_TITLE   = "Cafe game";
+static constexpr auto  WINDOW_TITLE   = "Entity Coffee System";
 static constexpr int   FPS            = 60;
 static constexpr float FRAME_DELTA_MS = FPS ? (1000.f / FPS) : 0.f;
 static constexpr float PTM            = 8.f;  // pixels to meters conversion factor

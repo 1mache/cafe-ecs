@@ -196,7 +196,7 @@ bool DayReportScene::onUpdate(float /*dt*/)
         if (b.menuAction == MenuAction::NextDay) nextDay = true;
     }
 
-    buttonDispatchSystem(getAssetManager(), nullptr, getAudioContext()); // no PhysicsContext here: no Spawn buttons in this scene
+    buttonDispatchSystem(getAssetManager(), nullptr, getAudioContext(), renderer); // no PhysicsContext here: no Spawn buttons in this scene
 
     if (exitRequested) { requestNext(SceneId::Quit);     return false; }
     if (nextDay)       { requestNext(SceneId::MainGame); return false; }

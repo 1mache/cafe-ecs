@@ -12,10 +12,4 @@ namespace cafe
  *  this system no longer maps it itself. Mouse only — the menu has no key
  *  bindings. */
 void menuInputSystem(SDL_Renderer* renderer, bool& outExit, AudioContext& audio);
-
-/** @brief Re-tints every Button{kind==Sound} square from SettingsState::muted()
- *  each frame (white = sound on, gray = muted). The toggle action itself
- *  (flipping muted + applying volume) now lives in buttonDispatchSystem —
- *  this system is tint-only. */
-void soundToggleSystem();
 } // namespace cafe

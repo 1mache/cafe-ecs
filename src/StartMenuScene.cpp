@@ -34,8 +34,6 @@ constexpr int  SCALE       = 1;
 constexpr WorldPos LOGO_POS    = { 0.f, 2.75f };   // screen (80, 23)
 constexpr float    LOGO_HALF_W = 3.0f;             // 48 px wide
 
-constexpr float    BTN_HALF_W  = 1.875f;           // 30 px wide
-constexpr float    BTN_HALF_H  = 0.625f;           // 10 px tall
 constexpr WorldPos START_POS   = { 0.f, -0.875f }; // screen (80, 52)
 constexpr WorldPos EXIT_POS    = { 0.f, -2.5f };   // screen (80, 65)
 
@@ -47,19 +45,6 @@ constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * 0.5f;
 
 // Font glyphs are white; black text keeps the labels readable on white squares.
 constexpr SDL_Color TEXT_ON_SQUARE = { 0, 0, 0, 255 };
-
-/** White placeholder square: null texture => drawSystem fills the rect with
- *  tint. Swap to real art later by filling texture + srcRect (the microwave
- *  placeholder workflow). */
-bagel::Entity makeSquare(WorldPos pos, float halfW, float halfH)
-{
-    auto e = bagel::Entity::create();
-    e.addAll(
-        Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ nullptr, SDL_FRect{}, layer::UI1 } // default tint: opaque white
-    );
-    return e;
-}
 
 /** Centred label over a square: its own TextLabel entity at the square's
  *  centre, nudged up half a glyph (text-over-bar layout from DayReportScene). */
@@ -96,16 +81,49 @@ void StartMenuScene::onInit()
             Drawable{ logoTex.get(), src, layer::UI1 });
     }
 
-    // START / EXIT buttons: square + tag + centred label.
-    makeSquare(START_POS, BTN_HALF_W, BTN_HALF_H).add(Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::Start });
-    addCenteredLabel(START_POS, "START", cam);
+    // START / EXIT buttons: ui_buttons2's long-button background (frame 0 idle,
+    // frame 1 pressed — buttonDispatchSystem swaps it live), sized at native
+    // resolution (texToWorldScale of the sheet's own frame size, not a tuned
+    // constant), plus a centred label.
+    {
+        constexpr auto TEX_PATH   = "ui_buttons2.png";
+        constexpr auto SHEET_PATH = "ui_buttons2.json";
+        const SpriteSheet& sheet  = getAssetManager().getSpriteSheet(TEX_PATH, SHEET_PATH);
+        const Texture&     tex    = getAssetManager().getTexture(TEX_PATH);
+        const float halfW = texToWorldScale(sheet.spriteSize().x);
+        const float halfH = texToWorldScale(sheet.spriteSize().y);
 
-    makeSquare(EXIT_POS, BTN_HALF_W, BTN_HALF_H).add(Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::Exit });
-    addCenteredLabel(EXIT_POS, "EXIT", cam);
+        auto makeMenuButton = [&](WorldPos pos, MenuAction action, const char* label)
+        {
+            auto e = bagel::Entity::create();
+            e.addAll(
+                Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
+                Drawable{ tex.get(), sheet.getFrameRect(0), layer::UI1 },
+                Button{ .kind = ButtonKind::Menu, .menuAction = action });
+            addCenteredLabel(pos, label, cam);
+        };
 
-    // Sound toggle: no label (per the sketch); soundToggleSystem paints its
-    // on/off tint every frame, including the first.
-    makeSquare(SOUND_POS, SOUND_HALF, SOUND_HALF).add(Button{ .kind = ButtonKind::Sound });
+        makeMenuButton(START_POS, MenuAction::Start, "START");
+        makeMenuButton(EXIT_POS, MenuAction::Exit, "EXIT");
+    }
+
+    // Sound toggle: no label (per the sketch); buttonDispatchSystem paints the
+    // soundon/soundoff sprite frame every frame, including the first. Kept at
+    // its existing on-screen size (SOUND_HALF) rather than ui_buttons.json's
+    // native 16x16 frame size.
+    {
+        constexpr auto TEX_PATH   = "ui_buttons.png";
+        constexpr auto SHEET_PATH = "ui_buttons.json";
+        const SpriteSheet& sheet  = getAssetManager().getSpriteSheet(TEX_PATH, SHEET_PATH);
+        const Texture&     tex    = getAssetManager().getTexture(TEX_PATH);
+        const auto [soundOnFrame, _] = sheet.getTagBounds("soundon");
+
+        auto e = bagel::Entity::create();
+        e.addAll(
+            Transform{ .x = SOUND_POS.x, .y = SOUND_POS.y, .w = SOUND_HALF, .h = SOUND_HALF },
+            Drawable{ tex.get(), sheet.getFrameRect(soundOnFrame), layer::UI1 },
+            Button{ .kind = ButtonKind::Sound });
+    }
 
     getAudioContext().playMusic(sound::INTRO_MUSIC, sound::MUSIC_VOLUME);
 }
@@ -134,8 +152,7 @@ bool StartMenuScene::onUpdate(float /*dt*/)
         }
     }
 
-    soundToggleSystem();
-    buttonDispatchSystem(getAssetManager(), nullptr, getAudioContext()); // no PhysicsContext here: no Spawn buttons in this scene
+    buttonDispatchSystem(getAssetManager(), nullptr, getAudioContext(), renderer); // no PhysicsContext here: no Spawn buttons in this scene
 
     if (exit)  { requestNext(SceneId::Quit);     return false; }
     if (start) { requestNext(SceneId::MainGame); return false; }
