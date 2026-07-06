@@ -12,9 +12,11 @@ namespace cafe
 /** @brief What a Button{kind==Menu} click signals to its scene. */
 enum class MenuAction
 {
-    Start,   // start-menu START square -> begin the game
-    Exit,    // start-menu EXIT square  -> quit
-    NextDay, // day-report power button -> advance to the next day
+    Start,     // start-menu START square -> begin the game
+    Exit,      // start-menu EXIT square  -> quit
+    NextDay,   // day-report power button -> advance to the next day
+    HowToPlay, // start-menu HOW-TO square -> open the how-to-play scene
+    Back,      // how-to-play BACK square  -> return to the start menu
 };
 
 /** @brief Which button role an entity plays. Selects which fields below are live. */
