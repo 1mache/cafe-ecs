@@ -29,7 +29,7 @@ inline constexpr DrinkRecipe MENU[] = {
     // name           {coffee, water, milk}                    hot    cold   iconFrame  targetFill
     { "Black coffee",{ 0.80f, 0.20f, 0.00f }, true,  true,          1.f },
     { "Espresso",    { 1.00f, 0.00f, 0.00f }, true,  false,         0.5f },
-    { "Americano",   { 0.00f, 0.50f, 0.50f }, true,  true,          1.f },
+    { "Americano",   { 0.50f, 0.50f, 0.00f }, true,  true,          1.f },
     { "Latte",       { 0.25f, 0.50f, 0.25f }, true,  false,         1.f },
     { "Cappuccino",  { 0.30f, 0.70f, 0.00f }, true,  true,          0.8f },
 };
