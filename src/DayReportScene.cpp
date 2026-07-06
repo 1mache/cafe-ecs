@@ -36,13 +36,14 @@ constexpr float STAT_LINE_H   = 9.f;
 constexpr float STAT_MARGIN_X = 8.f;
 
 // --- Upgrade bars in WORLD units (camera at origin: 1 unit = 8 px, center = 80,45).
-// Sized/positioned to stay inside the backdrop's black screen area (see above)
-// and clear of its bottom bezel (screen y >= 76). ---
-constexpr float BTN_HALF_W  = 8.75f;   // upgrade bars: ~140 px wide, inset from the frame
+// Laid out as a 2x2 grid inside the backdrop's black screen area (see above),
+// clear of its bottom bezel (screen y >= 76). ---
+constexpr float BTN_HALF_W  = 4.375f;  // upgrade bars: ~70 px wide (two columns fit)
 constexpr float BTN_HALF_H  = 0.5625f; // ~9 px tall (one text line + padding)
-constexpr float BTN_X       = 0.f;     // centered horizontally
-constexpr float FIRST_BTN_Y = -1.5625f; // first upgrade bar (~screen y 57.5)
-constexpr float BTN_GAP_Y   = 1.375f;   // world gap between stacked bars
+constexpr float BTN_X       = 0.f;     // grid centered horizontally
+constexpr float BTN_COL_DX  = 4.75f;   // +/- column offset from center (~38 px)
+constexpr float FIRST_BTN_Y = -1.5625f; // top row (~screen y 57.5)
+constexpr float BTN_ROW_GAP = 1.5f;     // world gap between the two rows (~12 px)
 
 // The backdrop already draws a red "power" button in its bottom-right bezel
 // (screen px center ~149,84, ~9 px across); this is just its click hit-box —
@@ -50,8 +51,9 @@ constexpr float BTN_GAP_Y   = 1.375f;   // world gap between stacked bars
 constexpr WorldPos NEXT_DAY_HITBOX_POS  = { 8.625f, -4.875f };
 constexpr float    NEXT_DAY_HITBOX_HALF = 0.625f; // ~5 px half-size, a bit larger than the icon
 
-constexpr float LABEL_PAD      = 4.f;                                  // text inset from bar edge
-constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * 0.5f;  // vertical centring
+constexpr float BTN_FONT_SCALE = 0.45f;                               // shrunk font for the grid's name/status labels
+constexpr float LABEL_PAD      = 3.f;                                 // text inset from bar edge
+constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * BTN_FONT_SCALE * 0.5f; // vertical centring
 
 // State colours for the upgrade bar fill (see AskUserQuestion: "colour by state").
 constexpr SDL_Color COLOR_AFFORD = { 110, 190,  70, 255 }; // can buy      -> green
@@ -140,7 +142,10 @@ void DayReportScene::onInit()
     // onUpdate via the UpgradeStatusLabel tag).
     for (int i = 0; i < static_cast<int>(UpgradeId::count); ++i)
     {
-        const WorldPos pos{ BTN_X, FIRST_BTN_Y - static_cast<float>(i) * BTN_GAP_Y };
+        const int      col = i % 2;             // 0 = left, 1 = right
+        const int      row = i / 2;             // 0 = top,  1 = bottom
+        const WorldPos pos{ BTN_X + (col == 0 ? -BTN_COL_DX : BTN_COL_DX),
+                            FIRST_BTN_Y - static_cast<float>(row) * BTN_ROW_GAP };
         const auto     id = static_cast<UpgradeId>(i);
 
         auto e = makeButtonEntity(pos, BTN_HALF_W, BTN_HALF_H);
@@ -154,13 +159,13 @@ void DayReportScene::onInit()
         auto nameEnt = bagel::Entity::create();
         nameEnt.addAll(
             Transform{ .x = namePos.x, .y = namePos.y },
-            TextLabel{ upgradeDef(id).name, SCALE, TextAlign::Left });
+            TextLabel{ upgradeDef(id).name, BTN_FONT_SCALE, TextAlign::Left });
 
         const WorldPos statusPos = screenToWorldPoint({ r.x + r.w - LABEL_PAD, ty }, cam);
         auto statusEnt = bagel::Entity::create();
         statusEnt.addAll(
             Transform{ .x = statusPos.x, .y = statusPos.y },
-            TextLabel{ shopStatus(id, UpgradeState::level(id)), SCALE, TextAlign::Right },
+            TextLabel{ shopStatus(id, UpgradeState::level(id)), BTN_FONT_SCALE, TextAlign::Right },
             UpgradeStatusLabel{ id });
     }
 

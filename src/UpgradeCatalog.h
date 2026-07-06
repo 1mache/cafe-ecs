@@ -5,7 +5,7 @@ namespace cafe
 /** @brief Every upgrade the shop sells. `count` is last so it equals the number
  *  of real upgrades (sizes UPGRADES[] and bounds loops). Add an upgrade by adding
  *  an enumerator here (before count) and a matching row in UPGRADES[]. */
-enum class UpgradeId { TapSpeed, MicrowaveSpeed, count };
+enum class UpgradeId { TapSpeed, MicrowaveSpeed, KeyboardPour, KeyboardPastry, count };
 
 /** @brief Data-driven definition of one upgrade. Cost and effect are linear in
  *  the current level: cost(lvl) = baseCost + lvl*costStep,
@@ -25,6 +25,8 @@ inline constexpr UpgradeDef UPGRADES[static_cast<int>(UpgradeId::count)] = {
     //  name                maxLvl baseCost costStep baseValue valueStep
     { "FASTER TAPS",        3,     50,      25,      0.05f,    -0.012f },
     { "FASTER MICROWAVE",   3,     60,      30,      5.5f,     -1.3f   },
+    { "KEYBOARD POUR",      1,     10,      0,       1.f,      0.f     },
+    { "KEYBOARD PASTRY",    1,     10,      0,       1.f,      0.f     },
 };
 
 const UpgradeDef& upgradeDef(UpgradeId id);
