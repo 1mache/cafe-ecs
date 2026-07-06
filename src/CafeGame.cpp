@@ -1,17 +1,19 @@
 #include "CafeGame.h"
 
 #include "Components.h"
+#include "DayReportScene.h"
 #include "Entities.h"
 #include "GameConfig.h"
-#include "DayReportScene.h"
 #include "HowToPlayScene.h"
 #include "MainGameScene.h"
-#include "StartMenuScene.h"
 #include "PhysicsContext.h"
 #include "RenderContext.h"
+#include "SDL3_image/SDL_image.h"
 #include "SpriteDims.h"
+#include "StartMenuScene.h"
 #include "Systems.h"
 #include "Utils.h"
+
 #include <SDL3/SDL.h>
 #include <iostream>
 
@@ -59,6 +61,10 @@ void CafeGame::init()
                                      SDL_LOGICAL_PRESENTATION_INTEGER_SCALE);
     SDL_SetWindowResizable(window, true);
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+
+    _icon = IMG_Load("res/icon.png");
+    SDL_SetWindowIcon(window, _icon);
+
     RenderContext::init(window, renderer);
 
     _window   = window;
@@ -97,6 +103,7 @@ void CafeGame::destroy()
 {
     SDL_DestroyRenderer(_renderer);
     SDL_DestroyWindow(_window);
+    SDL_DestroySurface(_icon);
     SDL_Quit();
 }
 
