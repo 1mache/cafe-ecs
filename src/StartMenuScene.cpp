@@ -42,6 +42,12 @@ constexpr WorldPos EXIT_POS    = { 0.f, -2.5f };   // screen (80, 65)
 constexpr WorldPos SOUND_POS   = { 8.5f, -4.375f };// screen (148, 80), bottom-right
 constexpr float    SOUND_HALF  = 0.625f;           // 10 x 10 px
 
+// HOW-TO-PLAY button: gray placeholder square left of the sound toggle. No label
+// (per the sketch). Swap to a real sprite later by filling texture + srcRect.
+constexpr WorldPos  HOWTO_POS  = { 6.75f, -4.375f };// screen (134, 80), left of sound
+constexpr float     HOWTO_HALF = 0.625f;           // 10 x 10 px
+constexpr SDL_Color HOWTO_TINT = { 128, 128, 128, 255 };
+
 // Vertical centring for a label over a square (same trick as DayReportScene).
 constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * 0.5f;
 
@@ -49,14 +55,15 @@ constexpr float LABEL_Y_OFFSET = -static_cast<float>(GLYPH_H) * 0.5f;
 constexpr SDL_Color TEXT_ON_SQUARE = { 0, 0, 0, 255 };
 
 /** White placeholder square: null texture => drawSystem fills the rect with
- *  tint. Swap to real art later by filling texture + srcRect (the microwave
- *  placeholder workflow). */
-bagel::Entity makeSquare(WorldPos pos, float halfW, float halfH)
+ *  tint. Pass `tint` for a non-white placeholder (e.g. gray). Swap to real art
+ *  later by filling texture + srcRect (the microwave placeholder workflow). */
+bagel::Entity makeSquare(WorldPos pos, float halfW, float halfH,
+                         SDL_Color tint = { 255, 255, 255, 255 })
 {
     auto e = bagel::Entity::create();
     e.addAll(
         Transform{ .x = pos.x, .y = pos.y, .w = halfW, .h = halfH },
-        Drawable{ nullptr, SDL_FRect{}, layer::UI1 } // default tint: opaque white
+        Drawable{ nullptr, SDL_FRect{}, layer::UI1, tint }
     );
     return e;
 }
@@ -107,6 +114,10 @@ void StartMenuScene::onInit()
     // on/off tint every frame, including the first.
     makeSquare(SOUND_POS, SOUND_HALF, SOUND_HALF).add(Button{ .kind = ButtonKind::Sound });
 
+    // HOW-TO-PLAY: gray placeholder square, no label; opens the how-to scene.
+    makeSquare(HOWTO_POS, HOWTO_HALF, HOWTO_HALF, HOWTO_TINT)
+        .add(Button{ .kind = ButtonKind::Menu, .menuAction = MenuAction::HowToPlay });
+
     getAudioContext().playMusic(sound::INTRO_MUSIC, sound::MUSIC_VOLUME);
 }
 
@@ -117,8 +128,9 @@ bool StartMenuScene::onUpdate(float /*dt*/)
     bool exit = false;
     menuInputSystem(renderer, exit, getAudioContext());
 
-    // Thin per-scene Menu read: map Button{kind==Menu}.menuAction -> start/exit.
+    // Thin per-scene Menu read: map Button{kind==Menu}.menuAction -> start/exit/how-to.
     bool start = false;
+    bool howto = false;
     static const bagel::Mask menuMask = bagel::MaskBuilder().set<Button>().build();
     for (auto e = bagel::Entity::first(); !e.eof(); e.next())
     {
@@ -128,17 +140,19 @@ bool StartMenuScene::onUpdate(float /*dt*/)
         b.pressed = false;
         switch (b.menuAction)
         {
-        case MenuAction::Start: start = true; break;
-        case MenuAction::Exit:  exit  = true; break;
-        default: break; // NextDay is not raised in the start menu
+        case MenuAction::Start:     start = true; break;
+        case MenuAction::Exit:      exit  = true; break;
+        case MenuAction::HowToPlay: howto = true; break;
+        default: break; // NextDay / Back are not raised in the start menu
         }
     }
 
     soundToggleSystem();
     buttonDispatchSystem(getAssetManager(), nullptr, getAudioContext()); // no PhysicsContext here: no Spawn buttons in this scene
 
-    if (exit)  { requestNext(SceneId::Quit);     return false; }
-    if (start) { requestNext(SceneId::MainGame); return false; }
+    if (exit)  { requestNext(SceneId::Quit);      return false; }
+    if (start) { requestNext(SceneId::MainGame);  return false; }
+    if (howto) { requestNext(SceneId::HowToPlay); return false; }
 
     SDL_RenderClear(renderer);
 

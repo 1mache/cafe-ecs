@@ -4,6 +4,7 @@
 #include "Entities.h"
 #include "GameConfig.h"
 #include "DayReportScene.h"
+#include "HowToPlayScene.h"
 #include "MainGameScene.h"
 #include "StartMenuScene.h"
 #include "PhysicsContext.h"
@@ -84,6 +85,8 @@ std::unique_ptr<Scene> CafeGame::makeScene(SceneId id)
         return std::make_unique<StartMenuScene>();
     case SceneId::DayReport:
         return std::make_unique<DayReportScene>();
+    case SceneId::HowToPlay:
+        return std::make_unique<HowToPlayScene>();
     case SceneId::MainGame:
     default:
         return std::make_unique<MainGameScene>();
