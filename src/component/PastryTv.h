@@ -17,7 +17,7 @@ struct PastryTv
 };
 
 inline constexpr auto  PASTRY_TV_TEX         = "pastry_tv.png";
-inline constexpr float PASTRY_TV_ROTATE_TIME = 3.5f; // seconds per pastry
+inline constexpr float PASTRY_TV_ROTATE_TIME = 3.f; // seconds per pastry
 } // namespace cafe
 
 template <> struct bagel::Storage<cafe::PastryTv> final : bagel::NoInstance

@@ -23,10 +23,10 @@ struct UpgradeDef
 // THE table the team edits. Index order MUST match UpgradeId.
 inline constexpr UpgradeDef UPGRADES[static_cast<int>(UpgradeId::count)] = {
     //  name                maxLvl baseCost costStep baseValue valueStep
-    { "FASTER TAPS",        3,     100,      50,      0.05f,    -0.011f },
-    { "FASTER MICROWAVE",   3,     100,      50,      5.5f,     -1.f   },
-    { "KEYBOARD POUR",      1,     200,      0,       1.f,      0.f     },
-    { "KEYBOARD PASTRY",    1,     200,      0,       1.f,      0.f     },
+    { "FASTER TAPS",        3,     300,      100,      0.05f,    -0.011f },
+    { "FASTER MICROWAVE",   3,     300,      100,      5.5f,     -1.f   },
+    { "KEYBOARD POUR",      1,     1500,      0,       1.f,      0.f     },
+    { "KEYBOARD PASTRY",    1,     1500,      0,       1.f,      0.f     },
 };
 
 const UpgradeDef& upgradeDef(UpgradeId id);
